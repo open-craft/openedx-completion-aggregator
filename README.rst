@@ -4,19 +4,30 @@ openedx-completion-aggregator
 |pypi-badge| |travis-badge| |codecov-badge| |doc-badge| |pyversions-badge|
 |license-badge|
 
-The ``README.rst`` file should start with a brief description of the repository,
-which sets it in the context of other repositories under the ``edx``
-organization. It should make clear where this fits in to the overall edX
-codebase.
+openedx-completion-aggregator is a Django app that aggregates block level 
+completion data for different block types for Open edX.  
 
-an app that aggregates block level completion data for different block types for Open edX.
+Overview
+--------
 
-Overview (please modify)
-------------------------
+..code_block::
 
-The ``README.rst`` file should then provide an overview of the code in this
-repository, including the main components and useful entry points for starting
-to understand the code in more detail.
+    $ pip install openedx-completion-aggregator
+
+Add to settings.py::
+
+    INSTALLED_APPS += 'completion_aggregator'
+    COMPLETION_AGGREGATED_BLOCKS = [
+        'chapter',
+        'subsection',
+        'vertical',
+    ]
+    
+Add to urls.py::
+
+    urlpatterns += [
+       url('^completion/', include('completion_aggregator.urls'))
+    ]
 
 Documentation
 -------------
