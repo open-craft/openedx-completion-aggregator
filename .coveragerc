@@ -1,0 +1,10 @@
+[run]
+branch = True
+data_file = .coverage
+source=completion_aggregation
+omit =
+    test_settings
+    *migrations*
+    *admin.py
+    *static*
+    *templates*
