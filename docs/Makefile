@@ -96,9 +96,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/openedx-completion-aggregation.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/openedx-completion-aggregator.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/openedx-completion-aggregation.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/openedx-completion-aggregator.qhc"
 
 .PHONY: applehelp
 applehelp:
@@ -115,8 +115,8 @@ devhelp:
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/openedx-completion-aggregation"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/openedx-completion-aggregation"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/openedx-completion-aggregator"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/openedx-completion-aggregator"
 	@echo "# devhelp"
 
 .PHONY: epub

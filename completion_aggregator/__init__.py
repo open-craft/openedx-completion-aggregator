@@ -6,4 +6,4 @@ from __future__ import absolute_import, unicode_literals
 
 __version__ = '0.1.0'
 
-default_app_config = 'completion_aggregation.apps.CompletionAggregationConfig'  # pylint: disable=invalid-name
+default_app_config = 'completion_aggregator.apps.CompletionAggregatorConfig'  # pylint: disable=invalid-name

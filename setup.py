@@ -23,7 +23,7 @@ def get_version(*file_paths):
     raise RuntimeError('Unable to find version string.')
 
 
-VERSION = get_version('completion_aggregation', '__init__.py')
+VERSION = get_version('completion_aggregator', '__init__.py')
 
 if sys.argv[-1] == 'tag':
     print("Tagging the version on github:")
@@ -35,15 +35,15 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 CHANGELOG = open(os.path.join(os.path.dirname(__file__), 'CHANGELOG.rst')).read()
 
 setup(
-    name='openedx-completion-aggregation',
+    name='openedx-completion-aggregator',
     version=VERSION,
     description="""an app that aggregates block level completion data for different block types for Open edX.""",
     long_description=README + '\n\n' + CHANGELOG,
     author='edX',
     author_email='oscm@edx.org',
-    url='https://github.com/edx/openedx-completion-aggregation',
+    url='https://github.com/edx/openedx-completion-aggregator',
     packages=[
-        'completion_aggregation',
+        'completion_aggregator',
     ],
     include_package_data=True,
     install_requires=[

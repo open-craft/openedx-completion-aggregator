@@ -1,9 +1,9 @@
-.. openedx-completion-aggregation documentation master file, created by
+.. openedx-completion-aggregator documentation master file, created by
    sphinx-quickstart on Thu Jan 04 09:36:13 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-openedx-completion-aggregation
+openedx-completion-aggregator
 ===============================
 an app that aggregates block level completion data for different block types for Open edX.
 

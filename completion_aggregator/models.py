@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Database models for completion_aggregation.
+Database models for completion_aggregator.
 """
 
 from __future__ import absolute_import, unicode_literals
