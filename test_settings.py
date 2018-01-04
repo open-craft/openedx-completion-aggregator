@@ -29,15 +29,16 @@ DATABASES = {
 }
 
 INSTALLED_APPS = (
-    'django.contrib.auth',
     'django.contrib.contenttypes',
-    'completion_aggregation',
+    'django.contrib.auth',
+    'completion_aggregator',
+    'test_utils.test_app',
 )
 
 LOCALE_PATHS = [
-    root('completion_aggregation', 'conf', 'locale'),
+    root('completion_aggregator', 'conf', 'locale'),
 ]
 
-ROOT_URLCONF = 'completion_aggregation.urls'
+ROOT_URLCONF = 'completion_aggregator.urls'
 
 SECRET_KEY = 'insecure-secret-key'

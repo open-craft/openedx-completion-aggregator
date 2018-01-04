@@ -4,28 +4,17 @@
 #
 #    pip-compile --output-file requirements/test.txt requirements/base.in requirements/test.in
 #
-appdirs==1.4.3            # via fs
 attrs==17.4.0             # via pytest
-coverage==4.4.2           # via pytest-cov
+coverage==4.5.1           # via pytest-cov
 ddt==1.1.1
-django-model-utils==3.0.0
-django-rest-framework==0.1.0
-djangorestframework==3.7.7  # via django-rest-framework
-edx-opaque-keys==0.4
-fs==2.0.17                # via xblock
-lxml==4.1.1               # via xblock
-markupsafe==1.0           # via xblock
+django-model-utils==3.1.1
+edx-opaque-keys==0.4.2
 pbr==3.1.1                # via stevedore
 pluggy==0.6.0             # via pytest
 py==1.5.2                 # via pytest
 pymongo==3.6.0            # via edx-opaque-keys
 pytest-cov==2.5.1
-pytest==3.3.2             # via pytest-cov, pytest-django
-python-dateutil==2.6.1    # via xblock
-pytz==2017.3              # via django, fs, xblock
-pyyaml==3.12              # via xblock
-six==1.11.0               # via edx-opaque-keys, fs, pytest, python-dateutil, stevedore, xblock
+pytest==3.4.0             # via pytest-cov, pytest-django
+pytz==2018.3              # via django
+six==1.11.0               # via edx-opaque-keys, pytest, stevedore
 stevedore==1.28.0         # via edx-opaque-keys
-web-fragments==0.2.2      # via xblock
-webob==1.7.4              # via xblock
-xblock==1.1.1

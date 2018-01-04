@@ -40,6 +40,7 @@ htmlcov/
 .project
 .pycharm_helpers/
 .pydevproject
+.vscode/
 
 # The Silver Searcher
 .agignore
@@ -60,8 +61,8 @@ output/*/index.html
 # Sphinx
 docs/_build
 docs/modules.rst
-docs/completion_aggregation.rst
-docs/completion_aggregation.*.rst
+docs/completion_aggregator.rst
+docs/completion_aggregator.*.rst
 
 # Private requirements
 requirements/private.in

@@ -40,12 +40,13 @@ def get_version(*file_paths):
 
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(REPO_ROOT)
 
 VERSION = get_version('../completion_aggregator', '__init__.py')
 
 # Configure Django for autodoc usage
-settings.configure()
+
+sys.path.append(REPO_ROOT)
+os.environ['DJANGO_SETTINGS_MODULE'] = 'test_settings'
 django.setup()
 
 # If extensions (or modules to document with autodoc) are in another directory,
