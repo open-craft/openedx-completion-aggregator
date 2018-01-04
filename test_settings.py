@@ -32,8 +32,10 @@ DATABASES = {
 INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.auth',
+    'django.contrib.sessions',
     'completion_aggregator',
     'completion',
+    'oauth2_provider',
     'test_utils.test_app',
 )
 
@@ -41,12 +43,16 @@ LOCALE_PATHS = [
     root('completion_aggregator', 'conf', 'locale'),
 ]
 
-ROOT_URLCONF = 'completion_aggregator.urls'
+ROOT_URLCONF = 'test_urls'
 
 SECRET_KEY = 'insecure-secret-key'
 
 COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter'}
 
 CELERY_ALWAYS_EAGER = True
+
+REST_FRAMEWORK = {
+    'PAGE_SIZE': 10,
+}
 
 from test_utils.test_app import celery  # isort:skip
