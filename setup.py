@@ -47,7 +47,12 @@ setup(
     ],
     include_package_data=True,
     install_requires=[
-        "Django>=1.8,<1.11", "django-model-utils>=2.0"
+        "Django>=1.8,<1.11",
+        "django-model-utils>=2.0",
+        "django-rest-framework",
+        "pytest-django",
+        "XBlock",
+        "edx-opaque-keys",
     ],
     license="AGPL 3.0",
     zip_safe=False,
@@ -65,5 +70,6 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
 )
