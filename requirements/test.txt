@@ -9,7 +9,8 @@ coverage==4.5.1           # via pytest-cov
 ddt==1.1.1
 django-model-utils==3.1.1
 edx-opaque-keys==0.4.2
-pbr==3.1.1                # via stevedore
+mock==2.0.0
+pbr==3.1.1                # via mock, stevedore
 pluggy==0.6.0             # via pytest
 py==1.5.2                 # via pytest
 pymongo==3.6.0            # via edx-opaque-keys

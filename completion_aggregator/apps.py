@@ -14,3 +14,9 @@ class CompletionAggregatorConfig(AppConfig):
     """
 
     name = 'completion_aggregator'
+
+    def ready(self):
+        """
+        Load signal handlers when the app is ready.
+        """
+        from . import signals as _
