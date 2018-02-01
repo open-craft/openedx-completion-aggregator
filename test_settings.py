@@ -17,6 +17,7 @@ def root(*args):
     return join(abspath(dirname(__file__)), *args)
 
 
+USE_TZ = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -32,6 +33,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'completion_aggregator',
+    'completion',
     'test_utils.test_app',
 )
 
@@ -43,4 +45,8 @@ ROOT_URLCONF = 'completion_aggregator.urls'
 
 SECRET_KEY = 'insecure-secret-key'
 
-COMPLETION_AGGREGATED_MODEL_OVERRIDE = 'test_app.Completable'
+COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter'}
+
+CELERY_ALWAYS_EAGER = True
+
+from test_utils.test_app import celery  # isort:skip
