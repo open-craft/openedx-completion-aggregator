@@ -72,4 +72,10 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
+    entry_points={
+        'lms.djangoapp': [
+            'completion_aggregator = completion_aggregator.apps:CompletionAggregatorAppConfig'
+        ],
+        'cms.djangoapp': [],
+    }
 )

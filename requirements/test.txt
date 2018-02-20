@@ -15,7 +15,7 @@ pluggy==0.6.0             # via pytest
 py==1.5.2                 # via pytest
 pymongo==3.6.0            # via edx-opaque-keys
 pytest-cov==2.5.1
-pytest==3.4.0             # via pytest-cov, pytest-django
-pytz==2018.3              # via django
-six==1.11.0               # via edx-opaque-keys, pytest, stevedore
+pytest==3.4.1             # via pytest-cov, pytest-django
+pytz==2018.3              # via celery, django
+six==1.11.0               # via edx-opaque-keys, mock, pytest, stevedore
 stevedore==1.28.0         # via edx-opaque-keys
