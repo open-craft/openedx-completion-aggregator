@@ -10,5 +10,6 @@ from celery import Celery
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'test_settings')
 
-app = Celery('test_project', broker='redis://')  # pylint: disable=invalid-name
+app = Celery('test_project', broker='redis://')
+app.conf.update(accept_content=['json'])
 app.autodiscover_tasks(['completion_aggregator'])

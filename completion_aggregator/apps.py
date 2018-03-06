@@ -19,11 +19,15 @@ class CompletionAggregatorAppConfig(AppConfig):
             'lms.djangoapp': {
                 'namespace': 'completion_aggregator',
                 'regex': r'^completion-aggregator/',
-                'relative_path': 'completion_aggregator.urls',
+                'relative_path': 'urls',
             },
         },
         'settings_config': {
             'lms.djangoapp': {
+                'aws': {'relative_path': 'settings.aws'},
+                'common': {'relative_path': 'settings.common'},
+            },
+            'cms.djangoapp': {
                 'aws': {'relative_path': 'settings.aws'},
                 'common': {'relative_path': 'settings.common'},
             },
@@ -34,4 +38,5 @@ class CompletionAggregatorAppConfig(AppConfig):
         """
         Load signal handlers when the app is ready.
         """
-        from . import signals as _
+        from . import signals
+        signals.register()

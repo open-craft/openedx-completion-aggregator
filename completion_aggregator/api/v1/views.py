@@ -319,7 +319,6 @@ class CompletionListView(CompletionViewMixin, APIView):
 
 
 class CompletionDetailView(CompletionViewMixin, APIView):
-    # pylint: disable=line-too-long
     """
     API view to render a serialized CourseCompletion for a single user in a
     single course.
@@ -434,7 +433,6 @@ class CompletionDetailView(CompletionViewMixin, APIView):
     edx-solutions/progress-edx-platform-extensions models as a backing store.
     The replacement will have the same interface.
     """
-    # pylint: enable=line-too-long
 
     def get(self, request, course_key):
         """

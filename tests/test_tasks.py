@@ -4,11 +4,9 @@ Testing the functionality of asynchronous tasks
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import itertools
 from datetime import timedelta
 
-import six
-from mock import MagicMock
+import mock
 from opaque_keys.edx.keys import CourseKey
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
@@ -20,67 +18,7 @@ from django.utils.timezone import now
 from completion.models import BlockCompletion
 from completion_aggregator.models import Aggregator
 from completion_aggregator.tasks import AggregationUpdater
-
-
-class StubAggregationUpdater(AggregationUpdater):
-    """
-    An AggregationUpdater with connections to edx-platform and modulestore
-    replaced with local elements.
-    """
-    def init_course_block_key(self, modulestore, course_key):
-        """
-        Create a root usage key for the course.
-
-        For the purposes of testing, we're just going by convention.
-        """
-        return course_key.make_usage_key('course', 'course')
-
-    def init_course_blocks(self, user, course_block_key):
-        """
-        Not actually used in this implmentation.
-
-        Overridden here to prevent the default behavior, which relies on
-        modulestore.
-        """
-        pass
-
-    def _get_block_completions(self):
-        """
-        Return all completions for the current course.
-        """
-        return BlockCompletion.objects.filter(user=self.user, course_key=self.course_key)
-
-    def _get_children(self, block_key):
-        """
-        Return children for the given block.
-
-        For the purpose of the tests, we will use the following course
-        structure:
-
-                        course
-                          |
-                +--+---+--^-+----+----+
-               /   |   |    |    |     \
-            html html html html other hidden
-                                /   \
-                              html hidden
-
-        where `course` and `other` are a completion_mode of AGGREGATOR (but
-        only `course` is registered to store aggregations), `html` is
-        COMPLETABLE, and `hidden` is EXCLUDED.
-        """
-        if block_key.block_type == 'course':
-            return list(itertools.chain(
-                [self.course_key.make_usage_key('html', 'html{}'.format(i)) for i in six.moves.range(4)],
-                [self.course_key.make_usage_key('other', 'other')],
-                [self.course_key.make_usage_key('hidden', 'hidden0')]
-            ))
-        elif block_key.block_type == 'other':
-            return [
-                self.course_key.make_usage_key('html', 'html4'),
-                self.course_key.make_usage_key('hidden', 'hidden1')
-            ]
-        return []
+from test_utils.compat import StubCompat
 
 
 class CourseBlock(XBlock):
@@ -119,6 +57,9 @@ class AggregationUpdaterTestCase(TestCase):
     """
     def setUp(self):
         self.agg_modified = now() - timedelta(days=1)
+        patch = mock.patch('completion_aggregator.tasks.compat', StubCompat())
+        patch.start()
+        self.addCleanup(patch.stop)
         user = get_user_model().objects.create()
         self.course_key = CourseKey.from_string('course-v1:edx+course+test')
         self.agg, _ = Aggregator.objects.submit_completion(
@@ -137,7 +78,7 @@ class AggregationUpdaterTestCase(TestCase):
             completion=1.0,
             modified=now(),
         )
-        self.updater = StubAggregationUpdater(user, self.course_key, MagicMock())
+        self.updater = AggregationUpdater(user, self.course_key, mock.MagicMock())
 
     @XBlock.register_temp_plugin(CourseBlock, 'course')
     @XBlock.register_temp_plugin(HTMLBlock, 'html')

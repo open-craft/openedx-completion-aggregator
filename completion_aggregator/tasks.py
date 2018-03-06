@@ -4,36 +4,79 @@ Asynchronous tasks.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from collections import namedtuple
 from datetime import datetime
 
 import pytz
 from celery import shared_task
+from celery_utils.logged_task import LoggedTask
+from opaque_keys.edx.keys import CourseKey, UsageKey
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 
-from django.conf import settings
+from django.contrib.auth.models import User
 
+from . import compat
 from .models import Aggregator
 
 OLD_DATETIME = pytz.utc.localize(datetime(1900, 1, 1, 0, 0, 0))
 
+log = logging.getLogger(__name__)
 
-CompletionStats = namedtuple('CompletionStats', ['earned', 'possible', 'last_modified'])  # pylint: disable=invalid-name
+
+CompletionStats = namedtuple('CompletionStats', ['earned', 'possible', 'last_modified'])
 
 
-@shared_task
-def update_aggregators(user, course_key, block_keys=frozenset()):  # pylint: disable=unused-argument
+@shared_task(task=LoggedTask)
+def update_aggregators(username, course_key, block_keys=(), force=False):
     """
-    Update aggregators for the specified course.
+    Update aggregators for the specified enrollment (user + course).
 
-    Takes a collection of block_keys that have been updated, to enable
-    future optimizations in how aggregators are recalculated.
+    Parameters
+    ----------
+        username (str):
+            The user whose aggregators need updating.
+        course_key (str):
+            The course in which the aggregators need updating.
+        block_key (list[str]):
+            A list of completable blocks that have changed.
+        force (bool):
+            If True, update aggregators even if they are up-to-date.
+
+    Takes a collection of block_keys that have been updated, to enable future
+    optimizations in how aggregators are recalculated.
+
+    """
+    user = User.objects.get(username=username)
+    course_key = CourseKey.from_string(course_key)
+    block_keys = set(UsageKey.from_string(key) for key in block_keys)
+    return _update_aggregators(user, course_key, block_keys, force)
+
+
+def _update_aggregators(user, course_key, block_keys=frozenset(), force=False):
+    """
+    Update the aggregators for the specified enrollment (user + course).
+
+    This is the workhorse function for the update_aggregators task, taking its
+    arguments strongly typed.
+
+    Parameters
+    ----------
+        user (django.contrib.auth.models.User):
+            The user whose aggregators need updating.
+        course_key (opaque_keys.edx.keys.CourseKey):
+            The course in which the aggregators need updating.
+        block_key (list[opaque_keys.edx.keys.UsageKey]):
+             A list of completable blocks that have changed.
+        force (bool):
+            If True, update aggregators even if they are up-to-date.
+
     """
     from xmodule.modulestore.django import modulestore   # pylint: disable=import-error
-
+    log.debug("Updating aggregators in %s for %s", course_key, user)
     updater = AggregationUpdater(user, course_key, modulestore())
-    updater.update(block_keys)
+    updater.update(block_keys, force)
 
 
 class AggregationUpdater(object):
@@ -49,18 +92,22 @@ class AggregationUpdater(object):
         """
         self.user = user
         self.course_key = course_key
+
         with modulestore.bulk_operations(self.course_key):
-            self.course_block_key = self.init_course_block_key(modulestore, self.course_key)
-            self.course_blocks = self.init_course_blocks(self.user, self.course_block_key)
+            self.course_block_key = compat.init_course_block_key(modulestore, self.course_key)
+            self.course_blocks = compat.init_course_blocks(self.user, self.course_block_key)
         self.aggregators = {
             aggregator.block_key: aggregator for aggregator in Aggregator.objects.filter(
                 user=self.user,
                 course_key=self.course_key,
             )
         }
-        self.block_completions = {completion.block_key: completion for completion in self._get_block_completions()}
+        self.block_completions = {
+            completion.block_key.map_into_course(self.course_key): completion
+            for completion in compat.get_block_completions(self.user, self.course_key)
+        }
 
-    def update(self, changed_blocks=frozenset()):
+    def update(self, changed_blocks=frozenset(), force=False):
         """
         Update the aggregators for the course.
 
@@ -69,9 +116,9 @@ class AggregationUpdater(object):
         performed based on this information, but in the future they may help
         cut down on the amount of work performed.
         """
-        self.update_for_block(self.course_block_key, changed_blocks)
+        self.update_for_block(self.course_block_key, changed_blocks, force)
 
-    def update_for_block(self, block, changed_blocks):
+    def update_for_block(self, block, changed_blocks, force=False):
         """
         Recursive function to perform updates for a given block.
 
@@ -83,21 +130,22 @@ class AggregationUpdater(object):
         elif mode == XBlockCompletionMode.COMPLETABLE:
             return self.update_for_completable(block, changed_blocks)
         elif mode == XBlockCompletionMode.AGGREGATOR:
-            return self.update_for_aggregator(block, changed_blocks)
+            return self.update_for_aggregator(block, changed_blocks, force)
 
-    def update_for_aggregator(self, block, changed_blocks):
+    def update_for_aggregator(self, block, changed_blocks, force):
         """
         Calculate the new completion values for an aggregator.
         """
         total_earned = 0.0
         total_possible = 0.0
         last_modified = OLD_DATETIME
-        for child in self._get_children(block):
-            completion = self.update_for_block(child, changed_blocks)
-            total_earned += completion.earned
-            total_possible += completion.possible
-            last_modified = max(last_modified, completion.last_modified)
-        if self._aggregator_needs_update(block, last_modified):
+        for child in compat.get_children(self.course_blocks, block):
+            (earned, possible, modified) = self.update_for_block(child, changed_blocks, force)
+            total_earned += earned
+            total_possible += possible
+            last_modified = max(last_modified, modified)
+        if self._aggregator_needs_update(block, last_modified, force):
+            log.debug("updating aggregator %s", block)
             Aggregator.objects.submit_completion(
                 user=self.user,
                 course_key=self.course_key,
@@ -128,65 +176,15 @@ class AggregationUpdater(object):
             last_modified = OLD_DATETIME
         return CompletionStats(earned=earned, possible=1.0, last_modified=last_modified)
 
-    def _aggregator_needs_update(self, block, modified):
+    def _aggregator_needs_update(self, block, modified, force):
         """
         Return True if the given aggregator block needs to be updated.
 
         This method assumes that the block has already been determined to be an aggregator.
         """
-        agg = self.aggregators.get(block)
-        return is_registered_aggregator(block) and getattr(agg, 'last_modified', OLD_DATETIME) < modified
-
-    # Dependency isolation methods
-
-    def init_course_block_key(self, modulestore, course_key):
-        """
-        Return a UsageKey for the root course block.
-        """
-        # pragma: no-cover
-        return modulestore.make_course_usage_key(course_key)
-
-    def init_course_blocks(self, user, course_block_key):
-        """
-        Return a BlockStructure representing the course.
-
-        Blocks must have the following attributes:
-
-            .location
-            .block_type
-        """
-        # pragma: no-cover
-        from lms.djangoapps.course_blocks.api import get_course_blocks  # pylint: disable=import-error
-        return get_course_blocks(user, course_block_key)
-
-    def _get_block_completions(self):
-        """
-        Return the list of BlockCompletions.
-
-        Each must have the following attributes:
-
-            .block_key (UsageKey)
-            .modified (datetime)
-            .completion
-        """
-        from completion.models import BlockCompletion  # pylint: disable=import-error
-        return BlockCompletion.objects.filter(
-            user=self.user,
-            course_key=self.course_key,
-        )
-
-    def _get_children(self, block_key):
-        """
-        Return a list of blocks that are direct children of the specified block.
-
-        ``course_blocks`` is not imported here, but it is hard to replicate
-        without access to edx-platform, so tests will want to stub it out.
-        """
-        return self.course_blocks.get_children(block_key)
-
-
-def is_registered_aggregator(block_key):
-    """
-    Return True if the block is registered to aggregate completions.
-    """
-    return block_key.block_type in settings.COMPLETION_AGGREGATOR_BLOCK_TYPES
+        if Aggregator.block_is_registered_aggregator(block):
+            agg = self.aggregators.get(block)
+            if force:
+                return True
+            return getattr(agg, 'last_modified', OLD_DATETIME) < modified
+        return False

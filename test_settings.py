@@ -17,6 +17,7 @@ def root(*args):
     return join(abspath(dirname(__file__)), *args)
 
 
+AUTH_USER_MODEL = 'auth.User'
 CELERY_ALWAYS_EAGER = True
 COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter'}
 DATABASES = {
@@ -29,7 +30,7 @@ DATABASES = {
         'PORT': '',
     }
 }
-
+DEBUG = True
 INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.auth',
@@ -40,9 +41,7 @@ INSTALLED_APPS = (
     'test_utils.test_app',
 )
 
-LOCALE_PATHS = [
-    root('completion_aggregator', 'conf', 'locale'),
-]
+LOCALE_PATHS = [root('completion_aggregator', 'conf', 'locale')]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -58,7 +57,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
-ROOT_URLCONF = 'test_urls'
+ROOT_URLCONF = 'completion_aggregator.urls'
 SECRET_KEY = 'insecure-secret-key'
 USE_TZ = True
 
