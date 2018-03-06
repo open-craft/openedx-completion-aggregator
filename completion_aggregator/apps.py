@@ -34,4 +34,5 @@ class CompletionAggregatorAppConfig(AppConfig):
         """
         Load signal handlers when the app is ready.
         """
-        from . import signals as _
+        from . import signals
+        signals.register()

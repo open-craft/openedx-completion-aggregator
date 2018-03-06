@@ -17,6 +17,7 @@ def root(*args):
     return join(abspath(dirname(__file__)), *args)
 
 
+AUTH_USER_MODEL = 'auth.User'
 CELERY_ALWAYS_EAGER = True
 COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter'}
 DATABASES = {

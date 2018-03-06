@@ -8,6 +8,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from opaque_keys.edx.django.models import CourseKeyField, UsageKeyField
 from opaque_keys.edx.keys import CourseKey, UsageKey
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -203,6 +204,13 @@ class Aggregator(TimeStampedModel):
             block_key=self.block_key,
             percent=self.percent,
         )
+
+    @classmethod
+    def block_is_registered_aggregator(cls, block_key):
+        """
+        Return True if the block is registered to aggregate completions.
+        """
+        return block_key.block_type in settings.COMPLETION_AGGREGATOR_BLOCK_TYPES
 
 
 pre_save.connect(

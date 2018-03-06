@@ -13,6 +13,9 @@ from .tasks import update_aggregators
 log = logging.getLogger(__name__)
 
 
+<<<<<<< HEAD
+def completion_update_handler(signal, sender, instance, created, raw, using, update_fields, **kwargs):  # pylint: disable=unused-argument
+=======
 def register():
     """
     Register signal handlers.
@@ -72,6 +75,7 @@ def enrollment_updated_handler(user, course_key, **kwargs):
 
 
 def completion_updated_handler(signal, sender, instance, created, raw, using, update_fields, **kwargs):
+>>>>>>> b246d07... Add signal handlers for course update signals.
     """
     Update aggregate completions based on a changed block.
     """
@@ -103,3 +107,9 @@ def completion_updated_handler(signal, sender, instance, created, raw, using, up
             )
         except ImportError:
             log.warning("Completion Aggregator is not hooked up to edx-plaform.")
+<<<<<<< HEAD
+
+
+post_save.connect(completion_update_handler, sender='completion.BlockCompletion')
+=======
+>>>>>>> b246d07... Add signal handlers for course update signals.

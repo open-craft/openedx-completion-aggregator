@@ -4,8 +4,11 @@ Asynchronous tasks.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import logging
+<<<<<<< HEAD
 from collections import namedtuple
+=======
+import logging
+>>>>>>> b246d07... Add signal handlers for course update signals.
 from datetime import datetime
 
 import pytz
@@ -99,6 +102,14 @@ class AggregationUpdater(object):
         total_earned = 0.0
         total_possible = 0.0
         last_modified = OLD_DATETIME
+<<<<<<< HEAD
+        for child in self._get_children(block):
+            completion = self.update_for_block(child, changed_blocks)
+            total_earned += completion.earned
+            total_possible += completion.possible
+            last_modified = max(last_modified, completion.last_modified)
+        if self._aggregator_needs_update(block, last_modified):
+=======
         for child in compat.get_children(self.course_blocks, block):
             (earned, possible, modified) = self.update_for_block(child, changed_blocks, force)
             total_earned += earned
@@ -106,6 +117,7 @@ class AggregationUpdater(object):
             last_modified = max(last_modified, modified)
         if self._aggregator_needs_update(block, last_modified, force):
             log.warning("updating aggregator %s", block)
+>>>>>>> b246d07... Add signal handlers for course update signals.
             Aggregator.objects.submit_completion(
                 user=self.user,
                 course_key=self.course_key,

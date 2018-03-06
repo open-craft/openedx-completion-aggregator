@@ -13,9 +13,13 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils.timezone import now
 
+<<<<<<< HEAD
 from completion.models import BlockCompletion
+=======
 from completion_aggregator.signals import course_published_handler, enrollment_updated_handler, item_deleted_handler
 from test_utils.compat import StubCompat
+from test_utils.test_app.models import Completable
+>>>>>>> b246d07... Add signal handlers for course update signals.
 
 
 class SignalsTestCase(TestCase):
@@ -26,9 +30,15 @@ class SignalsTestCase(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create()
 
+<<<<<<< HEAD
+    @patch('completion_aggregator.signals.log.info')
+    def test_basic(self, mock_log):
+        completable = BlockCompletion(
+=======
     @patch('completion_aggregator.tasks.update_aggregators.apply_async')
     def test_basic(self, mock_task):
-        completable = BlockCompletion(
+        completable = Completable(
+>>>>>>> b246d07... Add signal handlers for course update signals.
             user=self.user,
             course_key=CourseKey.from_string('edX/test/2018'),
             block_key=UsageKey.from_string('i4x://edX/test/video/friday'),
