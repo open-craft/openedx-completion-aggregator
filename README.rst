@@ -4,8 +4,8 @@ openedx-completion-aggregator
 |pypi-badge| |travis-badge| |codecov-badge| |doc-badge| |pyversions-badge|
 |license-badge|
 
-openedx-completion-aggregator is a Django app that aggregates block level 
-completion data for different block types for Open edX.  
+openedx-completion-aggregator is a Django app that aggregates block level
+completion data for different block types for Open edX.
 
 Overview
 --------
@@ -22,7 +22,7 @@ Add to settings.py::
         'subsection',
         'vertical',
     ]
-    
+
 Add to urls.py::
 
     urlpatterns += [
