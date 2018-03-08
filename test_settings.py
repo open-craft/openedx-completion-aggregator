@@ -42,3 +42,5 @@ LOCALE_PATHS = [
 ROOT_URLCONF = 'completion_aggregator.urls'
 
 SECRET_KEY = 'insecure-secret-key'
+
+COMPLETION_AGGREGATED_MODEL_OVERRIDE = 'test_app.Completable'
