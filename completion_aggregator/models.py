@@ -81,7 +81,7 @@ class AggregatorManager(models.Manager):
         """
         instance.full_clean()
 
-    def submit_completion(self, user, course_key, block_key, aggregation_name, earned, possible):
+    def submit_completion(self, user, course_key, block_key, aggregation_name, earned, possible, last_modified):
         """
         Insert and Update the completion Aggregator for the specified record.
 
@@ -95,18 +95,27 @@ class AggregatorManager(models.Manager):
           its completion changed.
         * aggregation_name (string): The name of the aggregated blocks.
           This is set by the level that the aggregation
-          is occurring. Possible values are "course", "chapter", "sequential", "vertical"
-        * earned (float): The positive sum of the fractional completions of all descendant blocks up
-          to the value of possible.
-        * possible (float): The total sum of the possible completion values of all descendant
-          blocks that are visible to the user. This should be a positive integer.
+          is occurring. Possible values are "course", "chapter", "sequential",
+          "vertical"
+        * earned (float): The positive sum of the fractional completions of all
+          descendant blocks up to the value of possible.
+        * possible (float): The total sum of the possible completion values of
+          all descendant blocks that are visible to the user. This should be a
+          positive integer.
+        * last_modified (datetime): When the aggregator's blocks were most
+          recently updated.  Note this is different from the value of
+          `Aggregator.modified`, which is inherited from TimestampedModel, and
+          always updates to the current time when the model is updated.  This
+          instead reflects the most recent modification time of the
+          BlockCompletion objects it represents.  This is to prevent race
+          conditions that might cause the Aggregator to miss updates.
 
         Return Value
         ------------
-        (BlockCompletion, bool)
-            A tuple comprising the created or updated
-            BlockCompletion object and a boolean value indicating whether the
-            object was newly created by this call.
+        (Aggregator, bool)
+            A tuple comprising the created or updated Aggregator object and a
+            boolean value indicating whether the object was newly created by
+            this call.
 
         Raises
         ------
@@ -145,6 +154,7 @@ class AggregatorManager(models.Manager):
                 'percent': percent,
                 'possible': possible,
                 'earned': earned,
+                'last_modified': last_modified,
             },
         )
         return obj, is_new
@@ -165,6 +175,7 @@ class Aggregator(TimeStampedModel):
     earned = models.FloatField(validators=[validate_positive_float])
     possible = models.FloatField(validators=[validate_positive_float])
     percent = models.FloatField(validators=[validate_percent])
+    last_modified = models.DateTimeField()
 
     objects = AggregatorManager()
 

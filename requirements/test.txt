@@ -4,11 +4,19 @@
 #
 #    pip-compile --output-file requirements/test.txt requirements/base.in requirements/test.in
 #
+amqp==1.4.9               # via kombu
+anyjson==0.3.3            # via kombu
 attrs==17.4.0             # via pytest
-coverage==4.5.1           # via pytest-cov
+billiard==3.3.0.23        # via celery
+celery==3.1.25
+coverage==4.4.2           # via pytest-cov
 ddt==1.1.1
 django-model-utils==3.1.1
+edx-celeryutils==0.2.7
+git+https://github.com/jcdyer/completion@cliff/dj20-prep#egg=edx-completion==0.0.10a1
 edx-opaque-keys==0.4.2
+jsonfield==2.0.2          # via edx-celeryutils
+kombu==3.0.37             # via celery
 mock==2.0.0
 pbr==3.1.1                # via mock, stevedore
 pluggy==0.6.0             # via pytest

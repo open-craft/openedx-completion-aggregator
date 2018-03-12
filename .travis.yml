@@ -8,8 +8,7 @@ python:
 
 env:
   - TOXENV=django18
-  - TOXENV=django19
-  - TOXENV=django110
+  - TOXENV=django111
 
 matrix:
   include:
@@ -17,6 +16,8 @@ matrix:
       env: TOXENV=quality
     - python: 3.5
       env: TOXENV=docs
+    - python: 3.5
+      env: TOXENV=django20
 
 cache:
   - pip

@@ -1,5 +1,8 @@
 # Core requirements for using this application
 
+celery>=3.0,<4.0          # Asynchronous tasks
+edx-celeryutils           # Custom task extensions
 Django                    # Web application framework
 django-model-utils        # Provides TimeStampedModel abstract base class
 edx-opaque-keys>=0.4.2    # Provides CourseKey and UsageKey
+edx-completion
