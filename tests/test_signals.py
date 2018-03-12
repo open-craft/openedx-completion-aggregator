@@ -11,9 +11,8 @@ from opaque_keys.edx.keys import CourseKey, UsageKey
 
 from django.contrib.auth.models import User
 from django.test import TestCase
-from django.utils.timezone import now
 
-from completion.models import BlockCompletion
+from test_utils.test_app.models import Completable
 
 
 class SignalCalledTestCase(TestCase):
@@ -26,12 +25,11 @@ class SignalCalledTestCase(TestCase):
 
     @patch('completion_aggregator.signals.log.info')
     def test_basic(self, mock_log):
-        completable = BlockCompletion(
+        completable = Completable(
             user=self.user,
             course_key=CourseKey.from_string('edX/test/2018'),
             block_key=UsageKey.from_string('i4x://edX/test/video/friday'),
             completion=1.0,
-            modified=now()
         )
         completable.save()
         mock_log.assert_called_once()

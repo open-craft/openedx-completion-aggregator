@@ -14,7 +14,6 @@ from opaque_keys.edx.keys import UsageKey
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from django.utils.timezone import now
 
 from completion_aggregator.models import Aggregator
 
@@ -41,7 +40,6 @@ class AggregatorTestCase(TestCase):
                 aggregation_name='chapter',
                 earned=24.0,
                 possible=27.0,
-                last_modified=now(),
             )
 
     @ddt.data(
@@ -56,8 +54,7 @@ class AggregatorTestCase(TestCase):
             block_key=block_key_obj,
             aggregation_name=aggregate_name,
             earned=earned,
-            possible=possible,
-            last_modified=now(),
+            possible=possible
         )
         self.assertTrue(is_new)
         self.assertEqual(len(Aggregator.objects.all()), 1)
@@ -100,9 +97,7 @@ class AggregatorTestCase(TestCase):
                 block_key=block_key,
                 aggregation_name=aggregate_name,
                 earned=earned,
-                possible=possible,
-                last_modified=now()
-            )
+                possible=possible)
 
             self.assertEqual(exception_message, str(context_manager.exception))
 
@@ -121,8 +116,7 @@ class AggregatorTestCase(TestCase):
             block_key=block_key_obj,
             aggregation_name=aggregate_name,
             earned=earned,
-            possible=possible,
-            last_modified=now(),
+            possible=possible
         )
         expected_string = (
             'Aggregator: {username}, {course_key}, {block_key}: {expected_percent}'.format(
@@ -178,8 +172,7 @@ class AggregatorTestCase(TestCase):
             block_key=block_key_obj,
             aggregation_name=aggregate_name,
             earned=earned,
-            possible=possible,
-            last_modified=now(),
+            possible=possible
         )
         self.assertEqual(obj.percent, expected_percent)
         self.assertTrue(is_new)
@@ -190,8 +183,7 @@ class AggregatorTestCase(TestCase):
             block_key=new_block_key_obj,
             aggregation_name=new_aggregate_name,
             earned=new_earned,
-            possible=new_possible,
-            last_modified=now(),
+            possible=new_possible
         )
         self.assertEqual(new_obj.percent, new_percent)
         self.assertEqual(is_new, is_second_obj_new)

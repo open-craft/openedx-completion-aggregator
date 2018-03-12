@@ -4,12 +4,20 @@ Handlers for signals emitted by block completion models.
 
 import logging
 
+from django.conf import settings
 from django.db.models.signals import post_save
 
-from completion_aggregator.models import Aggregator
-from completion_aggregator.tasks import update_aggregators
-
 log = logging.getLogger(__name__)
+
+
+def _get_aggregated_model():
+    """
+    Return a string naming the model that we are aggregating.
+
+    Normally, this will be 'completion.BlockCompletion', but tests will need to
+    override it to avoid hooking into edx-platform.
+    """
+    return getattr(settings, 'COMPLETION_AGGREGATED_MODEL_OVERRIDE', 'completion.BlockCompletion')
 
 
 def completion_update_handler(signal, sender, instance, created, raw, using, update_fields, **kwargs):  # pylint: disable=unused-argument
@@ -23,6 +31,7 @@ def completion_update_handler(signal, sender, instance, created, raw, using, upd
         # command.
         return
 
+    # The implementation for this will be handled in OC-3098.
     log.info(
         "Updating aggregators for %s/%s.  Updated block: %s",
         instance.user.username,
@@ -30,20 +39,5 @@ def completion_update_handler(signal, sender, instance, created, raw, using, upd
         instance.block_key,
     )
 
-    if not Aggregator.objects.filter(
-            user=instance.user,
-            course_key=instance.course_key,
-            aggregation_name='course',
-            last_modified__gte=instance.modified).exists():
 
-        try:
-            update_aggregators.delay(
-                user=instance.user,
-                course_key=instance.course_key,
-                block_keys={instance.block_key},
-            )
-        except ImportError:
-            log.warning("Completion Aggregator is not hooked up to edx-plaform.")
-
-
-post_save.connect(completion_update_handler, sender='completion.BlockCompletion')
+post_save.connect(completion_update_handler, sender=_get_aggregated_model())
