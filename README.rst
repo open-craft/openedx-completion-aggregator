@@ -10,24 +10,25 @@ completion data for different block types for Open edX.
 Overview
 --------
 
+openedx-completion-aggregator uses the pluggable django app pattern to
+ease installation.  To use in edx-platform, simply install the app into
+your virtualenv.
+
 ..code_block::
 
     $ pip install openedx-completion-aggregator
 
-Add to settings.py::
+You may override the set of registered aggregator block types in your
+lms.env.json file::
 
-    INSTALLED_APPS += 'completion_aggregator'
-    COMPLETION_AGGREGATED_BLOCKS = [
-        'chapter',
-        'subsection',
-        'vertical',
-    ]
+    ...
+    "COMPLETION_AGGREGATOR_BLOCK_TYPES": {
+        "chapter",
+        "subsection",
+        "vertical"
+    },
+    ...
 
-Add to urls.py::
-
-    urlpatterns += [
-       url('^completion/', include('completion_aggregator.urls'))
-    ]
 
 Documentation
 -------------

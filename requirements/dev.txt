@@ -46,7 +46,7 @@ pylint-plugin-utils==0.2.6  # via pylint-celery, pylint-django
 pylint==1.7.1             # via edx-lint, pylint-celery, pylint-django, pylint-plugin-utils
 pymongo==3.6.0            # via edx-opaque-keys
 pyparsing==2.2.0          # via packaging
-pytz==2018.3              # via django
+pytz==2018.3              # via celery, django
 pyyaml==3.12              # via edx-i18n-tools
 requests-toolbelt==0.8.0  # via twine
 requests==2.18.4          # via caniusepython3, requests-toolbelt, twine
