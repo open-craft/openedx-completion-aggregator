@@ -58,7 +58,13 @@ class AggregationUpdater(object):
                 course_key=self.course_key,
             )
         }
-        self.block_completions = {completion.block_key: completion for completion in self._get_block_completions()}
+        self.block_completions = {}
+        for completion in self._get_block_completions():
+            blk = completion.block_key
+            if blk.course_key.run is None:
+                if blk.course_key.org == self.course_key.org and blk.course_key.course == self.course_key.course:
+                    blk = blk.map_into_course(self.course_key)
+            self.block_completions[blk] = completion
 
     def update(self, changed_blocks=frozenset()):
         """
