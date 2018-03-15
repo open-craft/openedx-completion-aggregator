@@ -4,7 +4,7 @@ Test serialization of completion data.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from collections import namedtuple
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest import expectedFailure
 
 import six
@@ -19,6 +19,7 @@ from xblock.core import XBlock
 
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.utils import timezone
 
 from completion_aggregator import models
 from completion_aggregator.api.v1.views import CompletionListView, CompletionViewMixin, UserEnrollments
@@ -45,7 +46,7 @@ def _create_oauth2_token(user):
     dot_access_token = dot_models.AccessToken.objects.create(
         user=user,
         application=dot_app,
-        expires=datetime.utcnow() + timedelta(weeks=1),
+        expires=timezone.now() + timedelta(weeks=1),
         scope='read',
         token='s3cur3t0k3n12345678901234567890'
     )
@@ -104,6 +105,7 @@ class CompletionViewTestCase(TestCase):
             aggregation_name='sequential',
             earned=1.0,
             possible=5.0,
+            last_modified=timezone.now(),
         )
 
         models.Aggregator.objects.submit_completion(
@@ -113,6 +115,7 @@ class CompletionViewTestCase(TestCase):
             aggregation_name='course',
             earned=1.0,
             possible=12.0,
+            last_modified=timezone.now(),
         )
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
@@ -234,7 +237,6 @@ class CompletionViewTestCase(TestCase):
         token = _create_oauth2_token(self.test_user)
         response = self.client.get(self.get_detail_url(self.course_key), HTTP_AUTHORIZATION="Bearer {0}".format(token))
         self.assertEqual(response.status_code, 200)
-        print(response.data)
         self.assertEqual(response.data['completion']['earned'], 1.0)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')

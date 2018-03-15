@@ -17,7 +17,8 @@ def root(*args):
     return join(abspath(dirname(__file__)), *args)
 
 
-USE_TZ = True
+CELERY_ALWAYS_EAGER = True
+COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter'}
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -43,16 +44,23 @@ LOCALE_PATHS = [
     root('completion_aggregator', 'conf', 'locale'),
 ]
 
-ROOT_URLCONF = 'test_urls'
-
-SECRET_KEY = 'insecure-secret-key'
-
-COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter'}
-
-CELERY_ALWAYS_EAGER = True
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
 
 REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
+ROOT_URLCONF = 'test_urls'
+SECRET_KEY = 'insecure-secret-key'
+USE_TZ = True
+
+# pylint: disable=unused-import,wrong-import-position
 from test_utils.test_app import celery  # isort:skip

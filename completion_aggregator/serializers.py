@@ -43,7 +43,7 @@ def is_aggregation_name(category):
     return get_completion_mode(cls) == XBlockCompletionMode.AGGREGATOR
 
 
-class CourseAggregationAdapter(object):
+class AggregatorAdapter(object):
     """
     Adapter for presenting Aggregators to the serializer.
 
@@ -56,26 +56,26 @@ class CourseAggregationAdapter(object):
 
     Usage:
 
-    To create CourseAggregationAdapters for a user's courses with a given queryset:
+    To create AggregatorAdapters for a user's courses with a given queryset:
 
-        >>> from lms.djangoapps.completion.models import AggregateCompletion
-        >>> from lms.djangoapps.completion.serializers import CourseAggregationAdapter
-        >>> completions = AggregateCompletion.objects.filter(
+        >>> from completion_aggregator.models import Aggregator
+        >>> from completion_aggregator.serializers import AggregatorAdapter
+        >>> completions = Aggregator.objects.filter(
         >>>     user=user,
         >>>     aggregation_name__in=['course', 'chapter', 'vertical']
         >>> )
         >>> adapters = []
         >>> for course_key in Enrollments.objects.filter(user=user, active=True):
-        >>>     adapters.append(CourseAggregationAdapter(
+        >>>     adapters.append(AggregatorAdapter(
         >>>         user=user,
         >>>         course_key=course_key,
         >>>         queryset=completions,
         >>>     ))
 
-    To add an aggregation or iterable of aggregations to an adapter:
+    To add an aggregator or iterable of aggregators to an adapter:
 
-        >>> from lms.djangoapps.completion.serializers import CourseAggregationAdapter
-        >>> adapter = CourseAggregationAdapter(
+        >>> from completion_aggregator.serializers import AggregatorAdapter
+        >>> adapter = AggregatorAdapter(
         >>>     user=user,
         >>>     course_key=course_key,
         >>> )
@@ -93,7 +93,7 @@ class CourseAggregationAdapter(object):
         """
         self.user = user
         self.course_key = course_key
-        self.aggregations = defaultdict(list)
+        self.aggregators = defaultdict(list)
         if queryset:
             self.update_aggregators(queryset)
 
@@ -102,20 +102,20 @@ class CourseAggregationAdapter(object):
         Provide the serializer with access to custom aggregators.
         """
         if is_aggregation_name(name):
-            return self.aggregations.get(name, [])
+            return self.aggregators.get(name, [])
         else:
             raise AttributeError
 
     def add_aggregator(self, aggregator):
         """
-        Add an aggregation to the CourseAggregationAdapter.
+        Add an aggregator to the AggregatorAdapter.
 
         When adding, check whether it meets the criteria for user, course_key,
         and aggregation_name
         """
         if (aggregator.user, aggregator.course_key) == (self.user, self.course_key):
             if is_aggregation_name(aggregator.aggregation_name):
-                self.aggregations[aggregator.aggregation_name].append(aggregator)
+                self.aggregators[aggregator.aggregation_name].append(aggregator)
 
     def update_aggregators(self, iterable):
         """
@@ -131,8 +131,8 @@ class CourseAggregationAdapter(object):
 
         If no course completion exists, use a dummy completion
         """
-        if self.aggregations['course']:
-            return self.aggregations['course'][0]
+        if self.aggregators['course']:
+            return self.aggregators['course'][0]
         return Aggregator(
             user=self.user,
             course_key=self.course_key,
@@ -204,7 +204,7 @@ class CourseCompletionSerializer(serializers.Serializer):
 
 class BlockCompletionSerializer(serializers.Serializer):
     """
-    A serializer that represents aggregations of sub-graphs of xblocks.
+    A serializer that represents aggregators of sub-graphs of xblocks.
     """
 
     course_key = serializers.CharField()

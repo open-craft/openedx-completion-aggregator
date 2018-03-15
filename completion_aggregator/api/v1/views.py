@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 
 from ...models import Aggregator
-from ...serializers import CourseAggregationAdapter, course_completion_serializer_factory, is_aggregation_name
+from ...serializers import AggregatorAdapter, course_completion_serializer_factory, is_aggregation_name
 
 User = get_user_model()  # pylint: disable=invalid-name
 
@@ -79,7 +79,6 @@ class CompletionViewMixin(object):
         requested_username = self.request.GET.get('username')
         if not requested_username:
             user = self.request.user
-            print(user, user.is_authenticated())
         else:
             if self.request.user.is_staff:
                 try:
@@ -103,7 +102,7 @@ class CompletionViewMixin(object):
         return Aggregator.objects.filter(user=self.user, aggregation_name__in=aggregations)
 
     # TODO: Coverage will be added when dummy values get used
-    def create_dummy_aggregation(self, course_key):  # pragma: no cover
+    def create_dummy_aggregator(self, course_key):  # pragma: no cover
         """
         Build an empty StudentProgress object for the current user and given course.
         """
@@ -133,7 +132,7 @@ class CompletionViewMixin(object):
             raise ParseError(msg.format(invalid))
         return fields
 
-    def get_serializer(self):
+    def get_serializer_class(self):
         """
         Return the appropriate serializer.
         """
@@ -178,7 +177,7 @@ class CompletionListView(CompletionViewMixin, APIView):
 
         * mean (float): The average completion ratio for all students enrolled
           in the course.
-        * Aggregations: The actual fields available are configurable, but
+        * Aggregators: The actual fields available are configurable, but
           may include `chapter`, `sequential`, or `vertical`.  If requested,
           the field will be a list of all blocks of that type containing
           completion information for that block.  Fields for each entry will
@@ -297,21 +296,21 @@ class CompletionListView(CompletionViewMixin, APIView):
         paginated = paginator.paginate_queryset(enrollments, self.request, view=self)
         # Grab the progress items for these enrollments
         course_keys = [enrollment.course_id for enrollment in paginated]
-        aggregations_queryset = self.get_queryset().filter(
+        aggregator_queryset = self.get_queryset().filter(
             course_key__in=course_keys
         )
 
         # Create the list of aggregate completions to be serialized.
         completions = [
-            CourseAggregationAdapter(
+            AggregatorAdapter(
                 user=self.user,
                 course_key=enrollment.course_id,
-                queryset=aggregations_queryset,
+                queryset=aggregator_queryset,
             ) for enrollment in paginated
         ]
 
         # Return the paginated, serialized completions
-        serializer = self.get_serializer()(
+        serializer = self.get_serializer_class()(
             instance=completions,
             requested_fields=self.get_requested_fields(),
             many=True
@@ -451,13 +450,17 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             # Fetch the Aggregate completions for the course
             completion = self.get_queryset().filter(course_key=course_key)
         except Aggregator.DoesNotExist:
-            # Otherwise, use an empty, unsaved Aggregation object
+            # Otherwise, use an empty, unsaved Aggregator object
             # TODO: Coverage will be added when test_detail_view_no_completion is supported
-            completion = self.create_dummy_aggregation(course_key)  # pragma: no cover
+            completion = self.create_dummy_aggregator(course_key)  # pragma: no cover
 
-        aggregation = CourseAggregationAdapter(
+        adapter = AggregatorAdapter(
             user=self.user,
             course_key=course_key,
         )
-        aggregation.update_aggregators(completion)
-        return Response(self.get_serializer()(aggregation, requested_fields=self.get_requested_fields()).data)
+        adapter.update_aggregators(completion)
+        serializer = self.get_serializer_class()(
+            adapter,
+            requested_fields=self.get_requested_fields(),
+        )
+        return Response(serializer.data)
