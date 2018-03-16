@@ -14,7 +14,7 @@ from django.test import TestCase
 from django.utils.timezone import now
 
 from completion.models import BlockCompletion
-from completion_aggregator.signals import course_published_handler, enrollment_updated_handler, item_deleted_handler
+from completion_aggregator.signals import cohort_updated_handler, course_published_handler, item_deleted_handler
 from test_utils.compat import StubCompat
 
 
@@ -66,11 +66,11 @@ class SignalsTestCase(TestCase):
             )
 
     @patch('completion_aggregator.tasks.update_aggregators.apply_async')
-    def test_enrollment_signal_handler(self, mock_task):
+    def test_cohort_signal_handler(self, mock_task):
         course_key = CourseKey.from_string('course-v1:edX+test+2018')
         user = get_user_model().objects.create(username='deleter')
         with patch('completion_aggregator.signals.compat', StubCompat()):
-            enrollment_updated_handler(user, course_key)
+            cohort_updated_handler(user, course_key)
             mock_task.assert_called_once_with(
                 (), dict(user=user, course_key=course_key, force=True)
             )

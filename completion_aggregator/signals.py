@@ -30,8 +30,8 @@ def register():
     else:
         SignalHandler.course_published.connect(course_published_handler)
         SignalHandler.item_deleted.connect(item_deleted_handler)
-        ENROLLMENT_TRACK_UPDATED.connect(enrollment_updated_handler)
-        COHORT_MEMBERSHIP_UPDATED.connect(enrollment_updated_handler)
+        ENROLLMENT_TRACK_UPDATED.connect(cohort_updated_handler)
+        COHORT_MEMBERSHIP_UPDATED.connect(cohort_updated_handler)
 
 
 # Signal handlers frequently ignore arguments passed to them.  No need to lint them.
@@ -45,10 +45,11 @@ def item_deleted_handler(usage_key, user_id, **kwargs):
     block is no longer part of the course graph, so we would be unable to find
     its parent blocks.
     """
+    log.debug("Updating aggregators due to item_deleted signal")
+
     # Ordinarily we have to worry about losing course run information when
     # extracting a course_key from a usage_key, but the item_delete signal is
     # only fired from split-mongo, so it will always contain the course run.
-    log.warning("handling item_deleted signal")
     course_key = usage_key.course_key
     for user in compat.get_enrolled_users(course_key):
         update_aggregators.delay(user=user, course_key=course_key, force=True)
@@ -58,16 +59,16 @@ def course_published_handler(course_key, **kwargs):
     """
     Update aggregators when a general course change happens.
     """
-    log.warning("handling course_published signal")
+    log.debug("Updating aggregators due to course_published signal")
     for user in compat.get_enrolled_users(course_key):
         update_aggregators.delay(user=user, course_key=course_key, force=True)
 
 
-def enrollment_updated_handler(user, course_key, **kwargs):
+def cohort_updated_handler(user, course_key, **kwargs):
     """
-    Update aggregators for a user when the user changes enrollment track.
+    Update aggregators for a user when the user changes cohort or enrollment track.
     """
-    log.warning("handling enrollment_updated signal")
+    log.debug("Updating aggregators due to cohort or enrollment update signal")
     update_aggregators.delay(user=user, course_key=course_key, force=True)
 
 
@@ -82,8 +83,8 @@ def completion_updated_handler(signal, sender, instance, created, raw, using, up
         # command.
         return
 
-    log.info(
-        "Updating aggregators for %s/%s.  Updated block: %s",
+    log.debug(
+        "Updating aggregators for %s in %s.  Updated block: %s",
         instance.user.username,
         instance.course_key,
         instance.block_key,
@@ -99,7 +100,7 @@ def completion_updated_handler(signal, sender, instance, created, raw, using, up
             update_aggregators.delay(
                 user=instance.user,
                 course_key=instance.course_key,
-                block_keys={instance.block_key},
+                block_keys=[instance.block_key],
             )
         except ImportError:
             log.warning("Completion Aggregator is not hooked up to edx-plaform.")

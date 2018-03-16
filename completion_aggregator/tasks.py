@@ -25,7 +25,7 @@ CompletionStats = namedtuple('CompletionStats', ['earned', 'possible', 'last_mod
 
 
 @shared_task
-def update_aggregators(user, course_key, block_keys=frozenset(), force=False):  # pylint: disable=unused-argument
+def update_aggregators(user, course_key, block_keys=(), force=False):  # pylint: disable=unused-argument
     """
     Update aggregators for the specified course.
 
@@ -33,8 +33,9 @@ def update_aggregators(user, course_key, block_keys=frozenset(), force=False):  
     future optimizations in how aggregators are recalculated.
     """
     from xmodule.modulestore.django import modulestore   # pylint: disable=import-error
+    block_keys = set(block_keys)
 
-    log.warning("Updating aggregators in %s for %s", course_key, user)
+    log.debug("Updating aggregators in %s for %s", course_key, user)
 
     updater = AggregationUpdater(user, course_key, modulestore())
     updater.update(block_keys, force)
@@ -64,7 +65,8 @@ class AggregationUpdater(object):
             )
         }
         self.block_completions = {
-            completion.block_key: completion for completion in compat.get_block_completions(self.user, self.course_key)
+            completion.block_key.map_into_course(self.course_key): completion
+            for completion in compat.get_block_completions(self.user, self.course_key)
         }
 
     def update(self, changed_blocks=frozenset(), force=False):
@@ -105,7 +107,7 @@ class AggregationUpdater(object):
             total_possible += possible
             last_modified = max(last_modified, modified)
         if self._aggregator_needs_update(block, last_modified, force):
-            log.warning("updating aggregator %s", block)
+            log.debug("updating aggregator %s", block)
             Aggregator.objects.submit_completion(
                 user=self.user,
                 course_key=self.course_key,
