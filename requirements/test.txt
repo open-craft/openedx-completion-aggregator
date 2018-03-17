@@ -6,24 +6,39 @@
 #
 amqp==1.4.9               # via kombu
 anyjson==0.3.3            # via kombu
+appdirs==1.4.3            # via fs
 attrs==17.4.0             # via pytest
 billiard==3.3.0.23        # via celery
 celery==3.1.25
 coverage==4.4.2           # via pytest-cov
 ddt==1.1.1
+django-braces==1.12.0     # via django-oauth-toolkit
 django-model-utils==3.1.1
+django-oauth-toolkit==0.12.0
+djangorestframework==3.6.4
 edx-celeryutils==0.2.7
 git+https://github.com/jcdyer/completion@cliff/dj20-prep#egg=edx-completion==0.0.10a1
 edx-opaque-keys==0.4.2
+enum34==1.1.6             # via fs
+fs==2.0.18                # via xblock
+funcsigs==1.0.2           # via mock, pytest
 jsonfield==2.0.2          # via edx-celeryutils
 kombu==3.0.37             # via celery
+lxml==4.1.1               # via xblock
+markupsafe==1.0           # via xblock
 mock==2.0.0
+oauthlib==2.0.1           # via django-oauth-toolkit
 pbr==3.1.1                # via mock, stevedore
 pluggy==0.6.0             # via pytest
 py==1.5.2                 # via pytest
 pymongo==3.6.0            # via edx-opaque-keys
 pytest-cov==2.5.1
 pytest==3.4.1             # via pytest-cov, pytest-django
+python-dateutil==2.6.1    # via xblock
 pytz==2018.3              # via celery, django
-six==1.11.0               # via edx-opaque-keys, mock, pytest, stevedore
+pyyaml==3.12              # via xblock
+six==1.11.0               # via django-oauth-toolkit, edx-opaque-keys, fs, mock, pytest, python-dateutil, stevedore, xblock
 stevedore==1.28.0         # via edx-opaque-keys
+web-fragments==0.2.2      # via xblock
+webob==1.7.4              # via xblock
+xblock==1.1.1
