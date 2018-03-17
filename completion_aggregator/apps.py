@@ -19,7 +19,7 @@ class CompletionAggregatorAppConfig(AppConfig):
             'lms.djangoapp': {
                 'namespace': 'completion_aggregator',
                 'regex': r'^completion-aggregator/',
-                'relative_path': 'completion_aggregator.urls',
+                'relative_path': 'urls',
             },
         },
         'settings_config': {
