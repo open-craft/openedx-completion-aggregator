@@ -4,6 +4,7 @@ Handlers for signals emitted by block completion models.
 
 import logging
 
+import six
 from django.db.models.signals import post_save
 
 from . import compat
@@ -52,7 +53,7 @@ def item_deleted_handler(usage_key, user_id, **kwargs):
     # only fired from split-mongo, so it will always contain the course run.
     course_key = usage_key.course_key
     for user in compat.get_enrolled_users(course_key):
-        update_aggregators.delay(user=user, course_key=course_key, force=True)
+        update_aggregators.delay(username=user.username, course_key=six.text_type(course_key), force=True)
 
 
 def course_published_handler(course_key, **kwargs):
@@ -61,7 +62,7 @@ def course_published_handler(course_key, **kwargs):
     """
     log.debug("Updating aggregators due to course_published signal")
     for user in compat.get_enrolled_users(course_key):
-        update_aggregators.delay(user=user, course_key=course_key, force=True)
+        update_aggregators.delay(username=user.username, course_key=six.text_type(course_key), force=True)
 
 
 def cohort_updated_handler(user, course_key, **kwargs):
@@ -69,7 +70,7 @@ def cohort_updated_handler(user, course_key, **kwargs):
     Update aggregators for a user when the user changes cohort or enrollment track.
     """
     log.debug("Updating aggregators due to cohort or enrollment update signal")
-    update_aggregators.delay(user=user, course_key=course_key, force=True)
+    update_aggregators.delay(username=user.username, course_key=six.text_type(course_key), force=True)
 
 
 def completion_updated_handler(signal, sender, instance, created, raw, using, update_fields, **kwargs):
@@ -98,9 +99,9 @@ def completion_updated_handler(signal, sender, instance, created, raw, using, up
 
         try:
             update_aggregators.delay(
-                user=instance.user,
-                course_key=instance.course_key,
-                block_keys=[instance.block_key],
+                username=instance.user.username,
+                course_key=six.text_type(instance.course_key),
+                block_keys=[six.text_type(instance.block_key)],
             )
         except ImportError:
             log.warning("Completion Aggregator is not hooked up to edx-plaform.")

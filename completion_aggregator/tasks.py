@@ -10,6 +10,8 @@ from datetime import datetime
 
 import pytz
 from celery import shared_task
+from django.contrib.auth.models import User
+from opaque_keys.edx.keys import CourseKey, UsageKey
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 
@@ -21,22 +23,56 @@ OLD_DATETIME = pytz.utc.localize(datetime(1900, 1, 1, 0, 0, 0))
 log = logging.getLogger(__name__)
 
 
-CompletionStats = namedtuple('CompletionStats', ['earned', 'possible', 'last_modified'])  # pylint: disable=invalid-name
+CompletionStats = namedtuple('CompletionStats', ['earned', 'possible', 'last_modified'])
 
 
 @shared_task
-def update_aggregators(user, course_key, block_keys=(), force=False):  # pylint: disable=unused-argument
+def update_aggregators(username, course_key, block_keys=(), force=False):
     """
     Update aggregators for the specified course.
 
-    Takes a collection of block_keys that have been updated, to enable
-    future optimizations in how aggregators are recalculated.
+    Parameters:
+
+        username (str):
+            The user whose aggregators need updating.
+        course_key (str):
+            The course in which the aggregators need updating.
+        block_key (list[str]):
+            A list of completable blocks that have changed.
+        force (bool):
+            If True, update aggregators even if they are up-to-date.
+
+    Takes a collection of block_keys that have been updated, to enable future
+    optimizations in how aggregators are recalculated.
     """
-    from xmodule.modulestore.django import modulestore   # pylint: disable=import-error
-    block_keys = set(block_keys)
+    user = User.objects.get(username=username)
+    course_key = CourseKey.from_string(course_key)
+    block_keys = set(UsageKey.from_string(key) for key in block_keys)
+    return _update_aggregators(user, course_key, block_keys, force)
+
+
+def _update_aggregators(user, course_key, block_keys=frozenset(), force=False):
+    """
+    Updates the aggregators for the specified enrollment (user + course).
+
+    This is the workhorse function for the update_aggregators task, taking its
+    arguments strongly typed.
+
+    Parameters:
+
+        user (django.contrib.auth.models.User):
+            The user whose aggregators need updating.
+        course_key (opaque_keys.edx.keys.CourseKey):
+            The course in which the aggregators need updating.
+        block_key (list[opaque_keys.edx.keys.UsageKey]):
+             A list of completable blocks that have changed.
+        force (bool):
+            If True, update aggregators even if they are up-to-date.
+    """
 
     log.debug("Updating aggregators in %s for %s", course_key, user)
 
+    from xmodule.modulestore.django import modulestore   # pylint: disable=import-error
     updater = AggregationUpdater(user, course_key, modulestore())
     updater.update(block_keys, force)
 

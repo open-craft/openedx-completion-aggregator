@@ -9,6 +9,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from mock import call, patch
 from opaque_keys.edx.keys import CourseKey, UsageKey
 
+import six
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils.timezone import now
@@ -47,7 +48,9 @@ class SignalsTestCase(TestCase):
             self.assertGreater(len(users), 0)
             print(mock_task.mock_calls)
             mock_task.assert_has_calls(
-                [call((), dict(user=user, course_key=course_key, force=True)) for user in users],
+                [call(
+                    (), dict(username=user.username, course_key=six.text_type(course_key), force=True),
+                ) for user in users],
                 any_order=True,
             )
 
@@ -61,7 +64,9 @@ class SignalsTestCase(TestCase):
             self.assertGreater(len(users), 0)
             print(mock_task.mock_calls)
             mock_task.assert_has_calls(
-                [call((), dict(user=user, course_key=block_key.course_key, force=True)) for user in users],
+                [call(
+                    (), dict(username=user.username, course_key=six.text_type(block_key.course_key), force=True),
+                ) for user in users],
                 any_order=True,
             )
 
@@ -72,5 +77,5 @@ class SignalsTestCase(TestCase):
         with patch('completion_aggregator.signals.compat', StubCompat()):
             cohort_updated_handler(user, course_key)
             mock_task.assert_called_once_with(
-                (), dict(user=user, course_key=course_key, force=True)
+                (), dict(username=user.username, course_key=six.text_type(course_key), force=True)
             )
