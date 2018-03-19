@@ -6,10 +6,10 @@ Demonstrate that the signals connect the handler to the aggregated model.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import six
 from mock import call, patch
 from opaque_keys.edx.keys import CourseKey, UsageKey
 
-import six
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils.timezone import now

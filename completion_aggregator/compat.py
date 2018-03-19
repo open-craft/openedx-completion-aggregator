@@ -69,7 +69,7 @@ def get_block_completions(user, course_key):
         .modified (datetime)
         .completion (float in range [0.0, 1.0])
     """
-    from completion.models import BlockCompletion  # pylint: disable=import-error
+    from completion.models import BlockCompletion
     return BlockCompletion.objects.filter(
         user=user,
         course_key=course_key,

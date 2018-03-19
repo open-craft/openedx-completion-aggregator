@@ -5,6 +5,7 @@ Handlers for signals emitted by block completion models.
 import logging
 
 import six
+
 from django.db.models.signals import post_save
 
 from . import compat
