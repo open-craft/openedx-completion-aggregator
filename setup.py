@@ -77,8 +77,11 @@ setup(
         'lms.djangoapp': [
             'completion_aggregator = completion_aggregator.apps:CompletionAggregatorAppConfig'
         ],
-        'cms.djangoapp': [ 
+        'cms.djangoapp': [
             'completion_aggregator = completion_aggregator.apps:CompletionAggregatorAppConfig'
+        ],
+        'openedx.block_structure_transformer': [
+            'completion_aggregator_annotator = completion_aggregator.transformers:AggregatorAnnotationTransformer',
         ],
     }
 )

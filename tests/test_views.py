@@ -50,7 +50,7 @@ def _create_oauth2_token(user):
     return dot_access_token.token
 
 
-@patch('completion_aggregator.api.v1.views.compat', StubCompat())
+@patch('completion_aggregator.api.v1.views.compat', StubCompat([]))
 class CompletionViewTestCase(TestCase):
     """
     Test that the CompletionView renders completion data properly.
@@ -60,7 +60,7 @@ class CompletionViewTestCase(TestCase):
     other_org_course_key = CourseKey.from_string('otherOrg/toy/2012_Fall')
     list_url = '/v1/course/'
     detail_url_fmt = '/v1/course/{}/'
-    course_enrollment_model = StubCompat().course_enrollment_model()
+    course_enrollment_model = StubCompat([]).course_enrollment_model()
 
     def setUp(self):
         self.test_user = User.objects.create(username='test_user')
