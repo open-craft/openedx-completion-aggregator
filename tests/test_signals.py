@@ -6,6 +6,8 @@ Demonstrate that the signals connect the handler to the aggregated model.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from datetime import timedelta
+
 import six
 from mock import call, patch
 from opaque_keys.edx.keys import CourseKey, UsageKey
@@ -45,6 +47,31 @@ class SignalsTestCase(TestCase):
         )
         completable.save()
         mock_task.assert_called_once()
+
+    @patch('completion_aggregator.tasks.update_aggregators.apply_async')
+    def test_only_calculate_on_newer(self, mock_task):
+        nowtime = now()
+        Aggregator.objects.create(
+            user=self.user,
+            course_key=CourseKey.from_string('edX/test/2018'),
+            block_key=UsageKey.from_string('i4x://edX/test/video/friday'),
+            aggregation_name='course',
+            earned=0.0,
+            possible=1.0,
+            percent=0.0,
+            last_modified=nowtime + timedelta(seconds=1),
+        )
+        completable = BlockCompletion(
+            user=self.user,
+            course_key=CourseKey.from_string('edX/test/2018'),
+            block_key=UsageKey.from_string('i4x://edX/test/video/friday'),
+            completion=1.0,
+            modified=nowtime,
+        )
+        completable.save()
+        # This aggregator claims to be more up to date than the block completion
+        # so the task won't run again.
+        mock_task.assert_not_called()
 
     def setup_active_users(self, course_key):
         """
@@ -108,7 +135,7 @@ class SignalsTestCase(TestCase):
     def test_cohort_signal_handler(self, mock_task):
         course_key = CourseKey.from_string('course-v1:edX+test+2018')
         user = get_user_model().objects.create(username='deleter')
-        with patch('completion_aggregator.signals.compat', StubCompat()):
+        with patch('completion_aggregator.signals.compat', StubCompat([])):
             cohort_updated_handler(user, course_key)
             mock_task.assert_called_once_with(
                 (), dict(username=user.username, course_key=six.text_type(course_key), force=True)
