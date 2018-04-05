@@ -76,6 +76,8 @@ setup(
         'lms.djangoapp': [
             'completion_aggregator = completion_aggregator.apps:CompletionAggregatorAppConfig'
         ],
-        'cms.djangoapp': [],
+        'cms.djangoapp': [ 
+            'completion_aggregator = completion_aggregator.apps:CompletionAggregatorAppConfig'
+        ],
     }
 )
