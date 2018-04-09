@@ -96,8 +96,8 @@ class AggregatorManager(models.Manager):
           its completion changed.
         * aggregation_name (string): The name of the aggregated blocks.
           This is set by the level that the aggregation
-          is occurring. Possible values are "course", "chapter", "sequential",
-          "vertical"
+          is occurring. Possible values include "course", "chapter",
+          "sequential", "vertical"
         * earned (float): The positive sum of the fractional completions of all
           descendant blocks up to the value of possible.
         * possible (float): The total sum of the possible completion values of

@@ -8,8 +8,6 @@ import itertools
 
 import six
 
-from django.contrib.auth import get_user_model
-
 from completion.models import BlockCompletion
 
 
@@ -18,20 +16,6 @@ class StubCompat(object):
     An AggregationUpdater with connections to edx-platform and modulestore
     replaced with local elements.
     """
-
-    def get_enrolled_users(self, course_key):  # pylint: disable=unused-argument
-        """
-        Return enrolled users for the course.
-
-        this implementation returns three users, named "user0", "user1", and
-        "user2".
-        """
-        user_model = get_user_model()
-        return [
-            user_model.objects.get_or_create(username='user0')[0],
-            user_model.objects.get_or_create(username='user1')[0],
-            user_model.objects.get_or_create(username='user2')[0],
-        ]
 
     def init_course_block_key(self, modulestore, course_key):  # pylint: disable=unused-argument
         """

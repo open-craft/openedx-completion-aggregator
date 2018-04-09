@@ -27,16 +27,6 @@ def get_aggregated_model():
     return getattr(settings, 'COMPLETION_AGGREGATED_MODEL_OVERRIDE', 'completion.BlockCompletion')
 
 
-def get_enrolled_users(course_key):
-    """
-    Return a collection of users enrolled in the specified course.
-
-    Tests will need to mock this to avoid hooking into edx-platform.
-    """
-    from student.models import CourseEnrollment  # pylint: disable=import-error
-    return CourseEnrollment.objects.users_enrolled_in(course_key)
-
-
 def init_course_block_key(modulestore, course_key):
     """
     Return a UsageKey for the root course block.
