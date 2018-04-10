@@ -239,7 +239,7 @@ def native_identifier(string):
     """
     if six.PY2:  # pragma: no cover
 
-        if isinstance(string, six.text_type):  # pylint: disable=undefined-variable
+        if isinstance(string, six.text_type):
             # Python 2 identifiers are required to be ascii
             string = string.encode('ascii')
     elif isinstance(string, bytes):  # pragma: no cover
