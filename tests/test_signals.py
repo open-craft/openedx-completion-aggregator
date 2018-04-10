@@ -66,6 +66,16 @@ class SignalsTestCase(TestCase):
                 possible=1.0,
                 last_modified=now(),
             )
+        # One extra to ensure we don't submit extra tasks.
+        Aggregator.objects.submit_completion(
+            user=self.extra_users[0],
+            course_key=course_key,
+            block_key=course_key.make_usage_key('course', 'course'),
+            aggregation_name='course',
+            earned=1.0,
+            possible=1.0,
+            last_modified=now(),
+        )
 
     @patch('completion_aggregator.tasks.update_aggregators.apply_async')
     def test_course_published_handler(self, mock_task):

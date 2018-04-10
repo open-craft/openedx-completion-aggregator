@@ -10,6 +10,7 @@ from datetime import datetime
 
 import pytz
 from celery import shared_task
+from celery_utils.logged_task import LoggedTask
 from opaque_keys.edx.keys import CourseKey, UsageKey
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
@@ -27,7 +28,7 @@ log = logging.getLogger(__name__)
 CompletionStats = namedtuple('CompletionStats', ['earned', 'possible', 'last_modified'])
 
 
-@shared_task
+@shared_task(task=LoggedTask)
 def update_aggregators(username, course_key, block_keys=(), force=False):
     """
     Update aggregators for the specified enrollment (user + course).

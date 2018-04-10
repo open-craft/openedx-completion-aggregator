@@ -27,6 +27,10 @@ class CompletionAggregatorAppConfig(AppConfig):
                 'aws': {'relative_path': 'settings.aws'},
                 'common': {'relative_path': 'settings.common'},
             },
+            'cms.djangoapp': {
+                'aws': {'relative_path': 'settings.aws'},
+                'common': {'relative_path': 'settings.common'},
+            },
         },
     }
 

@@ -113,4 +113,4 @@ def get_active_users(course_key):
     """
     Return a list of users that have Aggregators in the course.
     """
-    return get_user_model().objects.filter(aggregator__course_key=course_key)
+    return get_user_model().objects.filter(aggregator__course_key=course_key).distinct()
