@@ -350,14 +350,14 @@ class CompletionViewTestCase(TestCase):
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_request_self(self):
-        response = self.client.get(self.list_url + '?username={}'.format(self.test_user.username))
+        response = self.client.get(self.get_list_url(username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_wrong_user(self):
         user = User.objects.create(username='wrong')
         self.client.force_authenticate(user)
-        response = self.client.get(self.list_url + '?username={}'.format(self.test_user.username))
+        response = self.client.get(self.get_list_url(username=self.test_user.username))
         self.assertEqual(response.status_code, 404)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
