@@ -173,18 +173,18 @@ class CompletionListView(CompletionViewMixin, APIView):
         The response is a dictionary comprising pagination data and a page
         of results.
 
-        * pagination: A dict of pagination information, containing the fields:
-            * page: The page number of the current set of results.
-            * next: The URL for the next page of results, or None if already on
-              the last page.
-            * previous: The URL for the previous page of results, or None if
-              already on the first page.
-            * count: The total number of available results.
+        * page: The page number of the current set of results.
+        * next: The URL for the next page of results, or None if already on
+          the last page.
+        * previous: The URL for the previous page of results, or None if
+          already on the first page.
+        * count: The total number of available results.
         * results: A list of dictionaries representing the user's completion
           for each course.
 
         Standard fields for each completion dictionary:
 
+        * course_key (CourseKey): The unique course identifier.
         * completion: A dictionary comprising of the following fields:
             * earned (float): The sum of the learner's completions.
             * possible (float): The total number of completions available
@@ -234,12 +234,12 @@ class CompletionListView(CompletionViewMixin, APIView):
             GET /api/completion/v1/course
 
             {
-              "pagination": {
-                "count": 14,
-                "page": 1,
-                "next": "/api/completion/v1/course/?page=2,
-                "previous": None
-              },
+              "count": 14,
+              "num_pages": 1,
+              "current_page": 1,
+              "start": 1,
+              "next": "/api/completion/v1/course/?page=2,
+              "previous": None,
               "results": [
                 {
                   "course_key": "edX/DemoX/Demo_course",
