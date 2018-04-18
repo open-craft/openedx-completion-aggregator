@@ -65,6 +65,7 @@ class CompletionViewTestCase(TestCase):
 
     def setUp(self):
         self.test_user = User.objects.create(username='test_user')
+        self.staff_user = User.objects.create(username='staff', is_staff=True)
         self.mock_get_enrollment = self.patch_object(UserEnrollments, 'get_enrollments', return_value=[
             _StubEnrollment(user=self.test_user, course_id=self.course_key)
         ])
@@ -76,7 +77,7 @@ class CompletionViewTestCase(TestCase):
             return_value=[OAuth2Authentication, SessionAuthentication]
         )
         self.patch_object(
-            CompletionListView,
+            CompletionViewMixin,
             'pagination_class',
             new_callable=PropertyMock,
             return_value=PageNumberPagination
@@ -215,13 +216,21 @@ class CompletionViewTestCase(TestCase):
         response = self.client.get(self.get_detail_url(six.text_type(self.course_key)))
         self.assertEqual(response.status_code, 200)
         expected = {
-            'course_key': 'edX/toy/2012_Fall',
-            'completion': {
-                'earned': 1.0,
-                'possible': 12.0,
-                'percent': 1 / 12,
-            },
+            'count': 1,
+            'previous': None,
+            'next': None,
+            'results': [
+                {
+                    'course_key': 'edX/toy/2012_Fall',
+                    'completion': {
+                        'earned': 1.0,
+                        'possible': 12.0,
+                        'percent': 1 / 12,
+                    },
+                }
+            ]
         }
+
         self.assertEqual(response.data, expected)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
@@ -237,7 +246,7 @@ class CompletionViewTestCase(TestCase):
         token = _create_oauth2_token(self.test_user)
         response = self.client.get(self.get_detail_url(self.course_key), HTTP_AUTHORIZATION="Bearer {0}".format(token))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['completion']['earned'], 1.0)
+        self.assertEqual(response.data['results'][0]['completion']['earned'], 1.0)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_detail_view_not_enrolled(self):
@@ -245,7 +254,8 @@ class CompletionViewTestCase(TestCase):
         Test that requesting course completions for a course the user is not enrolled in
         will return a 404.
         """
-        response = self.client.get(self.get_detail_url(self.other_org_course_key))
+        response = self.client.get(self.get_detail_url(self.other_org_course_key,
+                                                       username=self.test_user.username))
         self.assertEqual(response.status_code, 404)
 
     @expectedFailure
@@ -282,18 +292,50 @@ class CompletionViewTestCase(TestCase):
         response = self.client.get(self.get_detail_url(self.course_key, requested_fields='sequential'))
         self.assertEqual(response.status_code, 200)
         expected = {
-            'course_key': 'edX/toy/2012_Fall',
-            'completion': {
-                'earned': 1.0,
-                'possible': 12.0,
-                'percent': 1 / 12,
-            },
-            'sequential': [
+            'count': 1,
+            'previous': None,
+            'next': None,
+            'results': [
                 {
-                    'course_key': u'edX/toy/2012_Fall',
-                    'block_key': u'i4x://edX/toy/sequential/vertical_sequential',
-                    'completion': {'earned': 1.0, 'possible': 5.0, 'percent': 0.2},
-                },
+                    'course_key': 'edX/toy/2012_Fall',
+                    'completion': {
+                        'earned': 1.0,
+                        'possible': 12.0,
+                        'percent': 1 / 12,
+                    },
+                    'sequential': [
+                        {
+                            'course_key': u'edX/toy/2012_Fall',
+                            'block_key': u'i4x://edX/toy/sequential/vertical_sequential',
+                            'completion': {'earned': 1.0, 'possible': 5.0, 'percent': 0.2},
+                        },
+                    ]
+                }
+            ]
+        }
+        self.assertEqual(response.data, expected)
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    def test_detail_view_staff_requested_user(self):
+        """
+        Test that requesting course completions for a specific user filters out the other enrolled users
+        """
+        self.client.force_authenticate(self.staff_user)
+        response = self.client.get(self.get_detail_url(self.course_key, username=self.test_user.username))
+        self.assertEqual(response.status_code, 200)
+        expected = {
+            'count': 1,
+            'previous': None,
+            'next': None,
+            'results': [
+                {
+                    'course_key': 'edX/toy/2012_Fall',
+                    'completion': {
+                        'earned': 1.0,
+                        'possible': 12.0,
+                        'percent': 1 / 12,
+                    },
+                }
             ]
         }
         self.assertEqual(response.data, expected)
@@ -331,8 +373,7 @@ class CompletionViewTestCase(TestCase):
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_staff_access(self):
-        user = User.objects.create(username='staff', is_staff=True)
-        self.client.force_authenticate(user)
+        self.client.force_authenticate(self.staff_user)
         response = self.client.get(self.get_list_url(username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
         expected_completion = {'earned': 1.0, 'possible': 12.0, 'percent': 1 / 12}
@@ -340,8 +381,7 @@ class CompletionViewTestCase(TestCase):
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_staff_access_non_user(self):
-        user = User.objects.create(username='staff', is_staff=True)
-        self.client.force_authenticate(user)
+        self.client.force_authenticate(self.staff_user)
         response = self.client.get(self.get_list_url(username='who-dat'))
         self.assertEqual(response.status_code, 404)
 
