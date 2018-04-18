@@ -5,7 +5,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from collections import namedtuple
 from datetime import timedelta
-from unittest import expectedFailure
 
 import six
 from mock import PropertyMock, patch
@@ -22,7 +21,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from completion_aggregator import models
-from completion_aggregator.api.v1.views import CompletionListView, CompletionViewMixin, UserEnrollments
+from completion_aggregator.api.v1.views import CompletionViewMixin, UserEnrollments
 from test_utils.test_blocks import StubCourse, StubSequential
 
 _StubEnrollment = namedtuple('_StubEnrollment', ['user', 'course_id'])
@@ -262,6 +261,8 @@ class CompletionViewTestCase(TestCase):
         self.mock_get_enrollment = self.patch_object(UserEnrollments, 'get_enrollments', return_value=[
             _StubEnrollment(user=self.test_user, course_id=self.other_org_course_key)
         ])
+        self.patch_object(UserEnrollments, 'is_enrolled',
+                          side_effect=lambda course: course == self.other_org_course_key)
         response = self.client.get(self.get_detail_url(self.other_org_course_key))
         self.assertEqual(response.status_code, 200)
         expected = {
@@ -329,6 +330,66 @@ class CompletionViewTestCase(TestCase):
                         'earned': 1.0,
                         'possible': 12.0,
                         'percent': 1 / 12,
+                    },
+                }
+            ]
+        }
+        self.assertEqual(response.data, expected)
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    def test_detail_view_staff_all_users(self):
+        """
+        Test that staff requesting course completions can see all completions
+        """
+
+        # Add an additonal completion for the staff user
+        models.Aggregator.objects.submit_completion(
+            user=self.staff_user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type='sequential', block_id='vertical_sequential'),
+            aggregation_name='sequential',
+            earned=3.0,
+            possible=5.0,
+            last_modified=timezone.now(),
+        )
+        models.Aggregator.objects.submit_completion(
+            user=self.staff_user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type='course', block_id='course'),
+            aggregation_name='course',
+            earned=3.0,
+            possible=12.0,
+            last_modified=timezone.now(),
+        )
+        self.mock_get_enrollment = self.patch_object(UserEnrollments, 'get_enrollments', return_value=[
+            _StubEnrollment(user=self.test_user, course_id=self.course_key),
+            _StubEnrollment(user=self.staff_user, course_id=self.course_key)
+        ])
+
+        self.client.force_authenticate(self.staff_user)
+        response = self.client.get(self.get_detail_url(self.course_key))
+        self.assertEqual(response.status_code, 200)
+        expected = {
+            'count': 2,
+            'previous': None,
+            'next': None,
+            'results': [
+                {
+                    'user': 'test_user',
+                    'course_key': 'edX/toy/2012_Fall',
+                    'completion': {
+                        'earned': 1.0,
+                        'possible': 12.0,
+                        'percent': 1 / 12,
+                    },
+                },
+                {
+                    'user': 'staff',
+                    'course_key': 'edX/toy/2012_Fall',
+                    'completion': {
+                        'earned': 3.0,
+                        'possible': 12.0,
+                        'percent': 0.25,
                     },
                 }
             ]

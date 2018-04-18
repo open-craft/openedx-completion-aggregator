@@ -5,10 +5,8 @@ API views to read completion information.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from opaque_keys.edx.keys import CourseKey
-from rest_framework import status
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django.contrib.auth import get_user_model
@@ -61,7 +59,7 @@ class CompletionViewMixin(object):
     Common functionality for completion views.
     """
 
-    _allowed_requested_fields = {'mean'}
+    _allowed_requested_fields = {'mean', 'user'}
     permission_classes = (IsAuthenticated,)
     _effective_user = None
     _requested_user = None
@@ -105,7 +103,6 @@ class CompletionViewMixin(object):
                     user = User.objects.get(username=requested_username)
                 except User.DoesNotExist:
                     raise NotFound()
-                self._requested_user = user
             else:
                 if self.request.user.username.lower() == requested_username.lower():
                     user = self.request.user
@@ -132,7 +129,7 @@ class CompletionViewMixin(object):
         """
         aggregations = {'course'}
         aggregations.update(category for category in self.get_requested_fields() if is_aggregation_name(category))
-        return Aggregator.objects.filter(user=self.user, aggregation_name__in=aggregations)
+        return Aggregator.objects.filter(aggregation_name__in=aggregations)
 
     def get_requested_fields(self):
         """
@@ -308,6 +305,7 @@ class CompletionListView(CompletionViewMixin, APIView):
         # Grab the progress items for these enrollments
         course_keys = [enrollment.course_id for enrollment in paginated]
         aggregator_queryset = self.get_queryset().filter(
+            user=self.user,
             course_key__in=course_keys
         )
 
@@ -443,7 +441,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
                   "sequential": [
                     {
                       "course_key": "course-v1:GeorgetownX+HUMX421-02x+1T2016",
-                      "block_key": "block-v1:GeorgetownX+HUMX421-02x+1T2016+type@sequential+block@e0eb7cbc1a0c407e622c988",
+                      "block_key":
+                        "block-v1:GeorgetownX+HUMX421-02x+1T2016+type@sequential+block@e0eb7cbc1a0c407e622c988",
                       "completion": {
                         "earned: 12.0,
                         "possible": 12.0,
@@ -452,7 +451,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
                     },
                     {
                       "course_key": "course-v1:GeorgetownX+HUMX421-02x+1T2016",
-                      "block_key": "block-v1:GeorgetownX+HUMX421-02x+1T2016+type@sequential+block@f6e7ec3e965b48acf3418e7",
+                      "block_key":
+                        "block-v1:GeorgetownX+HUMX421-02x+1T2016+type@sequential+block@f6e7ec3e965b48acf3418e7",
                       "completion": {
                         "earned: 0.0,
                         "possible": 12.0,
@@ -475,25 +475,23 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         """
         course_key = CourseKey.from_string(course_key)
         paginator = self.pagination_class()  # pylint: disable=not-callable
+        requested_fields = self.get_requested_fields()
 
-        if self.requested_user:
-            if not UserEnrollments(self.requested_user).is_enrolled(course_key):
-                # Return 404 if requested user does not have an active enrollment in the requested course
-                raise NotFound()
-
-            # Use enrollments for the requested user
-            enrollments = UserEnrollments(self.requested_user).get_enrollments(course_id=course_key)
-        else:
+        if not self.requested_user and self.user.is_staff:
             # Use all enrollments for the course
             enrollments = UserEnrollments().get_enrollments(course_id=course_key)
+            requested_fields.add('user')
+        else:
+            if not UserEnrollments(self.user).is_enrolled(course_key):
+                # Return 404 if effective user does not have an active enrollment in the requested course
+                raise NotFound()
+
+            # Use enrollments for the effective user
+            enrollments = UserEnrollments(self.user).get_enrollments(course_id=course_key)
 
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.
         paginated = paginator.paginate_queryset(enrollments, self.request, view=self)
-        # Grab the progress items for these enrollments
-        course_keys = [enrollment.course_id for enrollment in paginated]
-        aggregator_queryset = self.get_queryset().filter(
-            course_key__in=course_keys
-        )
+        aggregator_queryset = self.get_queryset().filter(course_key=course_key)
 
         # Create the list of aggregate completions to be serialized.
         completions = [
@@ -507,7 +505,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         # Return the paginated, serialized completions
         serializer = self.get_serializer_class()(
             instance=completions,
-            requested_fields=self.get_requested_fields(),
+            requested_fields=requested_fields,
             many=True
         )
         return paginator.get_paginated_response(serializer.data)

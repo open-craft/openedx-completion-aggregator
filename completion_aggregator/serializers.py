@@ -180,6 +180,18 @@ class _CompletionSerializer(serializers.Serializer):
     percent = serializers.FloatField()
 
 
+class UserPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    """
+    Serialize just the username.
+    """
+
+    def to_representation(self, value):
+        """
+        Serialize the username (instead of pk).
+        """
+        return value.username
+
+
 class CourseCompletionSerializer(serializers.Serializer):
     """
     Serialize completions at the course level.
@@ -187,9 +199,10 @@ class CourseCompletionSerializer(serializers.Serializer):
 
     course_key = serializers.CharField()
     completion = _CompletionSerializer(source='*')
+    user = UserPrimaryKeyRelatedField(read_only=True)
     mean = serializers.FloatField()
 
-    optional_fields = {'mean'}
+    optional_fields = {'mean', 'user'}
 
     def __init__(self, instance, requested_fields=frozenset(), *args, **kwargs):
         """
