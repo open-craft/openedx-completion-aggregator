@@ -140,41 +140,36 @@ class CompletionViewTestCase(TestCase):
         }
         self.assertEqual(response.data, expected)
 
-    @expectedFailure
     def test_list_view_enrolled_no_progress(self):
         """
         Test that the completion API returns a record for each course the user is enrolled in,
         even if no progress records exist yet.
-
-        @expectedFailure:
-
-        This test depends on being able to fill in missing data to get an appropriate value for
-        "possible" or "percent".  Actual calculation of Aggregator values is coming in a
-        later story (OC-3098)
-
         """
-        self.mock_get_enrollment.return_value += [  # pylint: disable=no-member
-            _StubEnrollment(self.test_user, self.other_org_course_key)
-        ]
+        self.mock_get_enrollment = self.patch_object(UserEnrollments, 'get_enrollments', return_value=[
+            _StubEnrollment(user=self.test_user, course_id=self.course_key),
+            _StubEnrollment(user=self.test_user, course_id=self.other_org_course_key)
+        ])
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
         expected = {
-            'pagination': {'count': 2, 'previous': None, 'num_pages': 1, 'next': None},
+            'count': 2,
+            'previous': None,
+            'next': None,
             'results': [
                 {
                     'course_key': 'edX/toy/2012_Fall',
                     'completion': {
-                        'earned': 1.0,
-                        'possible': 12.0,
-                        'percent': 1 / 12,
+                        'earned': 0.0,
+                        'possible': None,
+                        'percent': None,
                     },
                 },
                 {
                     'course_key': 'otherOrg/toy/2012_Fall',
                     'completion': {
                         'earned': 0.0,
-                        'possible': 12.0,
-                        'percent': 0.0,
+                        'possible': None,
+                        'percent': None,
                     },
                 }
             ],
@@ -258,31 +253,31 @@ class CompletionViewTestCase(TestCase):
                                                        username=self.test_user.username))
         self.assertEqual(response.status_code, 404)
 
-    @expectedFailure
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_detail_view_no_completion(self):
         """
         Test that requesting course completions for a course which has started, but the user has not yet started,
         will return an empty completion record with its "possible" field filled in.
-
-        @expectedFailure:
-
-        This test depends on being able to fill in missing data to get an appropriate value for
-        "possible" or "percent".  Actual calculation of Aggregator values is coming in a
-        later story (OC-3098)
         """
-        self.mock_get_enrollment.return_value += [  # pylint: disable=no-member
-            _StubEnrollment(self.test_user, self.other_org_course_key)
-        ]
+        self.mock_get_enrollment = self.patch_object(UserEnrollments, 'get_enrollments', return_value=[
+            _StubEnrollment(user=self.test_user, course_id=self.other_org_course_key)
+        ])
         response = self.client.get(self.get_detail_url(self.other_org_course_key))
         self.assertEqual(response.status_code, 200)
         expected = {
-            'course_key': 'otherOrg/toy/2012_Fall',
-            'completion': {
-                'earned': 0.0,
-                'possible': 12.0,
-                'percent': 0.0,
-            },
+            'count': 1,
+            'previous': None,
+            'next': None,
+            'results': [
+                {
+                    'course_key': 'otherOrg/toy/2012_Fall',
+                    'completion': {
+                        'earned': 0.0,
+                        'possible': None,
+                        'percent': None,
+                    },
+                }
+            ]
         }
         self.assertEqual(response.data, expected)
 
