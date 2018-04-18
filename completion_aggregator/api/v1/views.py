@@ -82,7 +82,7 @@ class CompletionViewMixin(object):
         """
         Return the class to use for pagination
         """
-        from openedx.core.lib.api import paginators  # pylint: disable=import-error
+        from edx_rest_framework_extensions import paginators  # pylint: disable=import-error
         return paginators.NamespacedPageNumberPagination
 
     @property
