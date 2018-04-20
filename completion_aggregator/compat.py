@@ -13,6 +13,7 @@ It can be stubbed out using:
 `StubCompat` is a class which implements all the below methods in a way that
 eliminates external dependencies
 """
+from __future__ import absolute_import, unicode_literals
 
 from django.conf import settings
 
@@ -74,3 +75,12 @@ def get_children(course_blocks, block_key):
     without access to edx-platform, so tests will want to stub it out.
     """
     return course_blocks.get_children(block_key)
+
+
+def course_enrollment_model():
+    """
+    Return the student.models.CourseEnrollment model.
+    """
+    # pragma: no-cover
+    from student.models import CourseEnrollment  # pylint: disable=import-error
+    return CourseEnrollment

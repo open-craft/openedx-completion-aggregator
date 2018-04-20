@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 from django.contrib.auth import get_user_model
 
+from ... import compat
 from ...models import Aggregator
 from ...serializers import AggregatorAdapter, course_completion_serializer_factory, is_aggregation_name
 
@@ -22,36 +23,44 @@ class UserEnrollments(object):
     Class for querying user enrollments
     """
     def __init__(self, user=None):
-        self.user = user
-
-    def get_enrollments(self, course_id=None):  # pragma: no cover
         """
-        Return a collection CourseEnrollments.
+        Filter active course enrollments for the given user, if any.
+        """
+        self.queryset = compat.course_enrollment_model().objects.filter(is_active=True)
+        if user:
+            self.queryset = self.queryset.filter(user=user)
+
+    def get_course_enrollments(self, course_key):
+        """
+        Return a collection of CourseEnrollments.
 
         **Parameters**
 
-        course_id (optional):
-            If specified, then all enrollments for the given course will be returned.
-            If omitted, then only the enrollments for the current user will be returned.
+        course_id:
+            Return all the enrollments for this course.
 
         The collection must have a .__len__() attribute, be sliceable,
         and consist of objects that have a user attribute and a course_id
         attribute.
         """
-        from student.models import CourseEnrollment  # pylint: disable=import-error
-        queryset = CourseEnrollment.objects.filter(is_active=True)
-        if course_id:
-            queryset = queryset.filter(course_id=course_id).order_by('user')
-        if self.user:
-            queryset = queryset.filter(user=self.user).order_by('course_id')
-        return queryset
+        queryset = self.queryset.filter(course_id=course_key)
+        return queryset.order_by('user')
 
-    def is_enrolled(self, course_key):  # pragma: no cover
+    def get_enrollments(self):
+        """
+        Return a collection of CourseEnrollments for the current user (if specified).
+
+        The collection must have a .__len__() attribute, be sliceable,
+        and consist of objects that have a user attribute and a course_id
+        attribute.
+        """
+        return self.queryset.order_by('user', 'course_id')
+
+    def is_enrolled(self, course_key):
         """
         Return a boolean stating whether user is enrolled in the named course.
         """
-        from student.models import CourseEnrollment  # pylint: disable=import-error
-        return CourseEnrollment.objects.filter(user=self.user, course_id=course_key, is_active=True).exists()
+        return self.queryset.filter(course_id=course_key).exists()
 
 
 class CompletionViewMixin(object):
@@ -479,7 +488,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
 
         if not self.requested_user and self.user.is_staff:
             # Use all enrollments for the course
-            enrollments = UserEnrollments().get_enrollments(course_id=course_key)
+            enrollments = UserEnrollments().get_course_enrollments(course_key)
             requested_fields.add('user')
         else:
             if not UserEnrollments(self.user).is_enrolled(course_key):
@@ -487,7 +496,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
                 raise NotFound()
 
             # Use enrollments for the effective user
-            enrollments = UserEnrollments(self.user).get_enrollments(course_id=course_key)
+            enrollments = UserEnrollments(self.user).get_course_enrollments(course_key)
 
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.
         paginated = paginator.paginate_queryset(enrollments, self.request, view=self)
