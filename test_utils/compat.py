@@ -10,6 +10,8 @@ import six
 
 from completion.models import BlockCompletion
 
+from .test_app.models import CourseEnrollment
+
 
 class StubCompat(object):
     """
@@ -72,3 +74,9 @@ class StubCompat(object):
                 course_key.make_usage_key('hidden', 'hidden1')
             ]
         return []
+
+    def course_enrollment_model(self):
+        """
+        Return this replacement for CourseEnrollment
+        """
+        return CourseEnrollment
