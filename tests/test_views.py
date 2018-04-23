@@ -3,9 +3,7 @@ Test serialization of completion data.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from collections import namedtuple
 from datetime import timedelta
-from unittest import expectedFailure
 
 import six
 from mock import PropertyMock, patch
@@ -22,10 +20,9 @@ from django.test import TestCase
 from django.utils import timezone
 
 from completion_aggregator import models
-from completion_aggregator.api.v1.views import CompletionListView, CompletionViewMixin, UserEnrollments
+from completion_aggregator.api.v1.views import CompletionViewMixin
+from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubSequential
-
-_StubEnrollment = namedtuple('_StubEnrollment', ['user', 'course_id'])
 
 
 def _create_oauth2_token(user):
@@ -53,6 +50,7 @@ def _create_oauth2_token(user):
     return dot_access_token.token
 
 
+@patch('completion_aggregator.api.v1.views.compat', StubCompat())
 class CompletionViewTestCase(TestCase):
     """
     Test that the CompletionView renders completion data properly.
@@ -62,13 +60,15 @@ class CompletionViewTestCase(TestCase):
     other_org_course_key = CourseKey.from_string('otherOrg/toy/2012_Fall')
     list_url = '/v1/course/'
     detail_url_fmt = '/v1/course/{}/'
+    course_enrollment_model = StubCompat().course_enrollment_model()
 
     def setUp(self):
         self.test_user = User.objects.create(username='test_user')
-        self.mock_get_enrollment = self.patch_object(UserEnrollments, 'get_enrollments', return_value=[
-            _StubEnrollment(user=self.test_user, course_id=self.course_key)
-        ])
-        self.patch_object(UserEnrollments, 'is_enrolled', side_effect=lambda course: course == self.course_key)
+        self.staff_user = User.objects.create(username='staff', is_staff=True)
+        self.test_enrollment = self.create_enrollment(
+            user=self.test_user,
+            course_id=self.course_key,
+        )
         self.patch_object(
             CompletionViewMixin,
             'authentication_classes',
@@ -76,7 +76,7 @@ class CompletionViewTestCase(TestCase):
             return_value=[OAuth2Authentication, SessionAuthentication]
         )
         self.patch_object(
-            CompletionListView,
+            CompletionViewMixin,
             'pagination_class',
             new_callable=PropertyMock,
             return_value=PageNumberPagination
@@ -118,6 +118,15 @@ class CompletionViewTestCase(TestCase):
             last_modified=timezone.now(),
         )
 
+    def create_enrollment(self, user, course_id):
+        """
+        create a CourseEnrollment.
+        """
+        return self.course_enrollment_model.objects.create(
+            user=user,
+            course_id=course_id,
+        )
+
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_list_view(self):
         response = self.client.get(self.list_url)
@@ -139,41 +148,36 @@ class CompletionViewTestCase(TestCase):
         }
         self.assertEqual(response.data, expected)
 
-    @expectedFailure
     def test_list_view_enrolled_no_progress(self):
         """
         Test that the completion API returns a record for each course the user is enrolled in,
         even if no progress records exist yet.
-
-        @expectedFailure:
-
-        This test depends on being able to fill in missing data to get an appropriate value for
-        "possible" or "percent".  Actual calculation of Aggregator values is coming in a
-        later story (OC-3098)
-
         """
-        self.mock_get_enrollment.return_value += [  # pylint: disable=no-member
-            _StubEnrollment(self.test_user, self.other_org_course_key)
-        ]
+        self.create_enrollment(
+            user=self.test_user,
+            course_id=self.other_org_course_key,
+        )
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
         expected = {
-            'pagination': {'count': 2, 'previous': None, 'num_pages': 1, 'next': None},
+            'count': 2,
+            'previous': None,
+            'next': None,
             'results': [
                 {
                     'course_key': 'edX/toy/2012_Fall',
                     'completion': {
-                        'earned': 1.0,
-                        'possible': 12.0,
-                        'percent': 1 / 12,
+                        'earned': 0.0,
+                        'possible': None,
+                        'percent': None,
                     },
                 },
                 {
                     'course_key': 'otherOrg/toy/2012_Fall',
                     'completion': {
                         'earned': 0.0,
-                        'possible': 12.0,
-                        'percent': 0.0,
+                        'possible': None,
+                        'percent': None,
                     },
                 }
             ],
@@ -210,18 +214,25 @@ class CompletionViewTestCase(TestCase):
         self.assertEqual(response.data, expected)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    @XBlock.register_temp_plugin(StubSequential, 'sequential')
     def test_detail_view(self):
         response = self.client.get(self.get_detail_url(six.text_type(self.course_key)))
         self.assertEqual(response.status_code, 200)
         expected = {
-            'course_key': 'edX/toy/2012_Fall',
-            'completion': {
-                'earned': 1.0,
-                'possible': 12.0,
-                'percent': 1 / 12,
-            },
+            'count': 1,
+            'previous': None,
+            'next': None,
+            'results': [
+                {
+                    'course_key': 'edX/toy/2012_Fall',
+                    'completion': {
+                        'earned': 1.0,
+                        'possible': 12.0,
+                        'percent': 1 / 12,
+                    },
+                }
+            ]
         }
+
         self.assertEqual(response.data, expected)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
@@ -237,42 +248,49 @@ class CompletionViewTestCase(TestCase):
         token = _create_oauth2_token(self.test_user)
         response = self.client.get(self.get_detail_url(self.course_key), HTTP_AUTHORIZATION="Bearer {0}".format(token))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['completion']['earned'], 1.0)
+        self.assertEqual(response.data['results'][0]['completion']['earned'], 1.0)
 
-    @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_detail_view_not_enrolled(self):
         """
         Test that requesting course completions for a course the user is not enrolled in
         will return a 404.
         """
-        response = self.client.get(self.get_detail_url(self.other_org_course_key))
+        response = self.client.get(self.get_detail_url(self.other_org_course_key,
+                                                       username=self.test_user.username))
         self.assertEqual(response.status_code, 404)
 
-    @expectedFailure
+    def test_detail_view_inactive_enrollment(self):
+        self.test_enrollment.is_active = False
+        self.test_enrollment.save()
+        response = self.client.get(self.get_detail_url(self.course_key))
+        self.assertEqual(response.status_code, 404)
+
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_detail_view_no_completion(self):
         """
         Test that requesting course completions for a course which has started, but the user has not yet started,
         will return an empty completion record with its "possible" field filled in.
-
-        @expectedFailure:
-
-        This test depends on being able to fill in missing data to get an appropriate value for
-        "possible" or "percent".  Actual calculation of Aggregator values is coming in a
-        later story (OC-3098)
         """
-        self.mock_get_enrollment.return_value += [  # pylint: disable=no-member
-            _StubEnrollment(self.test_user, self.other_org_course_key)
-        ]
+        self.create_enrollment(
+            user=self.test_user,
+            course_id=self.other_org_course_key,
+        )
         response = self.client.get(self.get_detail_url(self.other_org_course_key))
         self.assertEqual(response.status_code, 200)
         expected = {
-            'course_key': 'otherOrg/toy/2012_Fall',
-            'completion': {
-                'earned': 0.0,
-                'possible': 12.0,
-                'percent': 0.0,
-            },
+            'count': 1,
+            'previous': None,
+            'next': None,
+            'results': [
+                {
+                    'course_key': 'otherOrg/toy/2012_Fall',
+                    'completion': {
+                        'earned': 0.0,
+                        'possible': None,
+                        'percent': None,
+                    },
+                }
+            ]
         }
         self.assertEqual(response.data, expected)
 
@@ -282,28 +300,118 @@ class CompletionViewTestCase(TestCase):
         response = self.client.get(self.get_detail_url(self.course_key, requested_fields='sequential'))
         self.assertEqual(response.status_code, 200)
         expected = {
-            'course_key': 'edX/toy/2012_Fall',
-            'completion': {
-                'earned': 1.0,
-                'possible': 12.0,
-                'percent': 1 / 12,
-            },
-            'sequential': [
+            'count': 1,
+            'previous': None,
+            'next': None,
+            'results': [
                 {
-                    'course_key': u'edX/toy/2012_Fall',
-                    'block_key': u'i4x://edX/toy/sequential/vertical_sequential',
-                    'completion': {'earned': 1.0, 'possible': 5.0, 'percent': 0.2},
-                },
+                    'course_key': 'edX/toy/2012_Fall',
+                    'completion': {
+                        'earned': 1.0,
+                        'possible': 12.0,
+                        'percent': 1 / 12,
+                    },
+                    'sequential': [
+                        {
+                            'course_key': u'edX/toy/2012_Fall',
+                            'block_key': u'i4x://edX/toy/sequential/vertical_sequential',
+                            'completion': {'earned': 1.0, 'possible': 5.0, 'percent': 0.2},
+                        },
+                    ]
+                }
             ]
         }
         self.assertEqual(response.data, expected)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
+    def test_detail_view_staff_requested_user(self):
+        """
+        Test that requesting course completions for a specific user filters out the other enrolled users
+        """
+        self.client.force_authenticate(self.staff_user)
+        response = self.client.get(self.get_detail_url(self.course_key, username=self.test_user.username))
+        self.assertEqual(response.status_code, 200)
+        expected = {
+            'count': 1,
+            'previous': None,
+            'next': None,
+            'results': [
+                {
+                    'course_key': 'edX/toy/2012_Fall',
+                    'completion': {
+                        'earned': 1.0,
+                        'possible': 12.0,
+                        'percent': 1 / 12,
+                    },
+                }
+            ]
+        }
+        self.assertEqual(response.data, expected)
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    def test_detail_view_staff_all_users(self):
+        """
+        Test that staff requesting course completions can see all completions
+        """
+        # Add an additonal completion for the staff user
+        another_user = User.objects.create(username='test_user_2')
+        self.create_enrollment(
+            user=another_user,
+            course_id=self.course_key,
+        )
+        models.Aggregator.objects.submit_completion(
+            user=another_user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type='sequential', block_id='vertical_sequential'),
+            aggregation_name='sequential',
+            earned=3.0,
+            possible=5.0,
+            last_modified=timezone.now(),
+        )
+        models.Aggregator.objects.submit_completion(
+            user=another_user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type='course', block_id='course'),
+            aggregation_name='course',
+            earned=3.0,
+            possible=12.0,
+            last_modified=timezone.now(),
+        )
+
+        self.client.force_authenticate(self.staff_user)
+        response = self.client.get(self.get_detail_url(self.course_key))
+        self.assertEqual(response.status_code, 200)
+        expected = {
+            'count': 2,
+            'previous': None,
+            'next': None,
+            'results': [
+                {
+                    'username': 'test_user',
+                    'course_key': 'edX/toy/2012_Fall',
+                    'completion': {
+                        'earned': 1.0,
+                        'possible': 12.0,
+                        'percent': 1 / 12,
+                    },
+                },
+                {
+                    'username': 'test_user_2',
+                    'course_key': 'edX/toy/2012_Fall',
+                    'completion': {
+                        'earned': 3.0,
+                        'possible': 12.0,
+                        'percent': 0.25,
+                    },
+                },
+            ]
+        }
+        self.assertEqual(response.data, expected)
+
     def test_invalid_optional_fields(self):
         response = self.client.get(self.detail_url_fmt.format('edX/toy/2012_Fall') + '?requested_fields=INVALID')
         self.assertEqual(response.status_code, 400)
 
-    @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_unauthenticated(self):
         self.client.force_authenticate(None)
         detailresponse = self.client.get(self.get_detail_url(self.course_key))
@@ -313,17 +421,15 @@ class CompletionViewTestCase(TestCase):
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_request_self(self):
-        response = self.client.get(self.list_url + '?username={}'.format(self.test_user.username))
+        response = self.client.get(self.get_list_url(username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
 
-    @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_wrong_user(self):
         user = User.objects.create(username='wrong')
         self.client.force_authenticate(user)
-        response = self.client.get(self.list_url + '?username={}'.format(self.test_user.username))
+        response = self.client.get(self.get_list_url(username=self.test_user.username))
         self.assertEqual(response.status_code, 404)
 
-    @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_no_user(self):
         self.client.logout()
         response = self.client.get(self.list_url)
@@ -331,17 +437,14 @@ class CompletionViewTestCase(TestCase):
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_staff_access(self):
-        user = User.objects.create(username='staff', is_staff=True)
-        self.client.force_authenticate(user)
+        self.client.force_authenticate(self.staff_user)
         response = self.client.get(self.get_list_url(username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
         expected_completion = {'earned': 1.0, 'possible': 12.0, 'percent': 1 / 12}
         self.assertEqual(response.data['results'][0]['completion'], expected_completion)
 
-    @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_staff_access_non_user(self):
-        user = User.objects.create(username='staff', is_staff=True)
-        self.client.force_authenticate(user)
+        self.client.force_authenticate(self.staff_user)
         response = self.client.get(self.get_list_url(username='who-dat'))
         self.assertEqual(response.status_code, 404)
 

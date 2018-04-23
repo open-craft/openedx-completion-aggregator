@@ -5,14 +5,13 @@ API views to read completion information.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from opaque_keys.edx.keys import CourseKey
-from rest_framework import status
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django.contrib.auth import get_user_model
 
+from ... import compat
 from ...models import Aggregator
 from ...serializers import AggregatorAdapter, course_completion_serializer_factory, is_aggregation_name
 
@@ -21,29 +20,47 @@ User = get_user_model()  # pylint: disable=invalid-name
 
 class UserEnrollments(object):
     """
-    Class for managing user enrollments
+    Class for querying user enrollments
     """
-    def __init__(self, user):
-        self.user = user
-
-    def get_enrollments(self):  # pragma: no cover
+    def __init__(self, user=None):
         """
-        Return a collection CourseEnrollments.
+        Filter active course enrollments for the given user, if any.
+        """
+        self.queryset = compat.course_enrollment_model().objects.filter(is_active=True)
+        if user:
+            self.queryset = self.queryset.filter(user=user)
+
+    def get_course_enrollments(self, course_key):
+        """
+        Return a collection of CourseEnrollments.
+
+        **Parameters**
+
+        course_id:
+            Return all the enrollments for this course.
 
         The collection must have a .__len__() attribute, be sliceable,
         and consist of objects that have a user attribute and a course_id
         attribute.
         """
+        queryset = self.queryset.filter(course_id=course_key)
+        return queryset.order_by('user')
 
-        from student.models import CourseEnrollment  # pylint: disable=import-error
-        return CourseEnrollment.objects.filter(user=self.user, is_active=True).order_by('course_id')
+    def get_enrollments(self):
+        """
+        Return a collection of CourseEnrollments for the current user (if specified).
 
-    def is_enrolled(self, course_key):  # pragma: no cover
+        The collection must have a .__len__() attribute, be sliceable,
+        and consist of objects that have a user attribute and a course_id
+        attribute.
+        """
+        return self.queryset.order_by('user', 'course_id')
+
+    def is_enrolled(self, course_key):
         """
         Return a boolean stating whether user is enrolled in the named course.
         """
-        from student.models import CourseEnrollment  # pylint: disable=import-error
-        return CourseEnrollment.objects.filter(user=self.user, course_id=course_key, is_active=True).exists()
+        return self.queryset.filter(course_id=course_key).exists()
 
 
 class CompletionViewMixin(object):
@@ -51,9 +68,10 @@ class CompletionViewMixin(object):
     Common functionality for completion views.
     """
 
-    _allowed_requested_fields = {'mean'}
+    _allowed_requested_fields = {'mean', 'username'}
     permission_classes = (IsAuthenticated,)
-    _user = None
+    _effective_user = None
+    _requested_user = None
 
     @property
     def authentication_classes(self):  # pragma: no cover
@@ -67,18 +85,27 @@ class CompletionViewMixin(object):
         ]
 
     @property
+    def pagination_class(self):  # pragma: no cover
+        """
+        Return the class to use for pagination
+        """
+        from edx_rest_framework_extensions import paginators  # pylint: disable=import-error
+        return paginators.NamespacedPageNumberPagination
+
+    @property
     def user(self):
         """
         Return the effective user.
 
         Usually the requesting user, but a staff user can override this.
         """
-        if self._user:
-            return self._user
+        if self._effective_user:
+            return self._effective_user
 
         requested_username = self.request.GET.get('username')
         if not requested_username:
             user = self.request.user
+            self._requested_user = None
         else:
             if self.request.user.is_staff:
                 try:
@@ -90,8 +117,20 @@ class CompletionViewMixin(object):
                     user = self.request.user
                 else:
                     raise NotFound()
-        self._user = user
-        return self._user
+            self._requested_user = user
+        self._effective_user = user
+        return self._effective_user
+
+    @property
+    def requested_user(self):
+        """
+        Return the requested user.
+
+        Will be None if no specific username was in the request.
+        """
+        # Populating the user property also sets the requested user
+        self.user  # pylint: disable=pointless-statement
+        return self._requested_user
 
     def get_queryset(self):
         """
@@ -99,21 +138,7 @@ class CompletionViewMixin(object):
         """
         aggregations = {'course'}
         aggregations.update(category for category in self.get_requested_fields() if is_aggregation_name(category))
-        return Aggregator.objects.filter(user=self.user, aggregation_name__in=aggregations)
-
-    # TODO: Coverage will be added when dummy values get used
-    def create_dummy_aggregator(self, course_key):  # pragma: no cover
-        """
-        Build an empty StudentProgress object for the current user and given course.
-        """
-        return Aggregator(
-            user=self.user,
-            course_key=course_key,
-            usage_key=course_key.make_usage_key(block_type='course', block_id='xxx'),
-            aggregation_name='course',
-            earned=0.0,
-            possible=0.0,  # How to get the right value for this?
-        )
+        return Aggregator.objects.filter(aggregation_name__in=aggregations)
 
     def get_requested_fields(self):
         """
@@ -154,18 +179,18 @@ class CompletionListView(CompletionViewMixin, APIView):
         The response is a dictionary comprising pagination data and a page
         of results.
 
-        * pagination: A dict of pagination information, containing the fields:
-            * page: The page number of the current set of results.
-            * next: The URL for the next page of results, or None if already on
-              the last page.
-            * previous: The URL for the previous page of results, or None if
-              already on the first page.
-            * count: The total number of available results.
+        * page: The page number of the current set of results.
+        * next: The URL for the next page of results, or None if already on
+          the last page.
+        * previous: The URL for the previous page of results, or None if
+          already on the first page.
+        * count: The total number of available results.
         * results: A list of dictionaries representing the user's completion
           for each course.
 
         Standard fields for each completion dictionary:
 
+        * course_key (CourseKey): The unique course identifier.
         * completion: A dictionary comprising of the following fields:
             * earned (float): The sum of the learner's completions.
             * possible (float): The total number of completions available
@@ -215,12 +240,12 @@ class CompletionListView(CompletionViewMixin, APIView):
             GET /api/completion/v1/course
 
             {
-              "pagination": {
-                "count": 14,
-                "page": 1,
-                "next": "/api/completion/v1/course/?page=2,
-                "previous": None
-              },
+              "count": 14,
+              "num_pages": 1,
+              "current_page": 1,
+              "start": 1,
+              "next": "/api/completion/v1/course/?page=2,
+              "previous": None,
               "results": [
                 {
                   "course_key": "edX/DemoX/Demo_course",
@@ -277,14 +302,6 @@ class CompletionListView(CompletionViewMixin, APIView):
     The replacement will have the same interface.
     """
 
-    @property
-    def pagination_class(self):  # pragma: no cover
-        """
-        Return the class to use for pagination
-        """
-        from openedx.core.lib.api import paginators  # pylint: disable=import-error
-        return paginators.NamespacedPageNumberPagination
-
     def get(self, request):
         """
         Handler for GET requests.
@@ -297,6 +314,7 @@ class CompletionListView(CompletionViewMixin, APIView):
         # Grab the progress items for these enrollments
         course_keys = [enrollment.course_id for enrollment in paginated]
         aggregator_queryset = self.get_queryset().filter(
+            user=self.user,
             course_key__in=course_keys
         )
 
@@ -334,7 +352,19 @@ class CompletionDetailView(CompletionViewMixin, APIView):
 
     **Response Values**
 
-        Standard fields:
+        The response is a dictionary comprising pagination data and a page
+        of results.
+
+        * page: The page number of the current set of results.
+        * next: The URL for the next page of results, or None if already on
+          the last page.
+        * previous: The URL for the previous page of results, or None if
+          already on the first page.
+        * count: The total number of available results.
+        * results: A list of dictionaries representing the user's completion
+          for each course.
+
+        Standard fields for each completion dictionary:
 
         * course_key (CourseKey): The unique course identifier.
         * completion: A dictionary comprising of the following fields:
@@ -367,9 +397,11 @@ class CompletionDetailView(CompletionViewMixin, APIView):
     **Parameters**
 
         username (optional):
-            The username of the specified user for whom the course data is
-            being accessed.  If not specified, this defaults to the requesting
-            user.
+            The username of the specified user for whom the course data is being
+            accessed.
+            If omitted, and the requesting user has staff access, then data for
+            all enrolled users is returned. If the requesting user does not have
+            staff access, then only data for the requesting user is returned.
 
         requested_fields (optional):
             A comma separated list of extra data to be returned.  This can be
@@ -389,43 +421,55 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         Example response:
 
             {
-              "course_key": "course-v1:GeorgetownX+HUMX421-02x+1T2016",
-              "completion": {
-                "earned": 12.0,
-                "possible": 24.0,
-                "ratio": 0.5
-              },
-              "mean": 0.25,
-              "chapter": [
+              "count": 14,
+              "num_pages": 1,
+              "current_page": 1,
+              "start": 1,
+              "next": "/api/completion/v1/course/course-v1:GeorgetownX+HUMX421-02x+1T2016/?page=2,
+              "previous": None,
+              "results": [
                 {
                   "course_key": "course-v1:GeorgetownX+HUMX421-02x+1T2016",
-                  "block_key": "block-v1:GeorgetownX+HUMX421-02x+1T2016+type@chapter+block@Week-2-TheVitaNuova"
                   "completion": {
-                    "earned: 12.0,
+                    "earned": 12.0,
                     "possible": 24.0,
                     "ratio": 0.5
-                  }
-                }
-              ],
-              "sequential": [
-                {
-                  "course_key": "course-v1:GeorgetownX+HUMX421-02x+1T2016",
-                  "block_key": "block-v1:GeorgetownX+HUMX421-02x+1T2016+type@sequential+block@e0eb7cbc1a0c407e622c988",
-                  "completion": {
-                    "earned: 12.0,
-                    "possible": 12.0,
-                    "ratio": 1.0
-                  }
+                  },
+                  "mean": 0.25,
+                  "chapter": [
+                    {
+                      "course_key": "course-v1:GeorgetownX+HUMX421-02x+1T2016",
+                      "block_key": "block-v1:GeorgetownX+HUMX421-02x+1T2016+type@chapter+block@Week-2-TheVitaNuova"
+                      "completion": {
+                        "earned: 12.0,
+                        "possible": 24.0,
+                        "ratio": 0.5
+                      }
+                    }
+                  ],
+                  "sequential": [
+                    {
+                      "course_key": "course-v1:GeorgetownX+HUMX421-02x+1T2016",
+                      "block_key":
+                        "block-v1:GeorgetownX+HUMX421-02x+1T2016+type@sequential+block@e0eb7cbc1a0c407e622c988",
+                      "completion": {
+                        "earned: 12.0,
+                        "possible": 12.0,
+                        "ratio": 1.0
+                      }
+                    },
+                    {
+                      "course_key": "course-v1:GeorgetownX+HUMX421-02x+1T2016",
+                      "block_key":
+                        "block-v1:GeorgetownX+HUMX421-02x+1T2016+type@sequential+block@f6e7ec3e965b48acf3418e7",
+                      "completion": {
+                        "earned: 0.0,
+                        "possible": 12.0,
+                        "ratio": 0.0
+                      }
+                    },
                 },
-                {
-                  "course_key": "course-v1:GeorgetownX+HUMX421-02x+1T2016",
-                  "block_key": "block-v1:GeorgetownX+HUMX421-02x+1T2016+type@sequential+block@f6e7ec3e965b48acf3418e7",
-                  "completion": {
-                    "earned: 0.0,
-                    "possible": 12.0,
-                    "ratio": 0.0
-                  }
-                }
+                ...
               ]
             }
 
@@ -439,26 +483,38 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         Handler for GET requests.
         """
         course_key = CourseKey.from_string(course_key)
+        paginator = self.pagination_class()  # pylint: disable=not-callable
+        requested_fields = self.get_requested_fields()
 
-        # Return 404 if user does not have an active enrollment in the requested course
-        if not UserEnrollments(self.user).is_enrolled(course_key):
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        if not self.requested_user and self.user.is_staff:
+            # Use all enrollments for the course
+            enrollments = UserEnrollments().get_course_enrollments(course_key)
+            requested_fields.add('username')
+        else:
+            if not UserEnrollments(self.user).is_enrolled(course_key):
+                # Return 404 if effective user does not have an active enrollment in the requested course
+                raise NotFound()
 
-        try:
-            # Fetch the Aggregate completions for the course
-            completion = self.get_queryset().filter(course_key=course_key)
-        except Aggregator.DoesNotExist:
-            # Otherwise, use an empty, unsaved Aggregator object
-            # TODO: Coverage will be added when test_detail_view_no_completion is supported
-            completion = self.create_dummy_aggregator(course_key)  # pragma: no cover
+            # Use enrollments for the effective user
+            enrollments = UserEnrollments(self.user).get_course_enrollments(course_key)
 
-        adapter = AggregatorAdapter(
-            user=self.user,
-            course_key=course_key,
-        )
-        adapter.update_aggregators(completion)
+        # Paginate the list of active enrollments, annotated (manually) with a student progress object.
+        paginated = paginator.paginate_queryset(enrollments, self.request, view=self)
+        aggregator_queryset = self.get_queryset().filter(course_key=course_key)
+
+        # Create the list of aggregate completions to be serialized.
+        completions = [
+            AggregatorAdapter(
+                user=enrollment.user,
+                course_key=enrollment.course_id,
+                queryset=aggregator_queryset,
+            ) for enrollment in paginated
+        ]
+
+        # Return the paginated, serialized completions
         serializer = self.get_serializer_class()(
-            adapter,
-            requested_fields=self.get_requested_fields(),
+            instance=completions,
+            requested_fields=requested_fields,
+            many=True
         )
-        return Response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)

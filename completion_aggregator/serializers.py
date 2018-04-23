@@ -187,9 +187,10 @@ class CourseCompletionSerializer(serializers.Serializer):
 
     course_key = serializers.CharField()
     completion = _CompletionSerializer(source='*')
+    username = serializers.SerializerMethodField()
     mean = serializers.FloatField()
 
-    optional_fields = {'mean'}
+    optional_fields = {'mean', 'username'}
 
     def __init__(self, instance, requested_fields=frozenset(), *args, **kwargs):
         """
@@ -200,6 +201,12 @@ class CourseCompletionSerializer(serializers.Serializer):
         super(CourseCompletionSerializer, self).__init__(instance, *args, **kwargs)
         for field in self.optional_fields - requested_fields:
             del self.fields[field]
+
+    def get_username(self, obj):
+        """
+        Serialize the username.
+        """
+        return obj.user.username
 
 
 class BlockCompletionSerializer(serializers.Serializer):
