@@ -68,7 +68,7 @@ class CompletionViewMixin(object):
     Common functionality for completion views.
     """
 
-    _allowed_requested_fields = {'mean', 'user'}
+    _allowed_requested_fields = {'mean', 'username'}
     permission_classes = (IsAuthenticated,)
     _effective_user = None
     _requested_user = None
@@ -489,7 +489,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         if not self.requested_user and self.user.is_staff:
             # Use all enrollments for the course
             enrollments = UserEnrollments().get_course_enrollments(course_key)
-            requested_fields.add('user')
+            requested_fields.add('username')
         else:
             if not UserEnrollments(self.user).is_enrolled(course_key):
                 # Return 404 if effective user does not have an active enrollment in the requested course

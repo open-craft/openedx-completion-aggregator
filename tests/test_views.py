@@ -387,7 +387,7 @@ class CompletionViewTestCase(TestCase):
             'next': None,
             'results': [
                 {
-                    'user': 'test_user',
+                    'username': 'test_user',
                     'course_key': 'edX/toy/2012_Fall',
                     'completion': {
                         'earned': 1.0,
@@ -396,7 +396,7 @@ class CompletionViewTestCase(TestCase):
                     },
                 },
                 {
-                    'user': 'test_user_2',
+                    'username': 'test_user_2',
                     'course_key': 'edX/toy/2012_Fall',
                     'completion': {
                         'earned': 3.0,
