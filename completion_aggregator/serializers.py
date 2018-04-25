@@ -187,9 +187,10 @@ class CourseCompletionSerializer(serializers.Serializer):
 
     course_key = serializers.CharField()
     completion = _CompletionSerializer(source='*')
+    username = serializers.SerializerMethodField()
     mean = serializers.FloatField()
 
-    optional_fields = {'mean'}
+    optional_fields = {'mean', 'username'}
 
     def __init__(self, instance, requested_fields=frozenset(), *args, **kwargs):
         """
@@ -200,6 +201,12 @@ class CourseCompletionSerializer(serializers.Serializer):
         super(CourseCompletionSerializer, self).__init__(instance, *args, **kwargs)
         for field in self.optional_fields - requested_fields:
             del self.fields[field]
+
+    def get_username(self, obj):
+        """
+        Serialize the username.
+        """
+        return obj.user.username
 
 
 class BlockCompletionSerializer(serializers.Serializer):
@@ -239,7 +246,7 @@ def native_identifier(string):
     """
     if six.PY2:  # pragma: no cover
 
-        if isinstance(string, six.text_type):  # pylint: disable=undefined-variable
+        if isinstance(string, six.text_type):
             # Python 2 identifiers are required to be ascii
             string = string.encode('ascii')
     elif isinstance(string, bytes):  # pragma: no cover

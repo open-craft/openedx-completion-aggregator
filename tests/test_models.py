@@ -11,7 +11,7 @@ import pytest
 import six
 from opaque_keys.edx.keys import UsageKey
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils.timezone import now
@@ -30,7 +30,7 @@ class AggregatorTestCase(TestCase):
 
     def setUp(self):
         super(AggregatorTestCase, self).setUp()
-        self.user = User.objects.create(username='testuser')
+        self.user = get_user_model().objects.create(username='testuser')
 
     def test_submit_completion_with_invalid_user(self):
         with pytest.raises(TypeError):

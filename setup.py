@@ -47,11 +47,13 @@ setup(
     ],
     include_package_data=True,
     install_requires=[
-        "Django>=1.8,<1.11",
+        "Django>=1.11,<1.12",
         "django-model-utils>=2.0",
         "django-rest-framework",
         "pytest-django",
         "XBlock",
+        "edx-celeryutils>=0.2.7",
+        "edx-completion>=0.1.5",
         "edx-opaque-keys",
     ],
     license="AGPL 3.0",
@@ -60,9 +62,8 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Framework :: Django',
-        'Framework :: Django :: 1.8',
-        'Framework :: Django :: 1.9',
-        'Framework :: Django :: 1.10',
+        'Framework :: Django :: 1.11',
+        'Framework :: Django :: 2.0',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
         'Natural Language :: English',
@@ -76,6 +77,11 @@ setup(
         'lms.djangoapp': [
             'completion_aggregator = completion_aggregator.apps:CompletionAggregatorAppConfig'
         ],
-        'cms.djangoapp': [],
+        'cms.djangoapp': [
+            'completion_aggregator = completion_aggregator.apps:CompletionAggregatorAppConfig'
+        ],
+        'openedx.block_structure_transformer': [
+            'completion_aggregator_annotator = completion_aggregator.transformers:AggregatorAnnotationTransformer',
+        ],
     }
 )
