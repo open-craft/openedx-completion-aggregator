@@ -25,7 +25,6 @@ def register():
 
     try:
         from xmodule.modulestore.django import SignalHandler
-        from student.signals.signals import ENROLLMENT_TRACK_UPDATED
         from openedx.core.djangoapps.course_groups.signals.signals import COHORT_MEMBERSHIP_UPDATED
     except ImportError:
         log.warning(
@@ -34,12 +33,20 @@ def register():
     else:
         SignalHandler.course_published.connect(course_published_handler)
         SignalHandler.item_deleted.connect(item_deleted_handler)
-        ENROLLMENT_TRACK_UPDATED.connect(cohort_updated_handler)
         COHORT_MEMBERSHIP_UPDATED.connect(cohort_updated_handler)
+    try:
+        from student.signals.signals import ENROLLMENT_TRACK_UPDATED
+    except ImportError:
+        log.info(
+            "ENROLLMENT_TRACK_UPDATED signal not found.  This may be a ginkgo server."
+        )
+    else:
+        ENROLLMENT_TRACK_UPDATED.connect(cohort_updated_handler)
 
 
 # Signal handlers frequently ignore arguments passed to them.  No need to lint them.
 # pylint: disable=unused-argument
+
 
 def item_deleted_handler(usage_key, user_id, **kwargs):
     """

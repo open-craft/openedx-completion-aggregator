@@ -11,29 +11,28 @@ argparse==1.4.0           # via caniusepython3
 astroid==1.5.2            # via edx-lint, pylint, pylint-celery, pylint-plugin-utils
 backports.functools-lru-cache==1.5  # via caniusepython3
 billiard==3.3.0.23        # via celery
-caniusepython3==6.0.0
-celery==3.1.26.post2
-certifi==2018.1.18        # via requests
+caniusepython3==7.0.0
+celery==3.1.18
+certifi==2018.4.16        # via requests
 chardet==3.0.4            # via requests
 click-log==0.1.8          # via edx-lint
 click==6.7                # via click-log, edx-lint, pip-tools
 diff-cover==1.0.2
-distlib==0.2.6            # via caniusepython3
-django-braces==1.12.0     # via django-oauth-toolkit
-django-model-utils==3.1.1
+distlib==0.2.7            # via caniusepython3
+django-braces==1.13.0     # via django-oauth-toolkit
+django-model-utils==3.1.2
 django-oauth-toolkit==0.12.0
-django==1.11.12
+django==1.10.8
 djangorestframework==3.6.4
-edx-celeryutils==0.2.7
-edx-completion==0.1.5
-edx-i18n-tools==0.4.4
+edx-celeryutils==0.1.5
+edx-completion==0.1.6
+edx-i18n-tools==0.4.5
 edx-lint==0.5.5
 edx-opaque-keys[django]==0.4.4
 first==2.0.1              # via pip-tools
-fs==2.0.20                # via xblock
-futures==3.1.1            # via caniusepython3
+fs==2.0.21                # via xblock
 idna==2.6                 # via requests
-inflect==0.2.5            # via jinja2-pluralize
+inflect==0.3.1            # via jinja2-pluralize
 isort==4.3.4
 jinja2-pluralize==0.3.0   # via diff-cover
 jinja2==2.10              # via diff-cover, jinja2-pluralize
@@ -46,8 +45,8 @@ mccabe==0.6.1             # via pylint
 oauthlib==2.0.1           # via django-oauth-toolkit
 packaging==17.1           # via caniusepython3
 path.py==11.0.1           # via edx-i18n-tools
-pbr==4.0.1                # via stevedore
-pip-tools==1.11.0
+pbr==4.0.3                # via stevedore
+pip-tools==2.0.2
 pkginfo==1.4.2            # via twine
 pluggy==0.6.0             # via tox
 polib==1.1.0              # via edx-i18n-tools
@@ -61,8 +60,8 @@ pylint-plugin-utils==0.2.6  # via pylint-celery, pylint-django
 pylint==1.7.1             # via edx-lint, pylint-celery, pylint-django, pylint-plugin-utils
 pymongo==3.6.1            # via edx-opaque-keys
 pyparsing==2.2.0          # via packaging
-python-dateutil==2.7.2    # via xblock
-pytz==2018.4              # via celery, django, edx-completion, fs, xblock
+python-dateutil==2.7.3    # via xblock
+pytz==2018.4              # via celery, edx-completion, fs, xblock
 pyyaml==3.12              # via edx-i18n-tools, xblock
 requests-toolbelt==0.8.0  # via twine
 requests==2.18.4          # via caniusepython3, requests-toolbelt, twine
@@ -71,12 +70,12 @@ snowballstemmer==1.2.1    # via pydocstyle
 stevedore==1.28.0         # via edx-opaque-keys
 tox-battery==0.2
 tox==3.0.0
-tqdm==4.21.0              # via twine
+tqdm==4.23.3              # via twine
 twine==1.11.0
 urllib3==1.22             # via requests
-virtualenv==15.2.0        # via tox
+virtualenv==16.0.0        # via tox
 web-fragments==0.2.2      # via xblock
-webob==1.8.0              # via xblock
-wheel==0.31.0
+webob==1.8.1              # via xblock
+wheel==0.31.1
 wrapt==1.10.11            # via astroid
 xblock==1.2.0
