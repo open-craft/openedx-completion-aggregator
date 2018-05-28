@@ -1,7 +1,7 @@
 """
 Handlers for signals emitted by block completion models.
 """
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging
 
@@ -25,7 +25,6 @@ def register():
 
     try:
         from xmodule.modulestore.django import SignalHandler
-        from openedx.core.djangoapps.course_groups.signals.signals import COHORT_MEMBERSHIP_UPDATED
     except ImportError:
         log.warning(
             "Could not import modulestore signal handlers. Completion Aggregator not hooked up to edx-platform."
@@ -33,13 +32,20 @@ def register():
     else:
         SignalHandler.course_published.connect(course_published_handler)
         SignalHandler.item_deleted.connect(item_deleted_handler)
+
+    ginkgo_error_template = "%s signal not found. If this is a solutions/ginkgo server, this is expected."
+
+    try:
+        from openedx.core.djangoapps.course_groups.signals.signals import COHORT_MEMBERSHIP_UPDATED
+    except ImportError:
+        log.info(ginkgo_error_template, "COHORT_MEMBERSHIP_UPDATED")
+    else:
         COHORT_MEMBERSHIP_UPDATED.connect(cohort_updated_handler)
+
     try:
         from student.signals.signals import ENROLLMENT_TRACK_UPDATED
     except ImportError:
-        log.info(
-            "ENROLLMENT_TRACK_UPDATED signal not found.  This may be a ginkgo server."
-        )
+        log.info(ginkgo_error_template, "ENROLLMENT_TRACK_UPDATED")
     else:
         ENROLLMENT_TRACK_UPDATED.connect(cohort_updated_handler)
 
