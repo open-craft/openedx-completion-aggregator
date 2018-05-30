@@ -23,6 +23,7 @@ lms.env.json file::
 
     ...
     "COMPLETION_AGGREGATOR_BLOCK_TYPES": {
+        "course",
         "chapter",
         "subsection",
         "vertical"
