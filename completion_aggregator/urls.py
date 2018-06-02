@@ -9,5 +9,5 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     url(r'^v1/', include('completion_aggregator.api.v1.urls', namespace='completion_api_v1')),
-    url(r'', TemplateView.as_view(template_name="completion_aggregator/base.html")),
+    url(r'^$', TemplateView.as_view(template_name="completion_aggregator/base.html")),
 ]
