@@ -89,7 +89,11 @@ class CompletionViewMixin(object):
         """
         Return the class to use for pagination
         """
-        from edx_rest_framework_extensions import paginators  # pylint: disable=import-error
+        try:
+            from edx_rest_framework_extensions import paginators  # pylint: disable=import-error
+        except ImportError:  # paginators are in edx-platform in ginkgo
+            from openedx.core.lib.api import paginators  # pylint: disable=import-error
+
         return paginators.NamespacedPageNumberPagination
 
     @property

@@ -59,7 +59,7 @@ def update_aggregators(username, course_key, block_keys=(), force=False):
     """
     user = User.objects.get(username=username)
     course_key = CourseKey.from_string(course_key)
-    block_keys = set(UsageKey.from_string(key) for key in block_keys)
+    block_keys = set(UsageKey.from_string(key).map_into_course(course_key) for key in block_keys)
     log.info("Updating aggregators in %s for %s. Changed blocks: %s", course_key, user.username, block_keys)
     return _update_aggregators(user, course_key, block_keys, force)
 

@@ -47,12 +47,13 @@ setup(
     ],
     include_package_data=True,
     install_requires=[
-        "Django>=1.11,<1.12",
+        "Django>=1.8,<1.12",
         "django-model-utils>=2.0",
         "django-rest-framework",
         "pytest-django",
         "XBlock",
-        "edx-celeryutils>=0.2.7",
+        "celery>=3.1",
+        "edx-celeryutils>=0.1.5",
         "edx-completion>=0.1.5",
         "edx-opaque-keys",
     ],
@@ -62,6 +63,7 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Framework :: Django',
+        'Framework :: Django :: 1.8',
         'Framework :: Django :: 1.11',
         'Framework :: Django :: 2.0',
         'Intended Audience :: Developers',
