@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# pylint: disable=C0111,W6005,W6100
-from __future__ import absolute_import, print_function
+# pylint: disable=missing-docstring
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+import io
 import os
 import re
 import sys
@@ -11,11 +13,11 @@ from setuptools import setup
 
 
 def get_version(*file_paths):
-    """
+    u"""
     Extract the version string from the file at the given relative path fragments.
     """
     filename = os.path.join(os.path.dirname(__file__), *file_paths)
-    version_file = open(filename).read()
+    version_file = io.open(filename).read()
     version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
                               version_file, re.M)
     if version_match:
@@ -31,8 +33,8 @@ if sys.argv[-1] == 'tag':
     os.system("git push --tags")
     sys.exit()
 
-README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
-CHANGELOG = open(os.path.join(os.path.dirname(__file__), 'CHANGELOG.rst')).read()
+README = io.open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
+CHANGELOG = io.open(os.path.join(os.path.dirname(__file__), 'CHANGELOG.rst')).read()
 
 setup(
     name='openedx-completion-aggregator',

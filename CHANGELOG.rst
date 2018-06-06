@@ -14,12 +14,10 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
-*
-
-[0.1.0] - 2018-01-04
+[1.0.0] - 2018-01-04
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Added
-_____
-
 * First release on PyPI.
+* On-demand asynchronous aggregation of xblock completion.
+* Provides an API to retrieve aggregations for one or many users, for one or 
+  many courses.
