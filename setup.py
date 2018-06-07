@@ -41,9 +41,9 @@ setup(
     version=VERSION,
     description="""an app that aggregates block level completion data for different block types for Open edX.""",
     long_description=README + '\n\n' + CHANGELOG,
-    author='edX',
-    author_email='oscm@edx.org',
-    url='https://github.com/edx/openedx-completion-aggregator',
+    author='OpenCraft',
+    author_email='help@opencraft.com',
+    url='https://github.com/open-craft/openedx-completion-aggregator',
     packages=[
         'completion_aggregator',
     ],

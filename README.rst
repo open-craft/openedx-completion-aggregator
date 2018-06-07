@@ -1,8 +1,7 @@
 openedx-completion-aggregator
 =============================
 
-|pypi-badge| |travis-badge| |codecov-badge| |doc-badge| |pyversions-badge|
-|license-badge|
+|pypi-badge| |travis-badge| |doc-badge| |pyversions-badge| |license-badge|
 
 openedx-completion-aggregator is a Django app that aggregates block level
 completion data for different block types for Open edX.
@@ -63,7 +62,7 @@ can find it at `ISSUE_TEMPLATE.md <https://github.com/edx/openedx-completion-agg
 Reporting Security Issues
 -------------------------
 
-Please do not report security issues in public. Please email security@edx.org.
+Please do not report security issues in public. Please email help@opencraft.com.
 
 Getting Help
 ------------
@@ -78,13 +77,9 @@ refer to this `list of resources`_ if you need any assistance.
     :target: https://pypi.python.org/pypi/openedx-completion-aggregator/
     :alt: PyPI
 
-.. |travis-badge| image:: https://travis-ci.org/edx/openedx-completion-aggregator.svg?branch=master
-    :target: https://travis-ci.org/edx/openedx-completion-aggregator
+.. |travis-badge| image:: https://travis-ci.org/open-craft/openedx-completion-aggregator.svg?branch=master
+    :target: https://travis-ci.org/open-craft/openedx-completion-aggregator
     :alt: Travis
-
-.. |codecov-badge| image:: http://codecov.io/github/edx/openedx-completion-aggregator/coverage.svg?branch=master
-    :target: http://codecov.io/github/edx/openedx-completion-aggregator?branch=master
-    :alt: Codecov
 
 .. |doc-badge| image:: https://readthedocs.org/projects/openedx-completion-aggregator/badge/?version=latest
     :target: http://openedx-completion-aggregator.readthedocs.io/en/latest/
