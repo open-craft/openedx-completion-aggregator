@@ -17,7 +17,6 @@ instructions.
 4. If D happend instead - check failed.
 
 **Reviewers:**
-- [ ] tag reviwer 
 - [ ] tag reviewer 
 
 **Merge checklist:**
@@ -31,7 +30,7 @@ instructions.
 
 **Post merge:**
 - [ ] Create a tag
-- [ ] Check new version is pushed to PyPi after tag-triggered build is 
+- [ ] Check new version is pushed to PyPI after tag-triggered build is 
       finished.
 - [ ] Delete working branch (if not needed anymore)
 

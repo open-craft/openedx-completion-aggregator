@@ -54,10 +54,10 @@ Even though they were written with ``edx-platform`` in mind, the guidelines
 should be followed for Open edX code in general.
 
 PR description template should be automatically applied if you are sending PR from github interface; otherwise you
-can find it it at `PULL_REQUEST_TEMPLATE.md <https://github.com/edx/openedx-completion-aggregator/blob/master/.github/PULL_REQUEST_TEMPLATE.md>`_
+can find it it at `PULL_REQUEST_TEMPLATE.md <https://github.com/open-craft/openedx-completion-aggregator/blob/master/.github/PULL_REQUEST_TEMPLATE.md>`_
 
 Issue report template should be automatically applied if you are sending it from github UI as well; otherwise you
-can find it at `ISSUE_TEMPLATE.md <https://github.com/edx/openedx-completion-aggregator/blob/master/.github/ISSUE_TEMPLATE.md>`_
+can find it at `ISSUE_TEMPLATE.md <https://github.com/open-craft/openedx-completion-aggregator/blob/master/.github/ISSUE_TEMPLATE.md>`_
 
 Reporting Security Issues
 -------------------------
@@ -89,6 +89,6 @@ refer to this `list of resources`_ if you need any assistance.
     :target: https://pypi.python.org/pypi/openedx-completion-aggregator/
     :alt: Supported Python versions
 
-.. |license-badge| image:: https://img.shields.io/github/license/edx/openedx-completion-aggregator.svg
-    :target: https://github.com/edx/openedx-completion-aggregator/blob/master/LICENSE.txt
+.. |license-badge| image:: https://img.shields.io/github/license/open-craft/openedx-completion-aggregator.svg
+    :target: https://github.com/open-craft/openedx-completion-aggregator/blob/master/LICENSE.txt
     :alt: License
