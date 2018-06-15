@@ -164,8 +164,6 @@ class AggregatorAdapter(object):
     def percent(self):
         """
         Report the percentage of possible completions earned.
-
-        Returns a float in the range [0.0, 1.0], where 1.0 == 100%.
         """
         return self.course.percent
 
@@ -178,6 +176,20 @@ class _CompletionSerializer(serializers.Serializer):
     earned = serializers.FloatField()
     possible = serializers.FloatField()
     percent = serializers.FloatField()
+
+
+class _CompletionSerializerV0(_CompletionSerializer):
+    """
+    Completion Serializer for V0 API (includes ratio field).
+    """
+
+    ratio = serializers.SerializerMethodField()
+
+    def get_ratio(self, obj):
+        """
+        Return ratio based on percent.
+        """
+        return obj.percent
 
 
 class CourseCompletionSerializer(serializers.Serializer):
@@ -209,6 +221,14 @@ class CourseCompletionSerializer(serializers.Serializer):
         return obj.user.username
 
 
+class CourseCompletionSerializerV0(CourseCompletionSerializer):
+    """
+    Serializer for V0 API (to include ratio field).
+    """
+
+    completion = _CompletionSerializerV0(source='*')
+
+
 class BlockCompletionSerializer(serializers.Serializer):
     """
     A serializer that represents aggregators of sub-graphs of xblocks.
@@ -219,20 +239,34 @@ class BlockCompletionSerializer(serializers.Serializer):
     completion = _CompletionSerializer(source='*')
 
 
-def course_completion_serializer_factory(requested_fields):
+class BlockCompletionSerializerV0(BlockCompletionSerializer):
+    """
+    A serializer that represents aggregators of sub-graphs of xblocks.
+    """
+
+    completion = _CompletionSerializerV0(source='*')
+
+
+def course_completion_serializer_factory(requested_fields, version=1):
     """
     Configure and create a serializer for aggregators.
 
     The created serializer nests appropriate
     BlockCompletionSerializers for the specified requested_fields.
     """
+    if version == 0:
+        course_completion_serializer = CourseCompletionSerializerV0
+        block_completion_serializer = BlockCompletionSerializerV0
+    else:
+        course_completion_serializer = CourseCompletionSerializer
+        block_completion_serializer = BlockCompletionSerializer
     dunder_dict = {
-        field: BlockCompletionSerializer(many=True) for field in requested_fields
+        field: block_completion_serializer(many=True) for field in requested_fields
         if is_aggregation_name(field)
     }
     return type(
         native_identifier('CourseCompletionSerializerWithAggregators'),
-        (CourseCompletionSerializer,),
+        (course_completion_serializer,),
         dunder_dict,
     )
 

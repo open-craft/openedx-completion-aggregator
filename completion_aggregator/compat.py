@@ -46,6 +46,17 @@ def get_modulestore():
     return modulestore()
 
 
+def get_item(content_key):
+    """
+    Return an item from the modulestore.
+    """
+    from xmodule.modulestore.exceptions import ItemNotFoundError  # pylint: disable=import-error
+    try:
+        get_modulestore().get_item(content_key)
+    except ItemNotFoundError:
+        return False
+
+
 def init_course_blocks(user, course_block_key):
     """
     Return a BlockStructure representing the course.
@@ -115,3 +126,24 @@ def get_affected_aggregators(course_blocks, changed_blocks):
         )
         affected_aggregators.update(block_aggregators)
     return affected_aggregators
+
+
+def get_mobile_only_courses(enrollments):
+    """
+    Return list of courses with mobile available given a list of enrollments.
+    """
+    from openedx.core.djangoapps.content.course_overviews.models import CourseOverview  # pylint: disable=import-error
+    course_keys = []
+    for course_enrollment in enrollments:
+        course_keys.append(course_enrollment.course_id)
+    course_overview_list = CourseOverview.objects.filter(id__in=course_keys, mobile_available=True)
+    filtered_course_overview = [overview.id for overview in course_overview_list]
+    return enrollments.filter(course_id__in=filtered_course_overview)
+
+
+def get_course(course_key):
+    """
+    Get course for given key.
+    """
+    from courseware.courses import _get_course  # pylint: disable=import-error
+    return _get_course(course_key)
