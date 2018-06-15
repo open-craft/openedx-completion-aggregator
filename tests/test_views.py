@@ -50,7 +50,7 @@ def _create_oauth2_token(user):
     return dot_access_token.token
 
 
-@patch('completion_aggregator.api.v1.views.compat', StubCompat([]))
+@patch('completion_aggregator.api.common.compat', StubCompat([]))
 class CompletionViewTestCase(TestCase):
     """
     Test that the CompletionView renders completion data properly.

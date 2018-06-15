@@ -77,6 +77,10 @@ class StubCompat(object):
         """
         return CourseEnrollment
 
+    def get_mobile_only_courses(self):
+        return MagicMock()
+
+
 
 CourseTreeNode = collections.namedtuple('CourseTreeNode', ['block', 'children'])
 
