@@ -319,8 +319,6 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             raise NotFound()
         requested_fields = self.get_requested_fields()
         enrollment = UserEnrollments(self.user).get_course_enrollment(course_key)
-        #aggregator_queryset = self.get_queryset().filter(course_key=course_key)
-
         aggregator_queryset = self.get_queryset().filter(course_key=course_key)
 
         # Create the list of aggregate completions to be serialized.
