@@ -8,6 +8,7 @@ from opaque_keys.edx.keys import CourseKey
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
 
+from ... import compat
 from ...serializers import AggregatorAdapter
 from ..common import CompletionViewMixin, UserEnrollments
 
@@ -73,6 +74,10 @@ class CompletionListView(CompletionViewMixin, APIView):
             one of the block types specified in `AGGREGATE_CATEGORIES`, or any of
             the other optional fields specified above.  If any invalid fields
             are requested, a 400 error will be returned.
+
+        mobile_only (optional):
+            A value of "true" will provide only completions that come from
+            mobile courses.
 
     **Returns**
 
@@ -144,10 +149,6 @@ class CompletionListView(CompletionViewMixin, APIView):
                 }
               ]
             }
-
-    This is a transitional implementation that uses the
-    edx-solutions/progress-edx-platform-extensions models as a backing store.
-    The replacement will have the same interface.
     """
 
     def get(self, request):
@@ -155,9 +156,14 @@ class CompletionListView(CompletionViewMixin, APIView):
         Handler for GET requests.
         """
         paginator = self.pagination_class()  # pylint: disable=not-callable
+        mobile_only = self.request.query_params.get('mobile_only', 'false').lower() == 'true'
 
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.
         enrollments = UserEnrollments(self.user).get_enrollments()
+
+        if mobile_only:
+            enrollments = compat.get_mobile_only_courses(enrollments)
+
         paginated = paginator.paginate_queryset(enrollments, self.request, view=self)
         # Grab the progress items for these enrollments
         course_keys = [enrollment.course_id for enrollment in paginated]
