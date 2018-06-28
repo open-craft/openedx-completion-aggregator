@@ -12,7 +12,7 @@ from timeit import default_timer
 import pytz
 
 from django.core.management.base import BaseCommand, CommandError
-from django.db import connection, reset_queries
+from django.db import connections, reset_queries
 
 from completion.models import BlockCompletion
 
@@ -160,7 +160,9 @@ class Command(BaseCommand):
         )
 
     def _copy_executed_queries(self):
-        self.executed_queries = list(connection.queries_log)
+        self.executed_queries = []
+        for c in connections.all():
+            self.executed_queries.extend(c.queries_log)
 
     def _update_aggregators(self, username, course_key, block_keys=(), force=False):
         update_aggregators(username, course_key, block_keys=block_keys, force=force)
