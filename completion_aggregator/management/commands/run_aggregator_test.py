@@ -10,9 +10,15 @@ import random
 from timeit import default_timer
 
 import pytz
-from completion.models import BlockCompletion
+
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection, reset_queries
+
+from completion.models import BlockCompletion
+
+from ...models import Aggregator
+from ...signals import course_published_handler, item_deleted_handler
+from ...tasks import update_aggregators
 
 try:
     import numpy
@@ -157,7 +163,6 @@ class Command(BaseCommand):
         self.executed_queries = list(connection.queries_log)
 
     def _update_aggregators(self, username, course_key, block_keys=(), force=False):
-        from completion_aggregator.tasks import update_aggregators
         update_aggregators(username, course_key, block_keys=block_keys, force=force)
 
     def _complete_blocks_for_users(self, blocks, users):
@@ -172,7 +177,6 @@ class Command(BaseCommand):
                 self._update_aggregators(user.username, str(self.course.id), block_keys=[str(block.location)])
 
     def _assert_vertical_completion_for_all_users(self, vertical, expected_completion):
-        from completion_aggregator.models import Aggregator
         for user in self.users:
             vertical_completion = Aggregator.objects.get(
                 user=user, course_key=self.course.id, block_key=vertical.location
@@ -189,7 +193,6 @@ class Command(BaseCommand):
     def test_course_published_handler_when_block_is_added(self):
 
         # Other listeners are connected so we time the handler alone later.
-        from completion_aggregator.signals import course_published_handler
         SignalHandler.course_published.disconnect(course_published_handler)
 
         vertical = self.course.get_children()[-1].get_children()[-1].get_children()[-1]
@@ -213,7 +216,6 @@ class Command(BaseCommand):
     def test_item_deleted_handler_when_block_is_deleted(self):
 
         # Other listeners are connected so we time the handler alone later.
-        from completion_aggregator.signals import item_deleted_handler
         SignalHandler.course_published.disconnect(item_deleted_handler)
 
         vertical = self.course.get_children()[-1].get_children()[-1].get_children()[-1]
@@ -234,8 +236,6 @@ class Command(BaseCommand):
         self._print_results_footer()
 
     def test_individual_block_completions(self):
-
-        from completion_aggregator.models import Aggregator
 
         times_taken = []
 
