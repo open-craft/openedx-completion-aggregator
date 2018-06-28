@@ -133,13 +133,17 @@ class Command(BaseCommand):
         self.stdout.write("Completions: {}".format(self.completions_count))
 
         query_data = {}
+        query_total_time = 0
         for query in self.executed_queries:
             query_type = query['sql'].split()[0]
             query_data.setdefault(query_type, {'count': 0, 'times': []})
             query_data[query_type]['count'] = query_data[query_type]['count'] + 1
             query_data[query_type]['times'].append(float(query['time']))
+            query_total_time += float(query['time'])
 
-        self.stdout.write("SQL Queries | All Count: {}".format(len(self.executed_queries)))
+        self.stdout.write(
+            "SQL Queries | All Count: {} | Time: {}".format(len(self.executed_queries), query_total_time)
+        )
         for query_type, data in query_data.items():
             self.stdout.write("SQL Queries | {} Count: {} Time: {} Percentiles: {}".format(
                 query_type, data['count'], sum(data['times']), self._get_percentiles(data['times'])
