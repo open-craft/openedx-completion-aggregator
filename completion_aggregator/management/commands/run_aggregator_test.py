@@ -176,6 +176,18 @@ class Command(BaseCommand):
                 )
                 self._update_aggregators(user.username, str(self.course.id), block_keys=[str(block.location)])
 
+    def _complete_random_blocks_for_users(self, blocks, users):
+        completions_left = self.completions_count
+        max_completions_per_user = 2 * (self.completions_count // len(users))
+        for user in users:
+            # For each user pick a random number of blocks to complete.
+            number_of_completions_for_user = min(random.choice(range(max_completions_per_user)), completions_left)
+            completions_left -= number_of_completions_for_user
+            if completions_left <= 0:
+                return
+            blocks_to_complete = random.sample(blocks, number_of_completions_for_user)
+            self._complete_blocks_for_users(blocks_to_complete, [user])
+
     def _assert_vertical_completion_for_all_users(self, vertical, expected_completion):
         for user in self.users:
             vertical_completion = Aggregator.objects.get(
@@ -195,7 +207,11 @@ class Command(BaseCommand):
         # Other listeners are connected so we time the handler alone later.
         SignalHandler.course_published.disconnect(course_published_handler)
 
+        self.stdout.write("\n--- Complete random blocks ---\n")
+        self._complete_random_blocks_for_users(self.blocks, self.users)
+
         vertical = self.course.get_children()[-1].get_children()[-1].get_children()[-1]
+        self.stdout.write("\n--- Complete blocks in last vertical ---\n")
         self._complete_blocks_for_users(vertical.get_children(), self.users)
         self._assert_vertical_completion_for_all_users(vertical, 1.0)
         with self.store.branch_setting(ModuleStoreEnum.Branch.draft_preferred, self.course.id):
@@ -218,7 +234,11 @@ class Command(BaseCommand):
         # Other listeners are connected so we time the handler alone later.
         SignalHandler.course_published.disconnect(item_deleted_handler)
 
+        self.stdout.write("\n--- Complete random blocks excluding those in the last vertical ---\n")
+        self._complete_random_blocks_for_users(self.blocks[:(-1 * self.course_breadth[3])], self.users)
+
         vertical = self.course.get_children()[-1].get_children()[-1].get_children()[-1]
+        self.stdout.write("\n--- Complete blocks in last vertical ---\n")
         self._complete_blocks_for_users(vertical.get_children()[1:], self.users)
         self._assert_vertical_completion_for_all_users(
             vertical, (self.course_breadth[3] - 1.0) / self.course_breadth[3]
