@@ -5,6 +5,7 @@ Performance tests for completion aggregator.
 
 from __future__ import absolute_import, division, unicode_literals
 
+import cProfile
 import datetime
 import random
 from timeit import default_timer
@@ -30,7 +31,14 @@ except ImportError:
 
 
 class Command(BaseCommand):
-    """ Run performance tests for completion aggregator. """
+    """
+    Run performance tests for completion aggregator.
+
+
+    CELERY_ALWAYS_EAGER = True must be set so that the tasks are executed in the thread.
+    The SQL queries are only logged by Django if DEBUG = True.
+    cProfile adds around 25% overhead for this code.
+    """
 
     help = "Run performance tests for completion aggregator."
 
@@ -220,13 +228,27 @@ class Command(BaseCommand):
         self.stdout.write("\n--- Complete blocks in last vertical ---\n")
         self._complete_blocks_for_users(vertical.get_children(), self.users)
         self._assert_vertical_completion_for_all_users(vertical, 1.0)
+
+        self.stdout.write("\n--- Call course_published_handler to seed Aggregator table. ---\n")
+        pr = cProfile.Profile()
+        pr.enable()
+        self._time_handler(course_published_handler, course_key=self.course.id)
+        pr.disable()
+        pr.print_stats(sort='cumtime')
+
+        self.stdout.write("\n--- Add block to last vertical ---\n")
         with self.store.branch_setting(ModuleStoreEnum.Branch.draft_preferred, self.course.id):
             with self.store.bulk_operations(self.course.id):
                 self._create_block(parent=vertical, category='html')
                 self.store.publish(vertical.location, ModuleStoreEnum.UserID.test)
 
+        self.stdout.write("\n--- Call course_published_handler again ---\n")
         reset_queries()
+        pr = cProfile.Profile()
+        pr.enable()
         time_taken = self._time_handler(course_published_handler, course_key=self.course.id)
+        pr.disable()
+        pr.print_stats(sort='cumtime')
         self._copy_executed_queries()
 
         self._print_results_header("test_course_published_handler_when_block_is_added", time_taken=time_taken)
@@ -249,12 +271,26 @@ class Command(BaseCommand):
         self._assert_vertical_completion_for_all_users(
             vertical, (self.course_breadth[3] - 1.0) / self.course_breadth[3]
         )
+
+        self.stdout.write("\n--- Call course_published_handler to seed Aggregator table. ---\n")
+        pr = cProfile.Profile()
+        pr.enable()
+        self._time_handler(course_published_handler, course_key=self.course.id)
+        pr.disable()
+        pr.print_stats(sort='cumtime')
+
+        self.stdout.write("\n--- Remove block from last vertical ---\n")
         block = vertical.get_children()[0]
         with self.store.branch_setting(ModuleStoreEnum.Branch.draft_preferred, self.course.id):
             self.store.delete_item(block.location, ModuleStoreEnum.UserID.test)
 
+        self.stdout.write("\n--- Call course_published_handler again ---\n")
         reset_queries()
+        pr = cProfile.Profile()
+        pr.enable()
         time_taken = self._time_handler(item_deleted_handler, usage_key=block.location, user_id=None)
+        pr.disable()
+        pr.print_stats(sort='cumtime')
         self._copy_executed_queries()
 
         self._print_results_header("test_item_deleted_handler_when_block_is_deleted", time_taken=time_taken)
@@ -270,7 +306,13 @@ class Command(BaseCommand):
 
         users = list(self.users)
 
+        self.stdout.write("\n--- Call course_published_handler to seed Aggregator table. ---\n")
+        self._time_handler(course_published_handler, course_key=self.course.id)
+
+        self.stdout.write("\n--- Do block completions ---\n")
         reset_queries()
+        pr = cProfile.Profile()
+        pr.enable()
 
         for __ in range(self.completions_count):
             random_user = random.choice(users)
@@ -285,6 +327,8 @@ class Command(BaseCommand):
             elapsed_milliseconds = (timer_end - timer_start)
             times_taken.append(elapsed_milliseconds)
 
+        pr.disable()
+        pr.print_stats(sort='cumtime')
         self._copy_executed_queries()
 
         for user in self.users:
