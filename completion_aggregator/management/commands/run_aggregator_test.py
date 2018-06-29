@@ -19,7 +19,6 @@ from completion.models import BlockCompletion
 
 from ...models import Aggregator
 from ...signals import course_published_handler, item_deleted_handler
-from ...tasks import update_aggregators
 
 try:
     import numpy
@@ -176,9 +175,6 @@ class Command(BaseCommand):
         for c in connections.all():
             self.executed_queries.extend(c.queries_log)
 
-    def _update_aggregators(self, username, course_key, block_keys=(), force=False):
-        update_aggregators(username, course_key, block_keys=block_keys, force=force)
-
     def _complete_blocks_for_users(self, blocks, users):
         for user in users:
             for block in blocks:
@@ -188,7 +184,6 @@ class Command(BaseCommand):
                     block_key=block.location,
                     completion=1.0
                 )
-                self._update_aggregators(user.username, str(self.course.id), block_keys=[str(block.location)])
 
     def _complete_random_blocks_for_users(self, blocks, users):
         completions_left = self.completions_count
