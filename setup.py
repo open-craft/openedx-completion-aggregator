@@ -51,7 +51,7 @@ setup(
     install_requires=[
         "Django>=1.8,<1.12",
         "django-model-utils>=2.0",
-        "django-rest-framework",
+        "djangorestframework",
         "pytest-django",
         "XBlock",
         "celery>=3.1",
