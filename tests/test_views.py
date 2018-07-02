@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from datetime import timedelta
 
+import ddt
 import six
 from mock import PropertyMock, patch
 from oauth2_provider import models as dot_models
@@ -50,7 +51,8 @@ def _create_oauth2_token(user):
     return dot_access_token.token
 
 
-@patch('completion_aggregator.api.v1.views.compat', StubCompat([]))
+@ddt.ddt
+@patch('completion_aggregator.api.common.compat', StubCompat([]))
 class CompletionViewTestCase(TestCase):
     """
     Test that the CompletionView renders completion data properly.
@@ -58,8 +60,8 @@ class CompletionViewTestCase(TestCase):
 
     course_key = CourseKey.from_string('edX/toy/2012_Fall')
     other_org_course_key = CourseKey.from_string('otherOrg/toy/2012_Fall')
-    list_url = '/v1/course/'
-    detail_url_fmt = '/v1/course/{}/'
+    list_url = '/v{}/course/'
+    detail_url_fmt = '/v{}/course/{}/'
     course_enrollment_model = StubCompat([]).course_enrollment_model()
 
     def setUp(self):
@@ -127,9 +129,39 @@ class CompletionViewTestCase(TestCase):
             course_id=course_id,
         )
 
+    def _get_expected_completion(self, version, earned=1.0, possible=12.0, percent=1 / 12):
+        """
+        Return completion section based on version.
+        """
+        completion = {
+            'earned': earned,
+            'possible': possible,
+            'percent': percent,
+        }
+        if version == 0:
+            completion['ratio'] = percent
+        return completion
+
+    def _get_expected_detail(self, version, values, count=1, previous=None, next_page=None):
+        """
+        Return base result for detail view based on version.
+        """
+        if version == 1:
+            if isinstance(values, dict):
+                values = [values]
+            return {
+                'count': count,
+                'previous': previous,
+                'next': next_page,
+                'results': values
+            }
+        else:
+            return values
+
+    @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    def test_list_view(self):
-        response = self.client.get(self.list_url)
+    def test_list_view(self, version):
+        response = self.client.get(self.list_url.format(version))
         self.assertEqual(response.status_code, 200)
         expected = {
             'count': 1,
@@ -138,17 +170,14 @@ class CompletionViewTestCase(TestCase):
             'results': [
                 {
                     'course_key': 'edX/toy/2012_Fall',
-                    'completion': {
-                        'earned': 1.0,
-                        'possible': 12.0,
-                        'percent': 1 / 12,
-                    },
+                    'completion': self._get_expected_completion(version),
                 }
             ],
         }
         self.assertEqual(response.data, expected)
 
-    def test_list_view_enrolled_no_progress(self):
+    @ddt.data(0, 1)
+    def test_list_view_enrolled_no_progress(self, version):
         """
         Test that the completion API returns a record for each course the user is enrolled in,
         even if no progress records exist yet.
@@ -157,7 +186,7 @@ class CompletionViewTestCase(TestCase):
             user=self.test_user,
             course_id=self.other_org_course_key,
         )
-        response = self.client.get(self.list_url)
+        response = self.client.get(self.list_url.format(version))
         self.assertEqual(response.status_code, 200)
         expected = {
             'count': 2,
@@ -166,28 +195,31 @@ class CompletionViewTestCase(TestCase):
             'results': [
                 {
                     'course_key': 'edX/toy/2012_Fall',
-                    'completion': {
-                        'earned': 0.0,
-                        'possible': None,
-                        'percent': None,
-                    },
+                    'completion': self._get_expected_completion(
+                        version,
+                        earned=0.0,
+                        possible=None,
+                        percent=None,
+                    ),
                 },
                 {
                     'course_key': 'otherOrg/toy/2012_Fall',
-                    'completion': {
-                        'earned': 0.0,
-                        'possible': None,
-                        'percent': None,
-                    },
+                    'completion': self._get_expected_completion(
+                        version,
+                        earned=0.0,
+                        possible=None,
+                        percent=None,
+                    ),
                 }
             ],
         }
         self.assertEqual(response.data, expected)
 
+    @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
-    def test_list_view_with_sequentials(self):
-        response = self.client.get(self.get_list_url(requested_fields='sequential'))
+    def test_list_view_with_sequentials(self, version):
+        response = self.client.get(self.get_list_url(version, requested_fields='sequential'))
         self.assertEqual(response.status_code, 200)
         expected = {
             'count': 1,
@@ -196,16 +228,17 @@ class CompletionViewTestCase(TestCase):
             'results': [
                 {
                     'course_key': 'edX/toy/2012_Fall',
-                    'completion': {
-                        'earned': 1.0,
-                        'possible': 12.0,
-                        'percent': 1 / 12,
-                    },
+                    'completion': self._get_expected_completion(version),
                     'sequential': [
                         {
                             'course_key': u'edX/toy/2012_Fall',
                             'block_key': u'i4x://edX/toy/sequential/vertical_sequential',
-                            'completion': {'earned': 1.0, 'possible': 5.0, 'percent': 0.2},
+                            'completion': self._get_expected_completion(
+                                version,
+                                earned=1.0,
+                                possible=5.0,
+                                percent=0.2,
+                            ),
                         },
                     ]
                 }
@@ -213,60 +246,65 @@ class CompletionViewTestCase(TestCase):
         }
         self.assertEqual(response.data, expected)
 
+    @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    def test_detail_view(self):
-        response = self.client.get(self.get_detail_url(six.text_type(self.course_key)))
+    def test_detail_view(self, version):
+        response = self.client.get(self.get_detail_url(version, six.text_type(self.course_key)))
         self.assertEqual(response.status_code, 200)
-        expected = {
-            'count': 1,
-            'previous': None,
-            'next': None,
-            'results': [
-                {
-                    'course_key': 'edX/toy/2012_Fall',
-                    'completion': {
-                        'earned': 1.0,
-                        'possible': 12.0,
-                        'percent': 1 / 12,
-                    },
-                }
-            ]
+        expected_values = {
+            'course_key': 'edX/toy/2012_Fall',
+            'completion': self._get_expected_completion(version)
         }
-
+        expected = self._get_expected_detail(version, expected_values)
         self.assertEqual(response.data, expected)
 
+    @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    def test_detail_view_oauth2(self):
+    def test_detail_view_oauth2(self, version):
         """
         Test the detail view using OAuth2 Authentication
         """
         # Try with no authentication:
         self.client.logout()
-        response = self.client.get(self.get_detail_url(self.course_key))
+        response = self.client.get(self.get_detail_url(version, self.course_key))
         self.assertEqual(response.status_code, 401)
         # Now, try with a valid token header:
         token = _create_oauth2_token(self.test_user)
-        response = self.client.get(self.get_detail_url(self.course_key), HTTP_AUTHORIZATION="Bearer {0}".format(token))
+        response = self.client.get(
+            self.get_detail_url(version, self.course_key),
+            HTTP_AUTHORIZATION="Bearer {0}".format(token)
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['results'][0]['completion']['earned'], 1.0)
+        if version == 0:
+            self.assertEqual(response.data['completion']['earned'], 1.0)
+        else:
+            self.assertEqual(response.data['results'][0]['completion']['earned'], 1.0)
 
-    def test_detail_view_not_enrolled(self):
+    @ddt.data(0, 1)
+    def test_detail_view_not_enrolled(self, version):
         """
         Test that requesting course completions for a course the user is not enrolled in
         will return a 404.
         """
-        response = self.client.get(self.get_detail_url(self.other_org_course_key,
-                                                       username=self.test_user.username))
+        response = self.client.get(
+            self.get_detail_url(
+                version,
+                self.other_org_course_key,
+                username=self.test_user.username
+            )
+        )
         self.assertEqual(response.status_code, 404)
 
-    def test_detail_view_inactive_enrollment(self):
+    @ddt.data(0, 1)
+    def test_detail_view_inactive_enrollment(self, version):
         self.test_enrollment.is_active = False
         self.test_enrollment.save()
-        response = self.client.get(self.get_detail_url(self.course_key))
+        response = self.client.get(self.get_detail_url(version, self.course_key))
         self.assertEqual(response.status_code, 404)
 
+    @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    def test_detail_view_no_completion(self):
+    def test_detail_view_no_completion(self, version):
         """
         Test that requesting course completions for a course which has started, but the user has not yet started,
         will return an empty completion record with its "possible" field filled in.
@@ -275,77 +313,49 @@ class CompletionViewTestCase(TestCase):
             user=self.test_user,
             course_id=self.other_org_course_key,
         )
-        response = self.client.get(self.get_detail_url(self.other_org_course_key))
+        response = self.client.get(self.get_detail_url(version, self.other_org_course_key))
         self.assertEqual(response.status_code, 200)
-        expected = {
-            'count': 1,
-            'previous': None,
-            'next': None,
-            'results': [
-                {
-                    'course_key': 'otherOrg/toy/2012_Fall',
-                    'completion': {
-                        'earned': 0.0,
-                        'possible': None,
-                        'percent': None,
-                    },
-                }
-            ]
+        expected_values = {
+            'course_key': 'otherOrg/toy/2012_Fall',
+            'completion': self._get_expected_completion(version, earned=0.0, possible=None, percent=None),
         }
+        expected = self._get_expected_detail(version, expected_values)
         self.assertEqual(response.data, expected)
 
+    @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
-    def test_detail_view_with_sequentials(self):
-        response = self.client.get(self.get_detail_url(self.course_key, requested_fields='sequential'))
+    def test_detail_view_with_sequentials(self, version):
+        response = self.client.get(self.get_detail_url(version, self.course_key, requested_fields='sequential'))
         self.assertEqual(response.status_code, 200)
-        expected = {
-            'count': 1,
-            'previous': None,
-            'next': None,
-            'results': [
+        expected_values = {
+            'course_key': 'edX/toy/2012_Fall',
+            'completion': self._get_expected_completion(version),
+            'sequential': [
                 {
-                    'course_key': 'edX/toy/2012_Fall',
-                    'completion': {
-                        'earned': 1.0,
-                        'possible': 12.0,
-                        'percent': 1 / 12,
-                    },
-                    'sequential': [
-                        {
-                            'course_key': u'edX/toy/2012_Fall',
-                            'block_key': u'i4x://edX/toy/sequential/vertical_sequential',
-                            'completion': {'earned': 1.0, 'possible': 5.0, 'percent': 0.2},
-                        },
-                    ]
-                }
+                    'course_key': u'edX/toy/2012_Fall',
+                    'block_key': u'i4x://edX/toy/sequential/vertical_sequential',
+                    'completion': self._get_expected_completion(version, earned=1.0, possible=5.0, percent=0.2),
+                },
             ]
         }
+        expected = self._get_expected_detail(version, expected_values)
         self.assertEqual(response.data, expected)
 
+    @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    def test_detail_view_staff_requested_user(self):
+    def test_detail_view_staff_requested_user(self, version):
         """
         Test that requesting course completions for a specific user filters out the other enrolled users
         """
         self.client.force_authenticate(self.staff_user)
-        response = self.client.get(self.get_detail_url(self.course_key, username=self.test_user.username))
+        response = self.client.get(self.get_detail_url(version, self.course_key, username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
-        expected = {
-            'count': 1,
-            'previous': None,
-            'next': None,
-            'results': [
-                {
-                    'course_key': 'edX/toy/2012_Fall',
-                    'completion': {
-                        'earned': 1.0,
-                        'possible': 12.0,
-                        'percent': 1 / 12,
-                    },
-                }
-            ]
+        expected_values = {
+            'course_key': 'edX/toy/2012_Fall',
+            'completion': self._get_expected_completion(version)
         }
+        expected = self._get_expected_detail(version, expected_values)
         self.assertEqual(response.data, expected)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
@@ -379,89 +389,86 @@ class CompletionViewTestCase(TestCase):
         )
 
         self.client.force_authenticate(self.staff_user)
-        response = self.client.get(self.get_detail_url(self.course_key))
+        response = self.client.get(self.get_detail_url(1, self.course_key))
         self.assertEqual(response.status_code, 200)
-        expected = {
-            'count': 2,
-            'previous': None,
-            'next': None,
-            'results': [
-                {
-                    'username': 'test_user',
-                    'course_key': 'edX/toy/2012_Fall',
-                    'completion': {
-                        'earned': 1.0,
-                        'possible': 12.0,
-                        'percent': 1 / 12,
-                    },
-                },
-                {
-                    'username': 'test_user_2',
-                    'course_key': 'edX/toy/2012_Fall',
-                    'completion': {
-                        'earned': 3.0,
-                        'possible': 12.0,
-                        'percent': 0.25,
-                    },
-                },
-            ]
-        }
+        expected_values = [
+            {
+                'username': 'test_user',
+                'course_key': 'edX/toy/2012_Fall',
+                'completion': self._get_expected_completion(1)
+            },
+            {
+                'username': 'test_user_2',
+                'course_key': 'edX/toy/2012_Fall',
+                'completion': self._get_expected_completion(1, earned=3.0, possible=12.0, percent=0.25),
+            },
+        ]
+        expected = self._get_expected_detail(1, expected_values, count=2)
         self.assertEqual(response.data, expected)
 
-    def test_invalid_optional_fields(self):
-        response = self.client.get(self.detail_url_fmt.format('edX/toy/2012_Fall') + '?requested_fields=INVALID')
+    @ddt.data(0, 1)
+    def test_invalid_optional_fields(self, version):
+        response = self.client.get(
+            self.detail_url_fmt.format(version, 'edX/toy/2012_Fall') + '?requested_fields=INVALID'
+        )
         self.assertEqual(response.status_code, 400)
 
-    def test_unauthenticated(self):
+    @ddt.data(0, 1)
+    def test_unauthenticated(self, version):
         self.client.force_authenticate(None)
-        detailresponse = self.client.get(self.get_detail_url(self.course_key))
+        detailresponse = self.client.get(self.get_detail_url(version, self.course_key))
         self.assertEqual(detailresponse.status_code, 401)
-        listresponse = self.client.get(self.get_list_url())
+        listresponse = self.client.get(self.get_list_url(version))
         self.assertEqual(listresponse.status_code, 401)
 
+    @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    def test_request_self(self):
-        response = self.client.get(self.get_list_url(username=self.test_user.username))
+    def test_request_self(self, version):
+        response = self.client.get(self.get_list_url(version, username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
 
-    def test_wrong_user(self):
+    @ddt.data(0, 1)
+    def test_wrong_user(self, version):
         user = User.objects.create(username='wrong')
         self.client.force_authenticate(user)
-        response = self.client.get(self.get_list_url(username=self.test_user.username))
+        response = self.client.get(self.get_list_url(version, username=self.test_user.username))
         self.assertEqual(response.status_code, 404)
 
-    def test_no_user(self):
+    @ddt.data(0, 1)
+    def test_no_user(self, version):
         self.client.logout()
-        response = self.client.get(self.list_url)
+        response = self.client.get(self.get_list_url(version))
         self.assertEqual(response.status_code, 401)
 
+    @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    def test_staff_access(self):
+    def test_staff_access(self, version):
         self.client.force_authenticate(self.staff_user)
-        response = self.client.get(self.get_list_url(username=self.test_user.username))
+        response = self.client.get(self.get_list_url(version, username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
-        expected_completion = {'earned': 1.0, 'possible': 12.0, 'percent': 1 / 12}
+        expected_completion = self._get_expected_completion(version)
         self.assertEqual(response.data['results'][0]['completion'], expected_completion)
 
-    def test_staff_access_non_user(self):
+    @ddt.data(0, 1)
+    def test_staff_access_non_user(self, version):
         self.client.force_authenticate(self.staff_user)
-        response = self.client.get(self.get_list_url(username='who-dat'))
+        response = self.client.get(self.get_list_url(version, username='who-dat'))
         self.assertEqual(response.status_code, 404)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    def get_detail_url(self, course_key, **params):
+    def get_detail_url(self, version, course_key, **params):
         """
         Given a course_key and a number of key-value pairs as keyword arguments,
         create a URL to the detail view.
         """
-        return append_params(self.detail_url_fmt.format(six.text_type(course_key)), params)
+        return append_params(self.detail_url_fmt.format(version, six.text_type(course_key)), params)
 
-    def get_list_url(self, **params):
+    def get_list_url(self, version, **params):
         """
         Given a number of key-value pairs as keyword arguments,
         create a URL to the list view.
         """
-        return append_params(self.list_url, params)
+        return append_params(self.list_url.format(version), params)
 
 
 def append_params(base, params):
