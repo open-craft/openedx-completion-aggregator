@@ -218,3 +218,27 @@ pre_save.connect(
     Aggregator,
     dispatch_uid="completion.models.Aggregator"
 )
+
+
+@python_2_unicode_compatible
+class StaleCompletion(TimeStampedModel):
+    """
+    Tracking model for aggregation work that needs to be done.
+    """
+
+    username = models.CharField(max_length=255)
+    course_key = CourseKeyField(max_length=255)
+    block_key = UsageKeyField(max_length=255, null=True, blank=True)
+    force = models.BooleanField(default=False)
+    resolved = models.BooleanField(default=False)
+
+    def __str__(self):
+        """
+        Render the StaleCompletion.
+        """
+        parts = ['{}/{}'.format(self.username, self.course_key)]
+        if self.block_key:
+            parts.append('/{}'.format(self.block_key))
+        if self.resolved:
+            parts.append('*')
+        return ''.join(parts)

@@ -6,10 +6,7 @@ Demonstrate that the signals connect the handler to the aggregated model.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from datetime import timedelta
-
-import six
-from mock import call, patch
+from mock import patch
 from opaque_keys.edx.keys import CourseKey, UsageKey
 
 from django.contrib.auth import get_user_model
@@ -17,7 +14,8 @@ from django.test import TestCase
 from django.utils.timezone import now
 
 from completion.models import BlockCompletion
-from completion_aggregator.models import Aggregator
+from completion_aggregator.aggregator import perform_aggregation
+from completion_aggregator.models import Aggregator, StaleCompletion
 from completion_aggregator.signals import cohort_updated_handler, course_published_handler, item_deleted_handler
 from test_utils.compat import StubCompat
 
@@ -36,42 +34,27 @@ class SignalsTestCase(TestCase):
             user_model.objects.get_or_create(username='user2')[0],
         ]
 
-    @patch('completion_aggregator.tasks.update_aggregators.apply_async')
+    @patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async')
     def test_basic(self, mock_task):
+        course_key = CourseKey.from_string('edX/test/2018')
+        block_key = UsageKey.from_string('i4x://edX/test/video/friday')
         completable = BlockCompletion(
             user=self.user,
-            course_key=CourseKey.from_string('edX/test/2018'),
-            block_key=UsageKey.from_string('i4x://edX/test/video/friday'),
+            course_key=course_key,
+            block_key=block_key,
             completion=1.0,
             modified=now()
         )
+        mock_task.reset()
         completable.save()
-        mock_task.assert_called_once()
-
-    @patch('completion_aggregator.tasks.update_aggregators.apply_async')
-    def test_only_calculate_on_newer(self, mock_task):
-        nowtime = now()
-        Aggregator.objects.create(
-            user=self.user,
-            course_key=CourseKey.from_string('edX/test/2018'),
-            block_key=UsageKey.from_string('i4x://edX/test/video/friday'),
-            aggregation_name='course',
-            earned=0.0,
-            possible=1.0,
-            percent=0.0,
-            last_modified=nowtime + timedelta(seconds=1),
-        )
-        completable = BlockCompletion(
-            user=self.user,
-            course_key=CourseKey.from_string('edX/test/2018'),
-            block_key=UsageKey.from_string('i4x://edX/test/video/friday'),
-            completion=1.0,
-            modified=nowtime,
-        )
-        completable.save()
-        # This aggregator claims to be more up to date than the block completion
-        # so the task won't run again.
+        assert StaleCompletion.objects.filter(
+            username=self.user.username,
+            course_key=course_key,
+            block_key=block_key
+        ).exists()
         mock_task.assert_not_called()
+        perform_aggregation()
+        mock_task.assert_called_once()
 
     def setup_active_users(self, course_key):
         """
@@ -104,39 +87,25 @@ class SignalsTestCase(TestCase):
             last_modified=now(),
         )
 
-    @patch('completion_aggregator.tasks.update_aggregators.apply_async')
-    def test_course_published_handler(self, mock_task):
+    def test_course_published_handler(self):
         course_key = CourseKey.from_string('edX/test/2018')
         self.setup_active_users(course_key)
-        mock_task.reset_mock()
         course_published_handler(course_key)
-        self.assertEqual(mock_task.call_count, len(self.extra_users))
-        mock_task.assert_has_calls(
-            [call(
-                (), dict(username=user.username, course_key=six.text_type(course_key), force=True),
-            ) for user in self.extra_users],
-            any_order=True,
+        self.assertEqual(
+            StaleCompletion.objects.filter(course_key=course_key, force=True).count(),
+            len(self.extra_users),
         )
 
-    @patch('completion_aggregator.tasks.update_aggregators.apply_async')
-    def test_item_deleted_handler(self, mock_task):
+    def test_item_deleted_handler(self):
         block_key = UsageKey.from_string('block-v1:edX+test+2018+type@problem+block@one-plus-one')
         self.setup_active_users(block_key.course_key)
-        mock_task.reset_mock()
         item_deleted_handler(block_key, self.user.id)
-        mock_task.assert_has_calls(
-            [call(
-                (), dict(username=user.username, course_key=six.text_type(block_key.course_key), force=True),
-            ) for user in self.extra_users],
-            any_order=True,
-        )
+        stale_qs = StaleCompletion.objects.filter(course_key=block_key.course_key, force=True)
+        assert stale_qs.count() == len(self.extra_users)
 
-    @patch('completion_aggregator.tasks.update_aggregators.apply_async')
-    def test_cohort_signal_handler(self, mock_task):
+    def test_cohort_signal_handler(self):
         course_key = CourseKey.from_string('course-v1:edX+test+2018')
         user = get_user_model().objects.create(username='deleter')
-        with patch('completion_aggregator.signals.compat', StubCompat([])):
+        with patch('completion_aggregator.tasks.aggregation_tasks.compat', StubCompat([])):
             cohort_updated_handler(user, course_key)
-            mock_task.assert_called_once_with(
-                (), dict(username=user.username, course_key=six.text_type(course_key), force=True)
-            )
+            assert StaleCompletion.objects.filter(username=user.username, course_key=course_key, force=True).exists()

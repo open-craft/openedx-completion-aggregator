@@ -21,6 +21,8 @@ def root(*args):
 AUTH_USER_MODEL = 'auth.User'
 CELERY_ALWAYS_EAGER = True
 COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter'}
+COMPLETION_AGGREGATOR_ASYNC_AGGREGATION = True
+
 DATABASES = {
     'default': {
         'ATOMIC_REQUESTS': True,

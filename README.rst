@@ -10,25 +10,41 @@ Overview
 --------
 
 openedx-completion-aggregator uses the pluggable django app pattern to
-ease installation.  To use in edx-platform, simply install the app into
-your virtualenv.
+ease installation.  To use in edx-platform, do the following:
 
-..code_block::
+1.  Install the app into your virtualenv.
 
-    $ pip install openedx-completion-aggregator
+    ..code_block::
 
-You may override the set of registered aggregator block types in your
-lms.env.json file::
+        $ pip install openedx-completion-aggregator
 
-    ...
-    "COMPLETION_AGGREGATOR_BLOCK_TYPES": {
-        "course",
-        "chapter",
-        "subsection",
-        "vertical"
-    },
-    ...
+2.  [Optional] You may override the set of registered aggregator block types in
+    your lms.env.json file::
 
+        ...
+        "COMPLETION_AGGREGATOR_BLOCK_TYPES": {
+            "course",
+            "chapter",
+            "subsection",
+            "vertical"
+        },
+        ...
+
+
+3.  By default, completion is aggregated with each created or updated
+    BlockCompletion.  If this creates too much database activity for your
+    installation, set the following in your lms.env.json file::
+
+        ...
+        "COMPLETION_AGGREGATOR_ASYNC_AGGREGATION": true,
+        ...
+
+    Then configure up a pair of cron jobs to run `./manage.py
+    run_aggregation_service` and `./manage.py run_aggregation_cleanup` as often
+    as desired.
+
+Note that if operating on a Hawthorne-or-later release of edx-platform, you may
+override the settings in `EDXAPP_ENV_EXTRA` instead.
 
 Documentation
 -------------

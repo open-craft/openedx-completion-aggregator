@@ -5,14 +5,11 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import logging
 
-import six
-
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.db.models.signals import post_save
 
-from . import compat
-from .models import Aggregator
-from .tasks import update_aggregators
+from . import aggregator, compat, models
+from .tasks import handler_tasks
 
 log = logging.getLogger(__name__)
 
@@ -68,8 +65,7 @@ def item_deleted_handler(usage_key, user_id, **kwargs):
     # extracting a course_key from a usage_key, but the item_delete signal is
     # only fired from split-mongo, so it will always contain the course run.
     course_key = usage_key.course_key
-    for user in get_active_users(course_key):
-        update_aggregators.delay(username=user.username, course_key=six.text_type(course_key), force=True)
+    handler_tasks.mark_all_stale.delay(course_key=course_key)
 
 
 def course_published_handler(course_key, **kwargs):
@@ -77,8 +73,7 @@ def course_published_handler(course_key, **kwargs):
     Update aggregators when a general course change happens.
     """
     log.debug("Updating aggregators due to course_published signal")
-    for user in get_active_users(course_key):
-        update_aggregators.delay(username=user.username, course_key=six.text_type(course_key), force=True)
+    handler_tasks.mark_all_stale.delay(course_key=course_key)
 
 
 def cohort_updated_handler(user, course_key, **kwargs):
@@ -86,7 +81,7 @@ def cohort_updated_handler(user, course_key, **kwargs):
     Update aggregators for a user when the user changes cohort or enrollment track.
     """
     log.debug("Updating aggregators due to cohort or enrollment update signal")
-    update_aggregators.delay(username=user.username, course_key=six.text_type(course_key), force=True)
+    handler_tasks.mark_all_stale.delay(course_key=course_key, users=[user])
 
 
 def completion_updated_handler(signal, sender, instance, created, raw, using, update_fields, **kwargs):
@@ -106,25 +101,11 @@ def completion_updated_handler(signal, sender, instance, created, raw, using, up
         instance.course_key,
         instance.block_key,
     )
-
-    if not Aggregator.objects.filter(
-            user=instance.user,
-            course_key=instance.course_key,
-            aggregation_name='course',
-            last_modified__gte=instance.modified).exists():
-
-        try:
-            update_aggregators.delay(
-                username=instance.user.username,
-                course_key=six.text_type(instance.course_key),
-                block_keys=[six.text_type(instance.block_key)],
-            )
-        except ImportError:
-            log.warning("Completion Aggregator is not hooked up to edx-plaform.")
-
-
-def get_active_users(course_key):
-    """
-    Return a list of users that have Aggregators in the course.
-    """
-    return get_user_model().objects.filter(aggregator__course_key=course_key).distinct()
+    models.StaleCompletion.objects.create(
+        username=instance.user.username,
+        course_key=instance.course_key,
+        block_key=instance.block_key
+    )
+    if not getattr(settings, 'COMPLETION_AGGREGATOR_ASYNC_AGGREGATION', False):
+        aggregator.perform_aggregation()
+        aggregator.perform_cleanup()

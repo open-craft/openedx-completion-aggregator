@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test App Django application initialization.
 """
