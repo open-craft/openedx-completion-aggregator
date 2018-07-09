@@ -175,16 +175,19 @@ class CourseCompletionSerializerTestCase(TestCase):
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @patch.object(AggregationUpdater, 'update')
     def test_aggregation_with_stale_completions(self, stale_block_key, stale_force, mock_update):
-        # Mark a completion as stale for the given block key
+        """
+        Ensure that a stale completion causes the aggregations to be recalculated once, and stale completion resolved.
+        """
         models.StaleCompletion.objects.create(
             username=self.test_user.username,
             course_key=self.course_key,
             block_key=stale_block_key,
             force=stale_force,
         )
+        assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
         self.assert_serialized_completions([], {})
-        # Ensure the aggregations were recalculated once due to the stale completion
         assert mock_update.call_count == 1
+        assert models.StaleCompletion.objects.filter(resolved=False).count() == 0
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_zero_possible(self):
