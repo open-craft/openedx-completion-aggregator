@@ -37,7 +37,7 @@ class AggregatorAdapterTestCase(TestCase):
         course_completion, _ = models.Aggregator.objects.submit_completion(
             user=self.test_user,
             course_key=self.course_key,
-            block_key=self.course_key.make_usage_key(block_type='course', block_id='course'),
+            block_key=self.course_key.make_usage_key(block_type='course', block_id='crs'),
             aggregation_name='course',
             earned=4.2,
             possible=9.6,
