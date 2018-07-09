@@ -10,14 +10,15 @@ from collections import defaultdict
 
 import six
 from rest_framework import serializers
-from django.db import transaction
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 from xblock.plugin import PluginMissingError
 
-from .import compat
+from django.db import transaction
+
+from . import compat
 from .models import Aggregator, StaleCompletion
-from .tasks.aggregation_tasks import AggregationUpdater  # FIXME: move this class?
+from .tasks.aggregation_tasks import AggregationUpdater
 
 
 def get_completion_mode(block):
