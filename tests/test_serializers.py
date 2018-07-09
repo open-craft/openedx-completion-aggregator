@@ -161,24 +161,29 @@ class CourseCompletionSerializerTestCase(TestCase):
         assert mock_update.call_count == 0
 
     @ddt.data(
-        None,
-        'block-v1:abc+def+ghi+type@course+block@course',
-        'block-v1:abc+def+ghi+type@sequential+block@seq1',
-        'block-v1:abc+def+ghi+type@sequential+block@seq2'
+        (None, True),
+        (None, False),
+        ('block-v1:abc+def+ghi+type@course+block@course', True),
+        ('block-v1:abc+def+ghi+type@course+block@course', False),
+        ('block-v1:abc+def+ghi+type@sequential+block@seq1', True),
+        ('block-v1:abc+def+ghi+type@sequential+block@seq1', False),
+        ('block-v1:abc+def+ghi+type@sequential+block@seq2', True),
+        ('block-v1:abc+def+ghi+type@sequential+block@seq2', False),
     )
+    @ddt.unpack
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @patch.object(AggregationUpdater, 'update')
-    def test_aggregation_with_stale_completions(self, stale_block_key, mock_update):
+    def test_aggregation_with_stale_completions(self, stale_block_key, stale_force, mock_update):
         # Mark a completion as stale for the given block key
         models.StaleCompletion.objects.create(
             username=self.test_user.username,
             course_key=self.course_key,
             block_key=stale_block_key,
-            force=True,
+            force=stale_force,
         )
         self.assert_serialized_completions([], {})
-        # Ensure the aggregations were recalculated due to the stale completion
+        # Ensure the aggregations were recalculated once due to the stale completion
         assert mock_update.call_count == 1
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
