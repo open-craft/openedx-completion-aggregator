@@ -194,16 +194,19 @@ class CompletionViewTestCase(TestCase):
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @patch.object(AggregationUpdater, 'update')
     def test_list_view_stale_completion(self, version, mock_update):
-        # Mark a completion as stale for the given block key
+        """
+        Ensure that a stale completion causes the aggregations to be recalculated once, and stale completion resolved.
+        """
         models.StaleCompletion.objects.create(
             username=self.test_user.username,
             course_key=self.course_key,
             block_key=None,
             force=False,
         )
+        assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
         self.assert_expected_list_view(version)
-        # Ensure the aggregations were recalculated once due to the stale completion
         assert mock_update.call_count == 1
+        assert models.StaleCompletion.objects.filter(resolved=False).count() == 0
 
     @ddt.data(0, 1)
     def test_list_view_enrolled_no_progress(self, version):
@@ -275,9 +278,10 @@ class CompletionViewTestCase(TestCase):
         }
         self.assertEqual(response.data, expected)
 
-    @ddt.data(0, 1)
-    @XBlock.register_temp_plugin(StubCourse, 'course')
-    def test_detail_view(self, version):
+    def assert_expected_detail_view(self, version):
+        """
+        Ensures that the expected data is returned from the versioned detail view.
+        """
         response = self.client.get(self.get_detail_url(version, six.text_type(self.course_key)))
         self.assertEqual(response.status_code, 200)
         expected_values = {
@@ -286,6 +290,32 @@ class CompletionViewTestCase(TestCase):
         }
         expected = self._get_expected_detail(version, expected_values)
         self.assertEqual(response.data, expected)
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @patch.object(AggregationUpdater, 'update')
+    def test_detail_view(self, version, mock_update):
+        self.assert_expected_detail_view(version)
+        # no stale completions, so aggregations were not updated
+        assert mock_update.call_count == 0
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @patch.object(AggregationUpdater, 'update')
+    def test_detail_view_stale_completion(self, version, mock_update):
+        """
+        Ensure that a stale completion causes the aggregations to be recalculated once, and stale completion resolved.
+        """
+        models.StaleCompletion.objects.create(
+            username=self.test_user.username,
+            course_key=self.course_key,
+            block_key=None,
+            force=False,
+        )
+        assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
+        self.assert_expected_detail_view(version)
+        assert mock_update.call_count == 1
+        assert models.StaleCompletion.objects.filter(resolved=False).count() == 0
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
