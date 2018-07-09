@@ -6,6 +6,7 @@ Serializers for the Completion API.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from collections import defaultdict
 
 import six
@@ -19,6 +20,8 @@ from django.db import transaction
 from . import compat
 from .models import Aggregator, StaleCompletion
 from .tasks.aggregation_tasks import AggregationUpdater
+
+log = logging.getLogger(__name__)
 
 
 def get_completion_mode(block):
@@ -100,17 +103,21 @@ class AggregatorAdapter(object):
         self.course_key = course_key
         self.aggregators = defaultdict(list)
 
-        # Check for stale completions, and recalculate the aggregators if any are found.
+        # Check for stale completions, to trigger recalculating the aggregators if any are found.
         with transaction.atomic():
-            stale_queryset = StaleCompletion.objects.select_for_update().filter(
-                resolved=False,
-                username=self.user.username,
-                course_key=self.course_key,
-            )
-            is_stale = stale_queryset.exists()
+            stale_completions = [
+                stale.id for stale in StaleCompletion.objects.select_for_update().filter(
+                    resolved=False,
+                    username=self.user.username,
+                    course_key=self.course_key,
+                )
+            ]
+            is_stale = len(stale_completions) > 0
 
-            # Resolve these stale completions; the stale aggregators will be recalculated in the next step.
-            StaleCompletion.objects.filter(id__in=(stale.id for stale in stale_queryset)).update(resolved=True)
+            if is_stale:
+                log.info("Resolving %s stale completions for %s+%s",
+                         len(stale_completions), self.user.username, self.course_key)
+                StaleCompletion.objects.filter(id__in=stale_completions).update(resolved=True)
 
         self.update_aggregators(queryset or [], is_stale)
 
@@ -141,7 +148,7 @@ class AggregatorAdapter(object):
         If stale completions are flagged, then recalculate and use the updated aggregations instead.
         """
         if is_stale:
-            # Recalculate the aggregations, and use them instead of the given aggregations.
+            log.info("Stale completions found for %s+%s, recalculating.", self.user, self.course_key)
             updater = AggregationUpdater(self.user, self.course_key, compat.get_modulestore())
             updater.update()
             iterable = updater.aggregators.values()
