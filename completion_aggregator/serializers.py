@@ -144,11 +144,10 @@ class AggregatorAdapter(object):
             # Recalculate the aggregations, and use them instead of the given aggregations.
             updater = AggregationUpdater(self.user, self.course_key, compat.get_modulestore())
             updater.update()
-            self.update_aggregators(updater.aggregators.values(), is_stale=False)
-        else:
-            # Given aggregators are not considered stale, so use them.
-            for aggregator in iterable:
-                self.add_aggregator(aggregator)
+            iterable = updater.aggregators.values()
+
+        for aggregator in iterable:
+            self.add_aggregator(aggregator)
 
     @property
     def course(self):
