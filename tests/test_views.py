@@ -22,8 +22,11 @@ from django.utils import timezone
 
 from completion_aggregator import models
 from completion_aggregator.api.v1.views import CompletionViewMixin
+from completion_aggregator.serializers import AggregationUpdater
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubSequential
+
+empty_compat = StubCompat([])
 
 
 def _create_oauth2_token(user):
@@ -52,7 +55,9 @@ def _create_oauth2_token(user):
 
 
 @ddt.ddt
-@patch('completion_aggregator.api.common.compat', StubCompat([]))
+@patch('completion_aggregator.api.common.compat', empty_compat)
+@patch('completion_aggregator.serializers.compat', empty_compat)
+@patch('completion_aggregator.tasks.aggregation_tasks.compat', empty_compat)
 class CompletionViewTestCase(TestCase):
     """
     Test that the CompletionView renders completion data properly.
@@ -158,9 +163,10 @@ class CompletionViewTestCase(TestCase):
         else:
             return values
 
-    @ddt.data(0, 1)
-    @XBlock.register_temp_plugin(StubCourse, 'course')
-    def test_list_view(self, version):
+    def assert_expected_list_view(self, version):
+        """
+        Ensures that the expected data is returned from the versioned list view.
+        """
         response = self.client.get(self.list_url.format(version))
         self.assertEqual(response.status_code, 200)
         expected = {
@@ -175,6 +181,29 @@ class CompletionViewTestCase(TestCase):
             ],
         }
         self.assertEqual(response.data, expected)
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @patch.object(AggregationUpdater, 'update')
+    def test_list_view(self, version, mock_update):
+        self.assert_expected_list_view(version)
+        # no stale completions, so aggregations were not updated
+        assert mock_update.call_count == 0
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @patch.object(AggregationUpdater, 'update')
+    def test_list_view_stale_completion(self, version, mock_update):
+        # Mark a completion as stale for the given block key
+        models.StaleCompletion.objects.create(
+            username=self.test_user.username,
+            course_key=self.course_key,
+            block_key=None,
+            force=False,
+        )
+        self.assert_expected_list_view(version)
+        # Ensure the aggregations were recalculated once due to the stale completion
+        assert mock_update.call_count == 1
 
     @ddt.data(0, 1)
     def test_list_view_enrolled_no_progress(self, version):
