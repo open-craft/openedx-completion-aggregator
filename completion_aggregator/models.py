@@ -242,13 +242,3 @@ class StaleCompletion(TimeStampedModel):
         if self.resolved:
             parts.append('*')
         return ''.join(parts)
-
-    @classmethod
-    def any(cls, course_key, user=None):
-        """
-        Returns whether there are any stale completions for the given course + (optional) user.
-        """
-        stale_objs = cls.objects.filter(course_key=course_key, resolved=False)
-        if user:
-            stale_objs.filter(username=user.username)
-        return stale_objs.exists()

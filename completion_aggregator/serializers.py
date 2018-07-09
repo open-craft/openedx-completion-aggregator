@@ -10,6 +10,7 @@ from collections import defaultdict
 
 import six
 from rest_framework import serializers
+from django.db import transaction
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 from xblock.plugin import PluginMissingError
@@ -98,8 +99,18 @@ class AggregatorAdapter(object):
         self.course_key = course_key
         self.aggregators = defaultdict(list)
 
-        # Update the aggregators, recalculating if stale
-        is_stale = StaleCompletion.any(course_key=self.course_key, user=self.user)
+        # Check for stale completions, and recalculate the aggregators if any are found.
+        with transaction.atomic():
+            stale_queryset = StaleCompletion.objects.select_for_update().filter(
+                resolved=False,
+                username=self.user.username,
+                course_key=self.course_key,
+            )
+            is_stale = stale_queryset.exists()
+
+            # Resolve these stale completions; the stale aggregators will be recalculated in the next step.
+            StaleCompletion.objects.filter(id__in=(stale.id for stale in stale_queryset)).update(resolved=True)
+
         self.update_aggregators(queryset or [], is_stale)
 
     def __getattr__(self, name):
@@ -126,17 +137,15 @@ class AggregatorAdapter(object):
         """
         Add a number of Aggregators to the adapter.
 
-        If fresh calculations are required, then recalculate and use the updated aggregations instead.
+        If stale completions are flagged, then recalculate and use the updated aggregations instead.
         """
         if is_stale:
-            # Stale completions were found for this course, so recalculate.
-            # TODO: how/when to resolve the StaleCompletions?
+            # Recalculate the aggregations, and use them instead of the given aggregations.
             updater = AggregationUpdater(self.user, self.course_key, compat.get_modulestore())
             updater.update()
-
-            # Aggregations from the updater are not stale, so use them.
             self.update_aggregators(updater.aggregators.values(), is_stale=False)
         else:
+            # Given aggregators are not considered stale, so use them.
             for aggregator in iterable:
                 self.add_aggregator(aggregator)
 
