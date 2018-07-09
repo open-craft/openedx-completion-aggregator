@@ -14,7 +14,9 @@ from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 from xblock.plugin import PluginMissingError
 
-from .models import Aggregator
+from .import compat
+from .models import Aggregator, StaleCompletion
+from .tasks.aggregation_tasks import AggregationUpdater  # FIXME: move this class?
 
 
 def get_completion_mode(block):
@@ -89,13 +91,16 @@ class AggregatorAdapter(object):
         """
         Initialize the adapter.
 
-        Optionally, an initial collection of aggregators may be provided.
+        Optionally, an initial collection of aggregators may be provided, though these may be recalculated if the course
+        is found to have stale completions.
         """
         self.user = user
         self.course_key = course_key
         self.aggregators = defaultdict(list)
-        if queryset:
-            self.update_aggregators(queryset)
+
+        # Update the aggregators, recalculating if stale
+        is_stale = StaleCompletion.any(course_key=self.course_key, user=self.user)
+        self.update_aggregators(queryset or [], is_stale)
 
     def __getattr__(self, name):
         """
@@ -117,12 +122,23 @@ class AggregatorAdapter(object):
             if is_aggregation_name(aggregator.aggregation_name):
                 self.aggregators[aggregator.aggregation_name].append(aggregator)
 
-    def update_aggregators(self, iterable):
+    def update_aggregators(self, iterable, is_stale=False):
         """
         Add a number of Aggregators to the adapter.
+
+        If fresh calculations are required, then recalculate and use the updated aggregations instead.
         """
-        for aggregator in iterable:
-            self.add_aggregator(aggregator)
+        if is_stale:
+            # Stale completions were found for this course, so recalculate.
+            # TODO: how/when to resolve the StaleCompletions?
+            updater = AggregationUpdater(self.user, self.course_key, compat.get_modulestore())
+            updater.update()
+
+            # Aggregations from the updater are not stale, so use them.
+            self.update_aggregators(updater.aggregators.values(), is_stale=False)
+        else:
+            for aggregator in iterable:
+                self.add_aggregator(aggregator)
 
     @property
     def course(self):
