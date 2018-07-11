@@ -52,6 +52,12 @@ upgrade: ## update the requirements/*.txt files with the latest packages satisfy
 quality: ## check coding style with pycodestyle and pylint
 	tox -e quality
 
+install_mysql: ## install MySQL for running tests.
+	@echo "\n\nThe environment variable EDXAGG_MYSQL_PASSWORD should be set to the value"
+	@echo "of the MySQL root user password. For more options see test_settings.py.\n\n"
+	sudo apt-get -y install mysql-server mysql-client
+	sudo service mysql restart
+
 requirements: ## install development environment requirements
 	pip install -qr requirements/dev.txt --exists-action w
 	pip-sync requirements/dev.txt requirements/private.* requirements/test.txt

@@ -37,6 +37,7 @@ jsonfield==2.0.2          # via edx-celeryutils
 kombu==3.0.37             # via celery
 lxml==4.2.1               # via xblock
 markupsafe==1.0           # via jinja2, xblock
+mysqlclient==1.3.13
 oauthlib==2.0.1           # via django-oauth-toolkit
 packaging==17.1           # via sphinx
 pbr==4.0.3                # via stevedore
