@@ -26,6 +26,7 @@ lxml==4.2.1               # via xblock
 markupsafe==1.0           # via xblock
 mock==2.0.0
 more-itertools==4.1.0     # via pytest
+mysqlclient==1.3.13
 oauthlib==2.0.1           # via django-oauth-toolkit
 pbr==4.0.3                # via mock, stevedore
 pluggy==0.6.0             # via pytest

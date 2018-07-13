@@ -7,6 +7,7 @@ Django applications, so these settings will not be used.
 
 from __future__ import absolute_import, unicode_literals
 
+from os import environ
 from os.path import abspath, dirname, join
 
 
@@ -22,12 +23,13 @@ CELERY_ALWAYS_EAGER = True
 COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter'}
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'default.db',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
+        'ATOMIC_REQUESTS': True,
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'completion_aggregator_test',
+        'HOST': environ.get('EDXAGG_MYSQL_HOST', '127.0.0.1'),
+        'PORT': int(environ.get('EDXAGG_MYSQL_PORT', 3306)),
+        'USER': environ.get('EDXAGG_MYSQL_USER', 'root'),
+        'PASSWORD': environ.get('EDXAGG_MYSQL_PASSWORD', ''),
     }
 }
 DEBUG = True

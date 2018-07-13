@@ -129,7 +129,7 @@ class CompletionViewTestCase(TestCase):
             course_id=course_id,
         )
 
-    def _get_expected_completion(self, version, earned=1.0, possible=12.0, percent=1 / 12):
+    def _get_expected_completion(self, version, earned=1.0, possible=12.0, percent=0.0833333333333333):
         """
         Return completion section based on version.
         """
