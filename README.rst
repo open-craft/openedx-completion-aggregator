@@ -40,7 +40,7 @@ ease installation.  To use in edx-platform, do the following:
         ...
 
     Then configure up a pair of cron jobs to run `./manage.py
-    run_aggregation_service` and `./manage.py run_aggregation_cleanup` as often
+    run_aggregator_service` and `./manage.py run_aggregator_cleanup` as often
     as desired.
 
 Note that if operating on a Hawthorne-or-later release of edx-platform, you may
