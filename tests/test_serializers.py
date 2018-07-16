@@ -127,10 +127,11 @@ class CourseCompletionSerializerTestCase(TestCase):
             },
         }
         expected.update(extra_body)
-        self.assertEqual(
-            serial.data,
-            expected,
-        )
+        # Need to allow for rounding error when retrieving the percent from the test database
+        self.assertEqual(serial.data['course_key'], expected['course_key'])
+        self.assertEqual(serial.data['completion']['earned'], expected['completion']['earned'])
+        self.assertEqual(serial.data['completion']['possible'], expected['completion']['possible'])
+        self.assertAlmostEqual(serial.data['completion']['possible'], expected['completion']['possible'], places=14)
 
     @ddt.data(
         [[], {}, False],
@@ -183,6 +184,8 @@ class CourseCompletionSerializerTestCase(TestCase):
 
     @ddt.data(
         (None, True, False),
+        (None, True, True),
+        (None, False, False),
         (None, False, True),
         ('block-v1:abc+def+ghi+type@course+block@course', True, False),
         ('block-v1:abc+def+ghi+type@course+block@course', False, False),
