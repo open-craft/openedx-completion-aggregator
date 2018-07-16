@@ -175,12 +175,14 @@ class CompletionListView(CompletionViewMixin, APIView):
             course_key__in=course_keys
         )
 
-        # Create the list of aggregate completions to be serialized.
+        # Create the list of aggregate completions to be serialized,
+        # recalculating any stale completions for this single user.
         completions = [
             AggregatorAdapter(
                 user=self.user,
                 course_key=enrollment.course_id,
                 queryset=aggregator_queryset,
+                recalculate_stale=True,
             ) for enrollment in paginated
         ]
 
@@ -321,11 +323,13 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         enrollment = UserEnrollments(self.user).get_course_enrollment(course_key)
         aggregator_queryset = self.get_queryset().filter(course_key=course_key)
 
-        # Create the list of aggregate completions to be serialized.
+        # Create the list of aggregate completions to be serialized,
+        # recalculating any stale completions for this single user.
         completions = AggregatorAdapter(
             user=enrollment.user,
             course_key=enrollment.course_id,
             queryset=aggregator_queryset,
+            recalculate_stale=True,
         )
 
         # Return the paginated, serialized completions

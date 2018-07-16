@@ -172,12 +172,14 @@ class CompletionListView(CompletionViewMixin, APIView):
             course_key__in=course_keys
         )
 
-        # Create the list of aggregate completions to be serialized.
+        # Create the list of aggregate completions to be serialized,
+        # recalculating any stale completions for this single user.
         completions = [
             AggregatorAdapter(
                 user=self.user,
                 course_key=enrollment.course_id,
                 queryset=aggregator_queryset,
+                recalculate_stale=True,
             ) for enrollment in paginated
         ]
 
@@ -340,10 +342,14 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         paginator = self.pagination_class()  # pylint: disable=not-callable
         requested_fields = self.get_requested_fields()
 
+        # Recalculate stale completions only if a single user's data was requested.
+        recalculate_stale = True
+
         if not self.requested_user and self.user.is_staff:
             # Use all enrollments for the course
             enrollments = UserEnrollments().get_course_enrollments(course_key)
             requested_fields.add('username')
+            recalculate_stale = False
         else:
             if not UserEnrollments(self.user).is_enrolled(course_key):
                 # Return 404 if effective user does not have an active enrollment in the requested course
@@ -362,6 +368,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
                 user=enrollment.user,
                 course_key=enrollment.course_id,
                 queryset=aggregator_queryset,
+                recalculate_stale=recalculate_stale,
             ) for enrollment in paginated
         ]
 

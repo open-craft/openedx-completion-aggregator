@@ -6,6 +6,7 @@ Serializers for the Completion API.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from collections import defaultdict
 
 import six
@@ -14,7 +15,13 @@ from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 from xblock.plugin import PluginMissingError
 
-from .models import Aggregator
+from django.db import transaction
+
+from . import compat
+from .models import Aggregator, StaleCompletion
+from .tasks.aggregation_tasks import AggregationUpdater
+
+log = logging.getLogger(__name__)
 
 
 def get_completion_mode(block):
@@ -54,6 +61,9 @@ class AggregatorAdapter(object):
     querysets that take in objects from multiple courses (or for multiple
     users) all at once.
 
+    By default, stale completions are not recalculated, and the given aggregators are used as provided.  To detect stale
+    completions and force them to be recalculated, pass `recalculate_stale=True`.
+
     Usage:
 
     To create AggregatorAdapters for a user's courses with a given queryset:
@@ -85,17 +95,36 @@ class AggregatorAdapter(object):
     The adapter or list of adapters can then be passed to the serializer for processing.
     """
 
-    def __init__(self, user, course_key, queryset=None):
+    def __init__(self, user, course_key, queryset=None, recalculate_stale=False):
         """
         Initialize the adapter.
 
-        Optionally, an initial collection of aggregators may be provided.
+        Optionally, an initial collection of aggregators may be provided, though these may be recalculated if the course
+        is found to have stale completions.
         """
         self.user = user
         self.course_key = course_key
         self.aggregators = defaultdict(list)
-        if queryset:
-            self.update_aggregators(queryset)
+
+        # If requested, check for stale completions, to trigger recalculating the aggregators if any are found.
+        is_stale = False
+        if recalculate_stale:
+            with transaction.atomic():
+                stale_completions = [
+                    stale.id for stale in StaleCompletion.objects.select_for_update().filter(
+                        resolved=False,
+                        username=self.user.username,
+                        course_key=self.course_key,
+                    )
+                ]
+                is_stale = bool(stale_completions)
+
+                if is_stale:
+                    log.info("Resolving %s stale completions for %s+%s",
+                             len(stale_completions), self.user.username, self.course_key)
+                    StaleCompletion.objects.filter(id__in=stale_completions).update(resolved=True)
+
+        self.update_aggregators(queryset or [], is_stale)
 
     def __getattr__(self, name):
         """
@@ -117,10 +146,18 @@ class AggregatorAdapter(object):
             if is_aggregation_name(aggregator.aggregation_name):
                 self.aggregators[aggregator.aggregation_name].append(aggregator)
 
-    def update_aggregators(self, iterable):
+    def update_aggregators(self, iterable, is_stale=False):
         """
         Add a number of Aggregators to the adapter.
+
+        If stale completions are flagged, then recalculate and use the updated aggregations instead.
         """
+        if is_stale:
+            log.info("Stale completions found for %s+%s, recalculating.", self.user, self.course_key)
+            updater = AggregationUpdater(self.user, self.course_key, compat.get_modulestore())
+            updater.update()
+            iterable = updater.aggregators.values()
+
         for aggregator in iterable:
             self.add_aggregator(aggregator)
 
