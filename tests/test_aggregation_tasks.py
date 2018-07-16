@@ -10,7 +10,6 @@ import mock
 import pytest
 import six
 from opaque_keys.edx.keys import CourseKey
-from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 
 from django.contrib.auth import get_user_model
@@ -19,43 +18,9 @@ from django.utils.timezone import now
 
 from completion.models import BlockCompletion
 from completion_aggregator.models import Aggregator
-from completion_aggregator.tasks import OLD_DATETIME, AggregationUpdater, update_aggregators
+from completion_aggregator.tasks.aggregation_tasks import OLD_DATETIME, AggregationUpdater, update_aggregators
 from test_utils.compat import StubCompat
-
-
-class CourseBlock(XBlock):
-    """
-    A registered aggregator block.
-    """
-    completion_mode = XBlockCompletionMode.AGGREGATOR
-
-
-class HTMLBlock(XBlock):
-    """
-    A completable block.
-    """
-    completion_mode = XBlockCompletionMode.COMPLETABLE
-
-
-class HiddenBlock(XBlock):
-    """
-    An excluded block.
-    """
-    completion_mode = XBlockCompletionMode.EXCLUDED
-
-
-class OtherAggBlock(XBlock):
-    """
-    An unregistered aggregator block.
-    """
-    completion_mode = XBlockCompletionMode.AGGREGATOR
-
-
-class InvalidModeBlock(XBlock):
-    """
-    A block with an invalid value for completion mode.
-    """
-    completion_mode = 'not-a-completion-mode'
+from test_utils.xblocks import CourseBlock, HiddenBlock, HTMLBlock, InvalidModeBlock, OtherAggBlock
 
 
 class AggregationUpdaterTestCase(TestCase):
@@ -83,7 +48,7 @@ class AggregationUpdaterTestCase(TestCase):
         """
         self.agg_modified = now() - timedelta(days=1)
         course_key = CourseKey.from_string('course-v1:edx+course+test')
-        patch = mock.patch('completion_aggregator.tasks.compat', StubCompat([
+        patch = mock.patch('completion_aggregator.tasks.aggregation_tasks.compat', StubCompat([
             course_key.make_usage_key('course', 'course'),
             course_key.make_usage_key('html', 'course-html0'),
             course_key.make_usage_key('html', 'course-html1'),
@@ -187,7 +152,7 @@ class PartialUpdateTest(TestCase):
             self.course_key.make_usage_key('html', 'course-chapter2-block1'),
             self.course_key.make_usage_key('html', 'course-chapter2-block2'),
         ]
-        patch = mock.patch('completion_aggregator.tasks.compat', StubCompat(self.blocks))
+        patch = mock.patch('completion_aggregator.tasks.aggregation_tasks.compat', StubCompat(self.blocks))
         patch.start()
         self.addCleanup(patch.stop)
 
@@ -275,14 +240,14 @@ class TaskArgumentHandling(TestCase):
             self.course_key.make_usage_key('html', 'course-chapter-html1'),
         }
 
-    @mock.patch('completion_aggregator.tasks._update_aggregators')
+    @mock.patch('completion_aggregator.tasks.aggregation_tasks._update_aggregators')
     def test_calling_task_with_no_blocks(self, mock_update):
         update_aggregators(username='sandystudent', course_key='course-v1:OpenCraft+Onboarding+2018')
         mock_update.assert_called_once_with(
             self.user, self.course_key, frozenset(), False
         )
 
-    @mock.patch('completion_aggregator.tasks._update_aggregators')
+    @mock.patch('completion_aggregator.tasks.aggregation_tasks._update_aggregators')
     def test_calling_task_with_changed_blocks(self, mock_update):
         update_aggregators(
             username='sandystudent',

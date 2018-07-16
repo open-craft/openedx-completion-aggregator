@@ -15,3 +15,4 @@ def plugin_settings(settings):
         'sequential',
         'vertical',
     }
+    settings.COMPLETION_AGGREGATOR_ASYNC_AGGREGATION = False

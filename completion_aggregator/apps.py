@@ -40,3 +40,4 @@ class CompletionAggregatorAppConfig(AppConfig):
         """
         from . import signals
         signals.register()
+        from .tasks import aggregation_tasks, handler_tasks  # pylint: disable=unused-variable

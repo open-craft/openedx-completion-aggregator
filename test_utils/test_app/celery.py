@@ -11,5 +11,6 @@ from celery import Celery
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'test_settings')
 
 app = Celery('test_project', broker='redis://')
-app.conf.update(accept_content=['json'])
+app.conf.update(CELERY_ACCEPT_CONTENT=['json'])
+app.conf.update(CELERY_ALWAYS_EAGER=True)
 app.autodiscover_tasks(['completion_aggregator'])

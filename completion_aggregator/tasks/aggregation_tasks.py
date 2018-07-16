@@ -1,5 +1,5 @@
 """
-Asynchronous tasks.
+Asynchronous tasks for performing aggregation of completions.
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -16,25 +16,17 @@ from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 
 from django.contrib.auth.models import User
+from django.utils import timezone
 
-from . import compat
-from .models import Aggregator
+from .. import compat
+from ..models import Aggregator, StaleCompletion
+from ..utils import BagOfHolding
 
 OLD_DATETIME = pytz.utc.localize(datetime(1900, 1, 1, 0, 0, 0))
 
-log = logging.getLogger(__name__)
-
-
 CompletionStats = namedtuple('CompletionStats', ['earned', 'possible', 'last_modified'])
 
-
-class _BagOfHolding(object):
-    """
-    A container that contains everything.
-    """
-
-    def __contains__(self, value):
-        return True
+log = logging.getLogger(__name__)
 
 
 @shared_task(task=LoggedTask)
@@ -123,7 +115,7 @@ class AggregationUpdater(object):
         if changed_blocks:
             return compat.get_affected_aggregators(self.course_blocks, changed_blocks)
         else:
-            return _BagOfHolding()
+            return BagOfHolding()
 
     def update(self, changed_blocks=frozenset(), force=False):
         """
@@ -134,8 +126,10 @@ class AggregationUpdater(object):
         the aggregators containing those blocks will be
         updated. Otherwise, the entire course tree will be updated.
         """
+        start = timezone.now()
         affected_aggregators = self.get_affected_aggregators(changed_blocks)
         self.update_for_block(self.course_block_key, affected_aggregators, force)
+        self.resolve_stale_completions(changed_blocks, start)
 
     def update_for_block(self, block, affected_aggregators, force=False):
         """
@@ -217,3 +211,16 @@ class AggregationUpdater(object):
                 return True
             return getattr(agg, 'last_modified', OLD_DATETIME) < modified
         return False
+
+    def resolve_stale_completions(self, changed_blocks, start):
+        """
+        Find all StaleCompletions resolved by this task and mark them resolved.
+        """
+        queryset = StaleCompletion.objects.filter(
+            username=self.user.username,
+            course_key=self.course_key,
+            modified__lt=start,
+        )
+        if changed_blocks:
+            queryset = queryset.filter(block_key__in=changed_blocks)
+        queryset.update(resolved=True)
