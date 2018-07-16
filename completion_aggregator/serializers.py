@@ -117,7 +117,7 @@ class AggregatorAdapter(object):
                         course_key=self.course_key,
                     )
                 ]
-                is_stale = len(stale_completions) > 0
+                is_stale = bool(stale_completions)
 
                 if is_stale:
                     log.info("Resolving %s stale completions for %s+%s",
