@@ -418,9 +418,11 @@ class CompletionViewTestCase(TestCase):
         self.assertEqual(response.data, expected)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    def test_detail_view_staff_all_users(self):
+    @patch.object(AggregationUpdater, 'update')
+    def test_detail_view_staff_all_users(self, mock_update):
         """
-        Test that staff requesting course completions can see all completions
+        Test that staff requesting course completions can see all completions,
+        and that the presence of stale completions does not trigger a recalculation.
         """
         # Add an additonal completion for the staff user
         another_user = User.objects.create(username='test_user_2')
@@ -446,6 +448,15 @@ class CompletionViewTestCase(TestCase):
             possible=12.0,
             last_modified=timezone.now(),
         )
+        # Create some stale completions too, to test recalculations are skipped
+        for user in (another_user, self.test_user):
+            models.StaleCompletion.objects.create(
+                username=user.username,
+                course_key=self.course_key,
+                block_key=None,
+                force=False,
+            )
+        assert models.StaleCompletion.objects.filter(resolved=False).count() == 2
 
         self.client.force_authenticate(self.staff_user)
         response = self.client.get(self.get_detail_url(1, self.course_key))
@@ -464,6 +475,8 @@ class CompletionViewTestCase(TestCase):
         ]
         expected = self._get_expected_detail(1, expected_values, count=2)
         self.assertEqual(response.data, expected)
+        assert mock_update.call_count == 0
+        assert models.StaleCompletion.objects.filter(resolved=False).count() == 2
 
     @ddt.data(0, 1)
     def test_invalid_optional_fields(self, version):

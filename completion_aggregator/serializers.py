@@ -61,6 +61,9 @@ class AggregatorAdapter(object):
     querysets that take in objects from multiple courses (or for multiple
     users) all at once.
 
+    By default, stale completions are not recalculated, and the given aggregators are used as provided.  To detect stale
+    completions and force them to be recalculated, pass `recalculate_stale=True`.
+
     Usage:
 
     To create AggregatorAdapters for a user's courses with a given queryset:
@@ -92,7 +95,7 @@ class AggregatorAdapter(object):
     The adapter or list of adapters can then be passed to the serializer for processing.
     """
 
-    def __init__(self, user, course_key, queryset=None):
+    def __init__(self, user, course_key, queryset=None, recalculate_stale=False):
         """
         Initialize the adapter.
 
@@ -103,21 +106,23 @@ class AggregatorAdapter(object):
         self.course_key = course_key
         self.aggregators = defaultdict(list)
 
-        # Check for stale completions, to trigger recalculating the aggregators if any are found.
-        with transaction.atomic():
-            stale_completions = [
-                stale.id for stale in StaleCompletion.objects.select_for_update().filter(
-                    resolved=False,
-                    username=self.user.username,
-                    course_key=self.course_key,
-                )
-            ]
-            is_stale = len(stale_completions) > 0
+        # If requested, check for stale completions, to trigger recalculating the aggregators if any are found.
+        is_stale = False
+        if recalculate_stale:
+            with transaction.atomic():
+                stale_completions = [
+                    stale.id for stale in StaleCompletion.objects.select_for_update().filter(
+                        resolved=False,
+                        username=self.user.username,
+                        course_key=self.course_key,
+                    )
+                ]
+                is_stale = len(stale_completions) > 0
 
-            if is_stale:
-                log.info("Resolving %s stale completions for %s+%s",
-                         len(stale_completions), self.user.username, self.course_key)
-                StaleCompletion.objects.filter(id__in=stale_completions).update(resolved=True)
+                if is_stale:
+                    log.info("Resolving %s stale completions for %s+%s",
+                             len(stale_completions), self.user.username, self.course_key)
+                    StaleCompletion.objects.filter(id__in=stale_completions).update(resolved=True)
 
         self.update_aggregators(queryset or [], is_stale)
 

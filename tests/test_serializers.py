@@ -76,7 +76,7 @@ class CourseCompletionSerializerTestCase(TestCase):
         self.test_user = User.objects.create()
         self.course_key = CourseKey.from_string('course-v1:abc+def+ghi')
 
-    def assert_serialized_completions(self, serializer_cls_args, extra_body):
+    def assert_serialized_completions(self, serializer_cls_args, extra_body, recalc_stale):
         """
         Ensures that the course completion serializer returns the expected results
         for this set of submitted completions.
@@ -115,6 +115,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             user=self.test_user,
             course_key=self.course_key,
             queryset=completions,
+            recalculate_stale=recalc_stale,
         )
         serial = serializer_cls(completion)
         expected = {
@@ -132,7 +133,8 @@ class CourseCompletionSerializerTestCase(TestCase):
         )
 
     @ddt.data(
-        [[], {}],
+        [[], {}, False],
+        [[], {}, True],
         [
             ['sequential'],
             {
@@ -148,35 +150,63 @@ class CourseCompletionSerializerTestCase(TestCase):
                         'completion': {'earned': 10.0, 'possible': 12.0, 'percent': 5 / 6},
                     },
                 ]
-            }
+            },
+            False
+        ],
+        [
+            ['sequential'],
+            {
+                'sequential': [
+                    {
+                        'course_key': 'course-v1:abc+def+ghi',
+                        'block_key': 'block-v1:abc+def+ghi+type@sequential+block@seq1',
+                        'completion': {'earned': 6.0, 'possible': 7.0, 'percent': 6 / 7},
+                    },
+                    {
+                        'course_key': 'course-v1:abc+def+ghi',
+                        'block_key': 'block-v1:abc+def+ghi+type@sequential+block@seq2',
+                        'completion': {'earned': 10.0, 'possible': 12.0, 'percent': 5 / 6},
+                    },
+                ]
+            },
+            True
         ]
     )
     @ddt.unpack
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @patch.object(AggregationUpdater, 'update')
-    def test_serialize_student_progress_object(self, serializer_cls_args, extra_body, mock_update):
-        self.assert_serialized_completions(serializer_cls_args, extra_body)
-        # no stale completions, so aggregations were not updated
+    def test_serialize_student_progress_object(self, serializer_cls_args, extra_body, recalc_stale, mock_update):
+        self.assert_serialized_completions(serializer_cls_args, extra_body, recalc_stale)
+        # no stale completions, so aggregations are not updated
         assert mock_update.call_count == 0
 
     @ddt.data(
-        (None, True),
-        (None, False),
-        ('block-v1:abc+def+ghi+type@course+block@course', True),
-        ('block-v1:abc+def+ghi+type@course+block@course', False),
-        ('block-v1:abc+def+ghi+type@sequential+block@seq1', True),
-        ('block-v1:abc+def+ghi+type@sequential+block@seq1', False),
-        ('block-v1:abc+def+ghi+type@sequential+block@seq2', True),
-        ('block-v1:abc+def+ghi+type@sequential+block@seq2', False),
+        (None, True, False),
+        (None, False, True),
+        ('block-v1:abc+def+ghi+type@course+block@course', True, False),
+        ('block-v1:abc+def+ghi+type@course+block@course', False, False),
+        ('block-v1:abc+def+ghi+type@sequential+block@seq1', True, False),
+        ('block-v1:abc+def+ghi+type@sequential+block@seq1', False, False),
+        ('block-v1:abc+def+ghi+type@sequential+block@seq2', True, False),
+        ('block-v1:abc+def+ghi+type@sequential+block@seq2', False, False),
+        ('block-v1:abc+def+ghi+type@course+block@course', True, True),
+        ('block-v1:abc+def+ghi+type@course+block@course', False, True),
+        ('block-v1:abc+def+ghi+type@sequential+block@seq1', True, True),
+        ('block-v1:abc+def+ghi+type@sequential+block@seq1', False, True),
+        ('block-v1:abc+def+ghi+type@sequential+block@seq2', True, True),
+        ('block-v1:abc+def+ghi+type@sequential+block@seq2', False, True),
     )
     @ddt.unpack
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @patch.object(AggregationUpdater, 'update')
-    def test_aggregation_with_stale_completions(self, stale_block_key, stale_force, mock_update):
+    def test_aggregation_recalc_stale_completions(self, stale_block_key, stale_force, recalc_stale, mock_update):
         """
-        Ensure that a stale completion causes the aggregations to be recalculated once, and stale completion resolved.
+        Ensure that requesting aggregation when recalculating stale completions causes the aggregations to be
+        recalculated once, and the stale completion resolved.
+
+        If not recalculating the stale completion, then it should remain unresolved.
         """
         models.StaleCompletion.objects.create(
             username=self.test_user.username,
@@ -185,9 +215,13 @@ class CourseCompletionSerializerTestCase(TestCase):
             force=stale_force,
         )
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
-        self.assert_serialized_completions([], {})
-        assert mock_update.call_count == 1
-        assert models.StaleCompletion.objects.filter(resolved=False).count() == 0
+        self.assert_serialized_completions([], {}, recalc_stale)
+        if recalc_stale:
+            assert mock_update.call_count == 1
+            assert models.StaleCompletion.objects.filter(resolved=False).count() == 0
+        else:
+            assert mock_update.call_count == 0
+            assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_zero_possible(self):
