@@ -6,4 +6,3 @@ mock
 pytest-cov                # pytest extension for code coverage statistics
 pytest-django             # pytest extension for better Django support
 redis
-mock

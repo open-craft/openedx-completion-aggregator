@@ -5,6 +5,7 @@ Test serialization of completion data.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import ddt
+import pytest
 from mock import patch
 from opaque_keys.edx.keys import CourseKey
 from xblock.core import XBlock
@@ -114,7 +115,7 @@ class CourseCompletionSerializerTestCase(TestCase):
         completion = AggregatorAdapter(
             user=self.test_user,
             course_key=self.course_key,
-            queryset=completions,
+            aggregators=completions,
             recalculate_stale=recalc_stale,
         )
         serial = serializer_cls(completion)
@@ -241,7 +242,7 @@ class CourseCompletionSerializerTestCase(TestCase):
         serial = course_completion_serializer_factory([])(AggregatorAdapter(
             user=self.test_user,
             course_key=course_key,
-            queryset=[completion]
+            aggregators=[completion]
         ))
         self.assertEqual(
             serial.data['completion'],
@@ -267,7 +268,7 @@ class CourseCompletionSerializerTestCase(TestCase):
         agg = AggregatorAdapter(
             user=self.test_user,
             course_key=course_key,
-            queryset=[completion]
+            aggregators=[completion]
         )
         # coverage demands this, because we have __getattr__ overridden
         with self.assertRaises(AttributeError):
@@ -278,7 +279,7 @@ class CourseCompletionSerializerTestCase(TestCase):
         serial = course_completion_serializer_factory([])(AggregatorAdapter(
             user=self.test_user,
             course_key=course_key,
-            queryset=[]
+            aggregators=[]
         ))
         self.assertEqual(
             serial.data['completion'],
@@ -289,41 +290,52 @@ class CourseCompletionSerializerTestCase(TestCase):
             },
         )
 
-    def test_filtering_completions(self):
+    def test_validating_completions(self):
         course_key = CourseKey.from_string('course-v1:abc+def+ghi')
         other_course_key = CourseKey.from_string('course-v1:ihg+fed+cba')
         other_user = User.objects.create(username='other')
-        agg = AggregatorAdapter(
+        aggregators = [
+            models.Aggregator.objects.submit_completion(
+                user=other_user,
+                course_key=course_key,
+                block_key=course_key.make_usage_key(block_type='course', block_id='course'),
+                aggregation_name='course',
+                earned=4.0,
+                possible=4.0,
+                last_modified=timezone.now(),
+            )[0],
+            models.Aggregator.objects.submit_completion(
+                user=self.test_user,
+                course_key=other_course_key,
+                block_key=other_course_key.make_usage_key(block_type='course', block_id='course'),
+                aggregation_name='course',
+                earned=1.0,
+                possible=3.0,
+                last_modified=timezone.now(),
+            )[0],
+        ]
+        for agg in aggregators:
+            with pytest.raises(ValueError):
+                AggregatorAdapter(
+                    user=self.test_user,
+                    course_key=course_key,
+                    aggregators=[agg],
+                )
+
+    def test_filtering_completions(self):
+        course_key = CourseKey.from_string('course-v1:abc+def+ghi')
+        aggregator = models.Aggregator.objects.submit_completion(
             user=self.test_user,
             course_key=course_key,
-            queryset=[
-                models.Aggregator.objects.submit_completion(
-                    user=other_user,
-                    course_key=course_key,
-                    block_key=course_key.make_usage_key(block_type='course', block_id='course'),
-                    aggregation_name='course',
-                    earned=4.0,
-                    possible=4.0,
-                    last_modified=timezone.now(),
-                )[0],
-                models.Aggregator.objects.submit_completion(
-                    user=self.test_user,
-                    course_key=other_course_key,
-                    block_key=other_course_key.make_usage_key(block_type='course', block_id='course'),
-                    aggregation_name='course',
-                    earned=1.0,
-                    possible=3.0,
-                    last_modified=timezone.now(),
-                )[0],
-                models.Aggregator.objects.submit_completion(
-                    user=self.test_user,
-                    course_key=course_key,
-                    block_key=course_key.make_usage_key(block_type='video', block_id='neatvideo'),
-                    aggregation_name='video',
-                    earned=1.0,
-                    possible=2.0,
-                    last_modified=timezone.now(),
-                )[0]
-            ]
+            block_key=course_key.make_usage_key(block_type='video', block_id='neatvideo'),
+            aggregation_name='video',
+            earned=1.0,
+            possible=2.0,
+            last_modified=timezone.now(),
+        )[0]
+        adapted = AggregatorAdapter(
+            user=self.test_user,
+            course_key=course_key,
+            aggregators=[aggregator],
         )
-        self.assertEqual(len(agg.aggregators), 0)
+        assert not adapted.aggregators

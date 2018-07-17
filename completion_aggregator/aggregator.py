@@ -1,4 +1,5 @@
 """
+
 Aggregator service.
 
 This service periodically determines which stale_blocks need updating, and
@@ -46,7 +47,7 @@ def perform_aggregation():
             blocks = stale_blocks[enrollment]
             if isinstance(blocks, utils.BagOfHolding) or len(blocks) <= MAX_KEYS_PER_TASK:
                 # We can stop adding once we have exceeded the maximum number of keys per task.
-                blocks.add(stale.block_key)
+                stale_blocks[enrollment].add(stale.block_key)
             if stale.force:
                 forced_updates.add(enrollment)
 

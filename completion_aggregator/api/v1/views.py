@@ -4,6 +4,8 @@ API views to read completion information.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from collections import defaultdict
+
 from opaque_keys.edx.keys import CourseKey
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
@@ -171,6 +173,9 @@ class CompletionListView(CompletionViewMixin, APIView):
             user=self.user,
             course_key__in=course_keys
         )
+        aggregators_by_enrollment = defaultdict(list)
+        for agg in aggregator_queryset:
+            aggregators_by_enrollment[agg.user, agg.course_key].append(agg)
 
         # Create the list of aggregate completions to be serialized,
         # recalculating any stale completions for this single user.
@@ -178,7 +183,7 @@ class CompletionListView(CompletionViewMixin, APIView):
             AggregatorAdapter(
                 user=self.user,
                 course_key=enrollment.course_id,
-                queryset=aggregator_queryset,
+                aggregators=aggregators_by_enrollment[self.user, enrollment.course_id],
                 recalculate_stale=True,
             ) for enrollment in paginated
         ]
@@ -194,8 +199,7 @@ class CompletionListView(CompletionViewMixin, APIView):
 
 class CompletionDetailView(CompletionViewMixin, APIView):
     """
-    API view to render a serialized CourseCompletion for a single user in a
-    single course.
+    API view to render serialized aggregators for a single course.
 
     **Request Format**
 
@@ -360,14 +364,19 @@ class CompletionDetailView(CompletionViewMixin, APIView):
 
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.
         paginated = paginator.paginate_queryset(enrollments, self.request, view=self)
-        aggregator_queryset = self.get_queryset().filter(course_key=course_key)
-
+        aggregator_queryset = self.get_queryset().filter(
+            course_key=course_key,
+            user__in=[enrollment.user for enrollment in paginated],
+        )
+        aggregators_by_user = defaultdict(list)
+        for aggregator in aggregator_queryset:
+            aggregators_by_user[aggregator.user].append(aggregator)
         # Create the list of aggregate completions to be serialized.
         completions = [
             AggregatorAdapter(
                 user=enrollment.user,
                 course_key=enrollment.course_id,
-                queryset=aggregator_queryset,
+                aggregators=aggregators_by_user[enrollment.user],
                 recalculate_stale=recalculate_stale,
             ) for enrollment in paginated
         ]
