@@ -4,6 +4,8 @@ API views to read completion information.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from collections import defaultdict
+
 from opaque_keys.edx.keys import CourseKey
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
@@ -192,8 +194,7 @@ class CompletionListView(CompletionViewMixin, APIView):
 
 class CompletionDetailView(CompletionViewMixin, APIView):
     """
-    API view to render a serialized CourseCompletion for a single user in a
-    single course.
+    API view to render serialized aggregators for a single course.
 
     **Request Format**
 
@@ -355,13 +356,15 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.
         paginated = paginator.paginate_queryset(enrollments, self.request, view=self)
         aggregator_queryset = self.get_queryset().filter(course_key=course_key)
-
+        aggregators_by_user = defaultdict(list)
+        for aggregator in aggregator_queryset:
+            aggregators_by_user[aggregator.user].append(aggregator)
         # Create the list of aggregate completions to be serialized.
         completions = [
             AggregatorAdapter(
                 user=enrollment.user,
                 course_key=enrollment.course_id,
-                queryset=aggregator_queryset,
+                queryset=aggregators_by_user[enrollment.user],
             ) for enrollment in paginated
         ]
 
