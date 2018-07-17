@@ -43,7 +43,7 @@ def perform_aggregation():
             )
             if stale.block_key is None:
                 stale_blocks[enrollment] = utils.BagOfHolding()
-            elif len(stale_blocks[enrollment]) <= MAX_KEYS_PER_TASK:
+            if not isinstance(stale_blocks[enrollment], utils.BagOfHolding) and len(stale_blocks[enrollment]) <= MAX_KEYS_PER_TASK:
                 # We can stop adding once we have exceeded the maximum number of keys per task.
                 stale_blocks[enrollment].add(stale.block_key)
             if stale.force:
