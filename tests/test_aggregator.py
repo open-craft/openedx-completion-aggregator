@@ -6,6 +6,7 @@ Test the aggregator functions directly.
 # pylint: disable=redefined-outer-name
 
 import pytest
+import six
 from mock import patch
 from opaque_keys.edx.keys import CourseKey
 from xblock.core import XBlock
@@ -75,7 +76,24 @@ def test_with_stale_completions(mock_task, users):
     assert mock_task.call_count == 2  # Called once for each user
 
 
-@pytest.mark.django_db
+@patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async')
+def test_with_full_course_stale_completion(mock_task, users):
+    course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
+    for user in users:
+        StaleCompletion.objects.create(
+            username=user.username,
+            course_key=course_key,
+            block_key=None,
+        )
+        StaleCompletion.objects.create(
+            username=user.username,
+            course_key=course_key,
+            block_key=course_key.make_usage_key('video', 'how-to-open-craft'),
+        )
+    perform_aggregation()
+    assert mock_task.call_count == 2  # Called once for each user
+
+
 @patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async')
 def test_with_no_blocks(mock_task, users):
     course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
@@ -84,12 +102,28 @@ def test_with_no_blocks(mock_task, users):
     assert mock_task.call_count == 1
 
 
-def compat_patch(course_key):
-    return patch('completion_aggregator.tasks.aggregation_tasks.compat', StubCompat([
-        course_key.make_usage_key('course', 'course'),
-        course_key.make_usage_key('vertical', 'course-vertical'),
-        course_key.make_usage_key('html', 'course-vertical-html'),
-    ]))
+def test_plethora_of_stale_completions(users):
+    course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
+
+    with patch('completion_aggregator.aggregator.MAX_KEYS_PER_TASK', new=3) as max_keys:
+        for i in range(max_keys + 1):
+            StaleCompletion.objects.create(
+                username=users[0].username,
+                course_key=course_key,
+                block_key=course_key.make_usage_key('chapter', 'chapter-{}'.format(i)),
+            )
+        with patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async') as mock_task:
+            perform_aggregation()
+    mock_task.assert_called_once_with(
+        (),
+        {
+            'username': users[0].username,
+            'course_key': six.text_type(course_key),
+            'block_keys': [],
+            'force': False,
+        },
+    )
+    assert mock_task.call_count == 1
 
 
 @XBlock.register_temp_plugin(CourseBlock, 'course')
@@ -112,3 +146,14 @@ def test_stale_completion_resolution():
     perform_cleanup()
     assert not StaleCompletion.objects.filter(resolved=True).exists()
     assert StaleCompletion.objects.filter(resolved=False).exists()
+
+
+def compat_patch(course_key):
+    """
+    Patch compat with a stub including a simple course.
+    """
+    return patch('completion_aggregator.tasks.aggregation_tasks.compat', StubCompat([
+        course_key.make_usage_key('course', 'course'),
+        course_key.make_usage_key('vertical', 'course-vertical'),
+        course_key.make_usage_key('html', 'course-vertical-html'),
+    ]))

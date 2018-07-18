@@ -4,6 +4,8 @@ API views to read completion information.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from collections import defaultdict
+
 from opaque_keys.edx.keys import CourseKey
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
@@ -174,6 +176,9 @@ class CompletionListView(CompletionViewMixin, APIView):
             user=self.user,
             course_key__in=course_keys
         )
+        aggregators_by_enrollment = defaultdict(list)
+        for agg in aggregator_queryset:
+            aggregators_by_enrollment[self.user, agg.course_key].append(agg)
 
         # Create the list of aggregate completions to be serialized,
         # recalculating any stale completions for this single user.
@@ -181,7 +186,7 @@ class CompletionListView(CompletionViewMixin, APIView):
             AggregatorAdapter(
                 user=self.user,
                 course_key=enrollment.course_id,
-                queryset=aggregator_queryset,
+                aggregators=aggregators_by_enrollment[self.user, enrollment.course_id],
                 recalculate_stale=True,
             ) for enrollment in paginated
         ]
@@ -328,7 +333,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         completions = AggregatorAdapter(
             user=enrollment.user,
             course_key=enrollment.course_id,
-            queryset=aggregator_queryset,
+            aggregators=aggregator_queryset,
             recalculate_stale=True,
         )
 

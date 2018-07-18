@@ -55,14 +55,11 @@ class AggregatorAdapter(object):
     Adapter for presenting Aggregators to the serializer.
 
     Can be given a collection of Aggregator objects, or a single Aggregator
-    at a time.  The adapter automatically filters out objects that do not
-    belong to the given user and course, or that pertain to aggregations that
-    we are not interested in.  This is done to facilitate working with
-    querysets that take in objects from multiple courses (or for multiple
-    users) all at once.
+    at a time, that all belong to the same user and course
 
-    By default, stale completions are not recalculated, and the given aggregators are used as provided.  To detect stale
-    completions and force them to be recalculated, pass `recalculate_stale=True`.
+    By default, stale completions are not recalculated, and the given aggregators
+    are used as provided.  To detect stale completions and force them to be
+    recalculated, pass `recalculate_stale=True`.
 
     Usage:
 
@@ -70,7 +67,7 @@ class AggregatorAdapter(object):
 
         >>> from completion_aggregator.models import Aggregator
         >>> from completion_aggregator.serializers import AggregatorAdapter
-        >>> completions = Aggregator.objects.filter(
+        >>> aggregators = Aggregator.objects.filter(
         >>>     user=user,
         >>>     aggregation_name__in=['course', 'chapter', 'vertical']
         >>> )
@@ -79,7 +76,7 @@ class AggregatorAdapter(object):
         >>>     adapters.append(AggregatorAdapter(
         >>>         user=user,
         >>>         course_key=course_key,
-        >>>         queryset=completions,
+        >>>         aggregators=aggregators,
         >>>     ))
 
     To add an aggregator or iterable of aggregators to an adapter:
@@ -95,7 +92,7 @@ class AggregatorAdapter(object):
     The adapter or list of adapters can then be passed to the serializer for processing.
     """
 
-    def __init__(self, user, course_key, queryset=None, recalculate_stale=False):
+    def __init__(self, user, course_key, aggregators=None, recalculate_stale=False):
         """
         Initialize the adapter.
 
@@ -124,7 +121,7 @@ class AggregatorAdapter(object):
                              len(stale_completions), self.user.username, self.course_key)
                     StaleCompletion.objects.filter(id__in=stale_completions).update(resolved=True)
 
-        self.update_aggregators(queryset or [], is_stale)
+        self.update_aggregators(aggregators or [], is_stale)
 
     def __getattr__(self, name):
         """
@@ -142,9 +139,10 @@ class AggregatorAdapter(object):
         When adding, check whether it meets the criteria for user, course_key,
         and aggregation_name
         """
-        if (aggregator.user, aggregator.course_key) == (self.user, self.course_key):
-            if is_aggregation_name(aggregator.aggregation_name):
-                self.aggregators[aggregator.aggregation_name].append(aggregator)
+        if (aggregator.user, aggregator.course_key) != (self.user, self.course_key):
+            raise ValueError("AggregatorAdapter received Aggregator for the wrong enrollment.")
+        if is_aggregation_name(aggregator.aggregation_name):
+            self.aggregators[aggregator.aggregation_name].append(aggregator)
 
     def update_aggregators(self, iterable, is_stale=False):
         """
