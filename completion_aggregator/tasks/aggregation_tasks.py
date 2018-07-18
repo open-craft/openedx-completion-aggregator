@@ -11,16 +11,48 @@ from datetime import datetime
 import pytz
 from celery import shared_task
 from celery_utils.logged_task import LoggedTask
+from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey, UsageKey
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 
 from django.contrib.auth.models import User
+from django.db import connection
 from django.utils import timezone
 
 from .. import compat
 from ..models import Aggregator, StaleCompletion
 from ..utils import BagOfHolding
+
+try:
+    from progress.models import CourseModuleCompletion
+    PROGRESS_IMPORTED = True
+except ImportError:
+    PROGRESS_IMPORTED = False
+
+# SQLite doesn't support the ON DUPLICATE KEY syntax.  INSERT OR REPLACE will
+# have a similar effect, but uses new primary keys.  The drawbacks of this are:
+# * It will consume the available keyspace more quickly.
+# * It will not preserve foreign keys pointing to our table.
+# SQLite is only used in testing environments, so neither of these drawbacks
+# poses an actual problem.
+
+INSERT_OR_UPDATE_MYSQL = """
+    INSERT INTO completion_blockcompletion
+        (user_id, course_key, block_key, block_type, completion)
+    VALUES
+        (%s, %s, %s, %s, 1.0)
+    ON DUPLICATE KEY UPDATE
+        completion=VALUES(completion);
+"""
+
+INSERT_OR_UPDATE_SQLITE = """
+    INSERT OR REPLACE
+    INTO completion_blockcompletion
+        (user_id, course_key, block_key, block_type, completion)
+    VALUES
+        (%s, %s, %s, %s, 1.0);
+"""
 
 OLD_DATETIME = pytz.utc.localize(datetime(1900, 1, 1, 0, 0, 0))
 
@@ -166,7 +198,8 @@ class AggregationUpdater(object):
             (earned, possible, modified) = self.update_for_block(child, affected_aggregators, force)
             total_earned += earned
             total_possible += possible
-            last_modified = max(last_modified, modified)
+            if modified is not None:
+                last_modified = max(last_modified, modified)
         if self._aggregator_needs_update(block, last_modified, force):
             obj, _ = Aggregator.objects.submit_completion(
                 user=self.user,
@@ -224,3 +257,62 @@ class AggregationUpdater(object):
         if changed_blocks:
             queryset = queryset.filter(block_key__in=changed_blocks)
         queryset.update(resolved=True)
+
+
+@shared_task
+def migrate_batch(offset, batch_size):  # Cannot pass a queryset to a task.
+    """
+    Convert a batch of CourseModuleCompletions to BlockCompletions.
+
+    Given an offset and batch_size, this task will:
+
+    * Fetch a subset of the existing CourseModuleCompletions,
+    * Update the BlockCompletions table
+    """
+    if not PROGRESS_IMPORTED:
+        log.error("Cannot perform migration: CourseModuleCompletion not importable.")
+
+    queryset = CourseModuleCompletion.objects.all().order_by('id')
+    course_module_completions = queryset[offset:offset + batch_size]
+
+    processed = {}  # Dict has format: {course: {user: [blocks]}
+    insert_params = []
+    for cmc in course_module_completions:
+        try:
+            course_key = CourseKey.from_string(cmc.course_id)
+            block_key = UsageKey.from_string(cmc.content_id).map_into_course(course_key)
+            block_type = block_key.block_type
+        except InvalidKeyError:
+            log.exception(
+                "Could not migrate CourseModuleCompletion with values: %s",
+                cmc.__dict__,
+            )
+            continue
+        if course_key not in processed:
+            processed[course_key] = set()
+        if cmc.user not in processed[course_key]:
+            processed[course_key].add(cmc.user)
+        # Param order: (user_id, course_key, block_key, block_type)
+        insert_params.append((cmc.user_id, cmc.course_id, cmc.content_id, block_type))
+    if connection.vendor == 'mysql':
+        sql = INSERT_OR_UPDATE_MYSQL
+    else:
+        sql = INSERT_OR_UPDATE_SQLITE
+    with connection.cursor() as cur:
+        cur.executemany(sql, insert_params)
+    # Create aggregators later.
+    stale_completions = []
+    for course_key in processed:
+        for user in processed[course_key]:
+            stale_completions.append(
+                StaleCompletion(
+                    username=user.username,
+                    course_key=course_key,
+                    block_key=None,
+                    force=True
+                )
+            )
+    StaleCompletion.objects.bulk_create(
+        stale_completions,
+    )
+    log.info("Completed progress migration batch from %s to %s", offset, offset + batch_size)
