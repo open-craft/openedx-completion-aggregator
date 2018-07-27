@@ -52,7 +52,6 @@ setup(
         "Django>=1.8,<1.12",
         "django-model-utils>=2.0",
         "djangorestframework",
-        "pytest-django",
         "XBlock",
         "celery>=3.1",
         "edx-celeryutils>=0.1.5",
