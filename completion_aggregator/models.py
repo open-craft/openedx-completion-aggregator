@@ -11,12 +11,28 @@ from opaque_keys.edx.keys import CourseKey, UsageKey
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import connection, models
 from django.db.models.signals import pre_save
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext as _
 
 from model_utils.models import TimeStampedModel
+
+from .utils import get_percent, make_datetime_timezone_unaware
+
+INSERT_OR_UPDATE_AGGREGATOR_QUERY = """
+    INSERT INTO completion_aggregator_aggregator
+        (user_id, course_key, block_key, aggregation_name, earned, possible, percent, last_modified, created, modified)
+    VALUES
+        (%(user)s, %(course_key)s, %(block_key)s, %(aggregation_name)s, %(earned)s,
+        %(possible)s, %(percent)s, %(last_modified)s, %(created)s, %(modified)s)
+    ON DUPLICATE KEY UPDATE
+        earned=VALUES(earned),
+        possible=VALUES(possible),
+        percent=VALUES(percent),
+        last_modified=VALUES(last_modified),
+        modified=VALUES(modified);
+"""
 
 
 def validate_percent(value):
@@ -140,12 +156,7 @@ class AggregatorManager(models.Manager):
 
         """
         self.validate(user, course_key, block_key)
-        if earned > possible:
-            raise ValueError(_('Earned cannot be greater than the possible value.'))
-        if possible > 0.0:
-            percent = earned / possible
-        else:
-            percent = 1.0
+        percent = get_percent(earned, possible)
         obj, is_new = self.update_or_create(
             user=user,
             course_key=course_key,
@@ -159,6 +170,15 @@ class AggregatorManager(models.Manager):
             },
         )
         return obj, is_new
+
+    def bulk_create_or_update(self, updated_aggregators):
+        """
+        Update the collection of aggregator object using mysql insert on duplicate update query.
+        """
+        if updated_aggregators:
+            aggregation_data = [obj.get_values() for obj in updated_aggregators]
+            with connection.cursor() as cur:
+                cur.executemany(INSERT_OR_UPDATE_AGGREGATOR_QUERY, aggregation_data)
 
 
 @python_2_unicode_compatible
@@ -204,6 +224,20 @@ class Aggregator(TimeStampedModel):
             block_key=self.block_key,
             percent=self.percent,
         )
+
+    def get_values(self):
+        """
+        Return a dict object containing fields and their values to be used in bulk create or update query.
+        """
+        values = {key: getattr(self, key) for key in [
+            'course_key', 'block_key', 'aggregation_name', 'earned', 'possible',
+        ]}
+        values['user'] = self.user.id
+        values['percent'] = get_percent(values['earned'], values['possible'])
+        values.update({key: make_datetime_timezone_unaware(getattr(self, key)) for key in [
+            'last_modified', 'created', 'modified',
+        ]})
+        return values
 
     @classmethod
     def block_is_registered_aggregator(cls, block_key):

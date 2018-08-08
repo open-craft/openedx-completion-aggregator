@@ -197,3 +197,21 @@ class AggregatorTestCase(TestCase):
         self.assertEqual(is_new, is_second_obj_new)
         if is_second_obj_new:
             self.assertNotEqual(obj.id, new_obj.id)
+
+    @ddt.data(
+        (BLOCK_KEY_OBJ, 'course', 0.5, 1, 0.5),
+    )
+    @ddt.unpack
+    def test_get_values(self, block_key_obj, aggregate_name, earned, possible, expected_percent):
+        aggregator = Aggregator(
+            user=self.user,
+            course_key=block_key_obj.course_key,
+            block_key=block_key_obj,
+            aggregation_name=aggregate_name,
+            earned=earned,
+            possible=possible,
+            last_modified=now(),
+        )
+        values = aggregator.get_values()
+        self.assertEqual(values['user'], self.user.id)
+        self.assertEqual(values['percent'], expected_percent)
