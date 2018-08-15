@@ -97,7 +97,20 @@ class AggregationUpdaterTestCase(TestCase):
     @XBlock.register_temp_plugin(HiddenBlock, 'hidden')
     @XBlock.register_temp_plugin(OtherAggBlock, 'other')
     def test_end_to_end_task_calling(self):
-        update_aggregators(username='saskia', course_key='course-v1:edx+course+test')
+        '''
+            Queries are for the following table
+            * Select
+                - auth_user (fetch user details)
+                - completion_aggregator_aggregator (user specific for specific course)
+                - completion_blockcompletion (user specific)
+                - auth user (fetch user details)
+            * Insert or Update Query
+                - completion_aggregator_aggregator (insert aggregation data)
+            * Update query
+                - completion_aggregator_stalecompletion (user specific)
+        '''
+        with self.assertNumQueries(6):
+            update_aggregators(username='saskia', course_key='course-v1:edx+course+test')
         self.agg.refresh_from_db()
         assert self.agg.last_modified > self.agg_modified
         assert self.agg.earned == 1.0
@@ -191,7 +204,22 @@ class PartialUpdateTest(TestCase):
             block_key=self.blocks[4],
             completion=0.75,
         )
-        update_aggregators(self.user.username, six.text_type(self.course_key), {six.text_type(completion.block_key)})
+        '''
+            Queries are for the following table
+            * Select
+                - auth_user (fetch user details)
+                - completion_aggregator_aggregator (user specific for specific course)
+                - completion_blockcompletion (user specific)
+                - completion_aggregator_aggregator (user specific for specific course and block)
+            * Insert or Update Query
+                - completion_aggregator_aggregator (insert aggregation data)
+            * Update query
+                - completion_aggregator_stalecompletion (user specific)
+        '''   # pylint: disable=pointless-string-statement
+
+        with self.assertNumQueries(6):
+            update_aggregators(self.user.username, six.text_type(self.course_key), {
+                six.text_type(completion.block_key)})
 
         new_completions = [
             BlockCompletion.objects.create(
@@ -207,11 +235,13 @@ class PartialUpdateTest(TestCase):
                 completion=0.5,
             ),
         ]
-        update_aggregators(
-            username=self.user.username,
-            course_key=six.text_type(self.course_key),
-            block_keys=[six.text_type(comp.block_key) for comp in new_completions]
-        )
+
+        with self.assertNumQueries(6):
+            update_aggregators(
+                username=self.user.username,
+                course_key=six.text_type(self.course_key),
+                block_keys=[six.text_type(comp.block_key) for comp in new_completions]
+            )
 
         course_agg = Aggregator.objects.get(course_key=self.course_key, block_key=self.blocks[0])
         chap1_agg = Aggregator.objects.get(course_key=self.course_key, block_key=self.blocks[1])
@@ -242,21 +272,23 @@ class TaskArgumentHandling(TestCase):
 
     @mock.patch('completion_aggregator.tasks.aggregation_tasks._update_aggregators')
     def test_calling_task_with_no_blocks(self, mock_update):
-        update_aggregators(username='sandystudent', course_key='course-v1:OpenCraft+Onboarding+2018')
+        with self.assertNumQueries(1):
+            update_aggregators(username='sandystudent', course_key='course-v1:OpenCraft+Onboarding+2018')
         mock_update.assert_called_once_with(
             self.user, self.course_key, frozenset(), False
         )
 
     @mock.patch('completion_aggregator.tasks.aggregation_tasks._update_aggregators')
     def test_calling_task_with_changed_blocks(self, mock_update):
-        update_aggregators(
-            username='sandystudent',
-            course_key='course-v1:OpenCraft+Onboarding+2018',
-            block_keys=[
-                'block-v1:OpenCraft+Onboarding+2018+type@html+block@course-chapter-html0',
-                'block-v1:OpenCraft+Onboarding+2018+type@html+block@course-chapter-html1',
-            ],
-        )
+        with self.assertNumQueries(1):
+            update_aggregators(
+                username='sandystudent',
+                course_key='course-v1:OpenCraft+Onboarding+2018',
+                block_keys=[
+                    'block-v1:OpenCraft+Onboarding+2018+type@html+block@course-chapter-html0',
+                    'block-v1:OpenCraft+Onboarding+2018+type@html+block@course-chapter-html1',
+                ],
+            )
         mock_update.assert_called_once_with(
             self.user,
             self.course_key,
@@ -266,4 +298,5 @@ class TaskArgumentHandling(TestCase):
 
     def test_unknown_username(self):
         with pytest.raises(get_user_model().DoesNotExist):
-            update_aggregators(username='sanfordstudent', course_key='course-v1:OpenCraft+Onboarding+2018')
+            with self.assertNumQueries(0):
+                update_aggregators(username='sanfordstudent', course_key='course-v1:OpenCraft+Onboarding+2018')

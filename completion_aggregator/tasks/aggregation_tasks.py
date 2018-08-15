@@ -54,6 +54,7 @@ INSERT_OR_UPDATE_SQLITE = """
         (%s, %s, %s, %s, 1.0);
 """
 
+
 OLD_DATETIME = pytz.utc.localize(datetime(1900, 1, 1, 0, 0, 0))
 
 CompletionStats = namedtuple('CompletionStats', ['earned', 'possible', 'last_modified'])
@@ -135,6 +136,8 @@ class AggregationUpdater(object):
                 course_key=self.course_key,
             )
         }
+        # used to store all rows for update
+        self.updated_aggregators = []
         self.block_completions = {
             completion.block_key.map_into_course(self.course_key): completion
             for completion in compat.get_block_completions(self.user, self.course_key)
@@ -161,6 +164,7 @@ class AggregationUpdater(object):
         start = timezone.now()
         affected_aggregators = self.get_affected_aggregators(changed_blocks)
         self.update_for_block(self.course_block_key, affected_aggregators, force)
+        Aggregator.objects.bulk_create_or_update(self.updated_aggregators)
         self.resolve_stale_completions(changed_blocks, start)
 
     def update_for_block(self, block, affected_aggregators, force=False):
@@ -201,16 +205,26 @@ class AggregationUpdater(object):
             if modified is not None:
                 last_modified = max(last_modified, modified)
         if self._aggregator_needs_update(block, last_modified, force):
-            obj, _ = Aggregator.objects.submit_completion(
-                user=self.user,
-                course_key=self.course_key,
-                block_key=block,
-                aggregation_name=block.block_type,
-                earned=total_earned,
-                possible=total_possible,
-                last_modified=last_modified,
-            )
-            self.aggregators[obj.block_key] = obj
+
+            Aggregator.objects.validate(self.user, self.course_key, block)
+            if block not in self.aggregators:
+                aggregator = Aggregator(
+                    user=self.user,
+                    course_key=self.course_key,
+                    block_key=block,
+                    aggregation_name=block.block_type,
+                    earned=total_earned,
+                    possible=total_possible,
+                    last_modified=last_modified,
+                )
+                self.aggregators[block] = aggregator
+            else:
+                aggregator = self.aggregators[block]
+                aggregator.earned = total_earned
+                aggregator.possible = total_possible
+                aggregator.last_modified = last_modified
+                aggregator.modified = timezone.now()
+            self.updated_aggregators.append(aggregator)
         return CompletionStats(earned=total_earned, possible=total_possible, last_modified=last_modified)
 
     def update_for_excluded(self):
