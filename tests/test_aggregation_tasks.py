@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from datetime import timedelta
 
+import ddt
 import mock
 import pytest
 import six
@@ -23,6 +24,7 @@ from test_utils.compat import StubCompat
 from test_utils.xblocks import CourseBlock, HiddenBlock, HTMLBlock, InvalidModeBlock, OtherAggBlock
 
 
+@ddt.ddt
 class AggregationUpdaterTestCase(TestCase):
     """
     Test the AggregationUpdater.
@@ -146,6 +148,30 @@ class AggregationUpdaterTestCase(TestCase):
     def test_invalid_completion_mode(self):
         with pytest.raises(ValueError):
             self.updater.update()
+
+    @ddt.data(ValueError, TypeError)
+    @XBlock.register_temp_plugin(CourseBlock, 'course')
+    @XBlock.register_temp_plugin(InvalidModeBlock, 'html')
+    @XBlock.register_temp_plugin(HiddenBlock, 'hidden')
+    @XBlock.register_temp_plugin(OtherAggBlock, 'other')
+    def test_expected_updater_errors(self, exception_class):
+        # Verify that no exception is bubbled up when the constructor errors, but that the update method is not called.
+        with mock.patch.object(AggregationUpdater, '__init__') as mock_update_constructor:
+            mock_update_constructor.side_effect = exception_class('test')
+            with mock.patch.object(AggregationUpdater, 'update') as mock_update_action:
+                update_aggregators(username='saskia', course_key='course-v1:OpenCraft+Onboarding+2018')
+                assert not mock_update_action.called
+
+    @XBlock.register_temp_plugin(CourseBlock, 'course')
+    @XBlock.register_temp_plugin(InvalidModeBlock, 'html')
+    @XBlock.register_temp_plugin(HiddenBlock, 'hidden')
+    @XBlock.register_temp_plugin(OtherAggBlock, 'other')
+    def test_unexpected_updater_errors(self):
+        # Verify that no exception is bubbled up when the constructor errors, but that the update method is not called.
+        with mock.patch.object(AggregationUpdater, '__init__') as mock_update_constructor:
+            mock_update_constructor.side_effect = RuntimeError('test')
+            with pytest.raises(RuntimeError):
+                update_aggregators(username='saskia', course_key='course-v1:OpenCraft+Onboarding+2018')
 
 
 class PartialUpdateTest(TestCase):
