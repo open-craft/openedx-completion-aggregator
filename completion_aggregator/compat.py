@@ -46,15 +46,12 @@ def get_modulestore():
     return modulestore()
 
 
-def get_item(content_key):
+def get_item_not_found_error():
     """
-    Return an item from the modulestore.
+    Return ItemNotFoundError.
     """
     from xmodule.modulestore.exceptions import ItemNotFoundError  # pylint: disable=import-error
-    try:
-        get_modulestore().get_item(content_key)
-    except ItemNotFoundError:
-        return False
+    return ItemNotFoundError
 
 
 def init_course_blocks(user, course_block_key):

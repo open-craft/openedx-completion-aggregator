@@ -80,6 +80,11 @@ class StubCompat(object):
     def get_mobile_only_courses(self):
         return MagicMock()
 
+    def get_item_not_found_error(self):
+        """
+        Use ValueError as a replacement for modulestore's ItemNotFoundError
+        """
+        return ValueError
 
 
 CourseTreeNode = collections.namedtuple('CourseTreeNode', ['block', 'children'])

@@ -108,8 +108,14 @@ def _update_aggregators(user, course_key, block_keys=frozenset(), force=False):
             If True, update aggregators even if they are up-to-date.
 
     """
-    updater = AggregationUpdater(user, course_key, compat.get_modulestore())
-    updater.update(block_keys, force)
+    try:
+        updater = AggregationUpdater(user, course_key, compat.get_modulestore())
+    except compat.get_item_not_found_error():
+        log.exception("Course not found in modulestore.  Skipping aggregation for %s/%s.", user, course_key)
+    except TypeError:
+        log.exception("Could not parse modulestore data.  Skipping aggregation for %s/%s.", user, course_key)
+    else:
+        updater.update(block_keys, force)
 
 
 class AggregationUpdater(object):
