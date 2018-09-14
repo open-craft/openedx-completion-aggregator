@@ -110,6 +110,13 @@ def course_enrollment_model():
     return CourseEnrollment
 
 
+def get_users_enrolled_in(course_key):
+    """
+    Return list of users enrolled in supplied course_key.
+    """
+    return course_enrollment_model().objects.users_enrolled_in(course_key)
+
+
 def get_affected_aggregators(course_blocks, changed_blocks):
     """
     Return the set of aggregator blocks that may need updating.

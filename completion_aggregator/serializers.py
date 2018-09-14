@@ -16,6 +16,7 @@ from xblock.core import XBlock
 from xblock.plugin import PluginMissingError
 
 from django.db import transaction
+from django.db.models import Sum
 
 from . import compat
 from .models import Aggregator, StaleCompletion
@@ -235,7 +236,7 @@ class CourseCompletionSerializer(serializers.Serializer):
     course_key = serializers.CharField()
     completion = _CompletionSerializer(source='*')
     username = serializers.SerializerMethodField()
-    mean = serializers.FloatField()
+    mean = serializers.SerializerMethodField()
 
     optional_fields = {'mean', 'username'}
 
@@ -254,6 +255,19 @@ class CourseCompletionSerializer(serializers.Serializer):
         Serialize the username.
         """
         return obj.user.username
+
+    def get_mean(self, obj):
+        """
+        Return the mean completion percent for all enrolled users.
+        """
+        enrollments = compat.get_users_enrolled_in(obj.course_key)
+        enrollment_count = enrollments.count()
+
+        mean = Aggregator.objects.filter(
+            course_key=obj.course_key,
+            aggregation_name='course',
+        ).aggregate(Sum('percent')).get('percent__sum', 0) / enrollment_count
+        return mean
 
 
 class CourseCompletionSerializerV0(CourseCompletionSerializer):

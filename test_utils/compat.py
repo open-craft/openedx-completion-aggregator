@@ -86,6 +86,15 @@ class StubCompat(object):
         """
         return ValueError
 
+    def get_users_enrolled_in(self, course_key):
+        """
+        Return a mock queryset of users enrolled in course.
+        """
+        mock = MagicMock()
+        # Simulate 5 users enrolled in course
+        mock.count.return_value = 5
+        return mock
+
 
 CourseTreeNode = collections.namedtuple('CourseTreeNode', ['block', 'children'])
 
