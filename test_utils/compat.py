@@ -86,7 +86,7 @@ class StubCompat(object):
         """
         return ValueError
 
-    def get_users_enrolled_in(self, course_key):
+    def get_users_enrolled_in(self, course_key):  # pylint: disable=unused-argument
         """
         Return a mock queryset of users enrolled in course.
         """

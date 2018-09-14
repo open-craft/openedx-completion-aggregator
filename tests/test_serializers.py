@@ -263,7 +263,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             (3., 9.),
             (8., 14.),
         ]
-        expected_mean = sum(item[0]/ item[1] for item in  data) / 5
+        expected_mean = sum(item[0] / item[1] for item in data) / 5.
         completions = [
             models.Aggregator.objects.submit_completion(
                 user=self.test_user,
