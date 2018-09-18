@@ -10,12 +10,12 @@ import logging
 from collections import defaultdict
 
 import six
-from django.core.cache import cache
 from rest_framework import serializers
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 from xblock.plugin import PluginMissingError
 
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Sum
 
