@@ -262,11 +262,13 @@ class CourseCompletionSerializer(serializers.Serializer):
         """
         enrollments = compat.get_users_enrolled_in(obj.course_key)
         enrollment_count = enrollments.count()
+        if enrollment_count == 0:
+            return 0.
 
         mean = Aggregator.objects.filter(
             course_key=obj.course_key,
             aggregation_name='course',
-        ).aggregate(Sum('percent')).get('percent__sum', 0) / enrollment_count
+        ).aggregate(Sum('percent')).get('percent__sum', 0.) / enrollment_count
         return mean
 
 
