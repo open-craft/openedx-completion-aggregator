@@ -254,6 +254,36 @@ class CourseCompletionSerializerTestCase(TestCase):
         )
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
+    def test_mean(self):
+        course_key = CourseKey.from_string('course-v1:abc+def+ghi')
+        data = [
+            # earned, possible
+            (5., 20.),
+            (7., 14.),
+            (3., 9.),
+            (8., 14.),
+        ]
+        expected_mean = sum(item[0] / item[1] for item in data) / 5.
+        completions = [
+            models.Aggregator.objects.submit_completion(
+                user=self.test_user,
+                course_key=course_key,
+                block_key=course_key.make_usage_key(block_type='course', block_id='course{}'.format(idx)),
+                aggregation_name='course',
+                earned=data[idx][0],
+                possible=data[idx][1],
+                last_modified=timezone.now(),
+            )[0]
+            for idx in range(4)
+        ]
+        serial = course_completion_serializer_factory(['mean'])(AggregatorAdapter(
+            user=self.test_user,
+            course_key=course_key,
+            aggregators=completions
+        ), requested_fields={'mean'})
+        self.assertAlmostEqual(serial.data['mean'], expected_mean)
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_invalid_aggregator(self):
         course_key = CourseKey.from_string('course-v1:abc+def+ghi')
         completion, _ = models.Aggregator.objects.submit_completion(

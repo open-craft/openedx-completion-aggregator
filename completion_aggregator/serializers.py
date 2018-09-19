@@ -15,13 +15,17 @@ from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 from xblock.plugin import PluginMissingError
 
+from django.core.cache import cache
 from django.db import transaction
+from django.db.models import Sum
 
 from . import compat
 from .models import Aggregator, StaleCompletion
 from .tasks.aggregation_tasks import AggregationUpdater
 
 log = logging.getLogger(__name__)
+
+MEAN_CACHE_KEY_FORMAT = 'completion-api-v0.mean-completion.{course_key}'
 
 
 def get_completion_mode(block):
@@ -235,7 +239,7 @@ class CourseCompletionSerializer(serializers.Serializer):
     course_key = serializers.CharField()
     completion = _CompletionSerializer(source='*')
     username = serializers.SerializerMethodField()
-    mean = serializers.FloatField()
+    mean = serializers.SerializerMethodField()
 
     optional_fields = {'mean', 'username'}
 
@@ -254,6 +258,25 @@ class CourseCompletionSerializer(serializers.Serializer):
         Serialize the username.
         """
         return obj.user.username
+
+    def get_mean(self, obj):
+        """
+        Return the mean completion percent for all enrolled users.
+        """
+        mean_cache_key = MEAN_CACHE_KEY_FORMAT.format(course_key=obj.course_key)
+        mean = cache.get(mean_cache_key)
+        if mean is None:
+            enrollments = compat.get_users_enrolled_in(obj.course_key)
+            enrollment_count = enrollments.count()
+            if enrollment_count == 0:
+                return 0.
+
+            mean = Aggregator.objects.filter(
+                course_key=obj.course_key,
+                aggregation_name='course',
+            ).aggregate(Sum('percent')).get('percent__sum', 0.) / enrollment_count
+            cache.set(mean_cache_key, mean, 30 * 60)  # Cache for 30 mins
+        return mean
 
 
 class CourseCompletionSerializerV0(CourseCompletionSerializer):

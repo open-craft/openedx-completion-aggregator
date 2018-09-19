@@ -80,15 +80,17 @@ class AggregatorManager(models.Manager):
             )
         if not isinstance(course_key, CourseKey):
             raise TypeError(
-                _("course_key must be an instance of `opaque_keys.edx.keys.CourseKey`.  Got {}".format(
-                    type(course_key)
-                ))
+                _(
+                    "course_key must be an instance of `opaque_keys.edx.keys.CourseKey`.  Got {}".format(
+                        type(course_key)
+                    ))
             )
         if not isinstance(block_key, UsageKey):
             raise TypeError(
-                _("block_key must be an instance of `opaque_keys.edx.keys.UsageKey`.  Got {}".format(
-                    type(block_key)
-                ))
+                _(
+                    "block_key must be an instance of `opaque_keys.edx.keys.UsageKey`.  Got {}".format(
+                        type(block_key)
+                    ))
             )
 
     @staticmethod
@@ -98,7 +100,8 @@ class AggregatorManager(models.Manager):
         """
         instance.full_clean()
 
-    def submit_completion(self, user, course_key, block_key, aggregation_name, earned, possible, last_modified):
+    def submit_completion(self, user, course_key, block_key, aggregation_name, earned, possible,
+                          last_modified):
         """
         Insert and Update the completion Aggregator for the specified record.
 
@@ -176,9 +179,22 @@ class AggregatorManager(models.Manager):
         Update the collection of aggregator object using mysql insert on duplicate update query.
         """
         if updated_aggregators:
-            aggregation_data = [obj.get_values() for obj in updated_aggregators]
             with connection.cursor() as cur:
-                cur.executemany(INSERT_OR_UPDATE_AGGREGATOR_QUERY, aggregation_data)
+                # SQLite doesn't support the bulk query, so use the normal inefficient approach
+                if connection.vendor == 'sqlite':
+                    for aggregator in updated_aggregators:
+                        self.submit_completion(
+                            user=aggregator.user,
+                            course_key=aggregator.course_key,
+                            block_key=aggregator.block_key,
+                            aggregation_name=aggregator.aggregation_name,
+                            possible=aggregator.possible,
+                            earned=aggregator.earned,
+                            last_modified=aggregator.last_modified,
+                        )
+                else:
+                    aggregation_data = [obj.get_values() for obj in updated_aggregators]
+                    cur.executemany(INSERT_OR_UPDATE_AGGREGATOR_QUERY, aggregation_data)
 
 
 @python_2_unicode_compatible
