@@ -178,7 +178,7 @@ class AggregatorAdapter(object):
             aggregation_name='course',
             earned=0.0,
             possible=None,
-            percent=None,
+            percent=0.0,
         )
 
     @property
