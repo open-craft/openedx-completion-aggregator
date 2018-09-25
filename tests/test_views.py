@@ -231,7 +231,7 @@ class CompletionViewTestCase(TestCase):
                         version,
                         earned=0.0,
                         possible=None,
-                        percent=None,
+                        percent=0.0,
                     ),
                 },
                 {
@@ -240,7 +240,7 @@ class CompletionViewTestCase(TestCase):
                         version,
                         earned=0.0,
                         possible=None,
-                        percent=None,
+                        percent=0.0,
                     ),
                 }
             ],
@@ -376,7 +376,7 @@ class CompletionViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         expected_values = {
             'course_key': 'otherOrg/toy/2012_Fall',
-            'completion': self._get_expected_completion(version, earned=0.0, possible=None, percent=None),
+            'completion': self._get_expected_completion(version, earned=0.0, possible=None, percent=0.0),
         }
         expected = self._get_expected_detail(version, expected_values)
         self.assertEqual(response.data, expected)
