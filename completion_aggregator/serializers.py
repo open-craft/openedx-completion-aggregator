@@ -16,7 +16,8 @@ from xblock.core import XBlock
 from xblock.plugin import PluginMissingError
 
 from django.core.cache import cache
-from django.db.models import Sum
+from django.db.models import Sum, Value
+from django.db.models.functions import Coalesce
 
 from . import compat
 from .models import Aggregator, StaleCompletion
@@ -266,10 +267,10 @@ class CourseCompletionSerializer(serializers.Serializer):
         total = Aggregator.objects.filter(
             course_key=obj.course_key,
             aggregation_name='course',
-        ).aggregate(Sum('percent')).get('percent__sum', 0.)
+        ).aggregate(
+            total=Sum(Coalesce('percent', Value(0.)))
+        ).get('total') or 0.
 
-        if total is None:
-            return 0.
         return total / enrollment_count
 
     def get_mean(self, obj):
