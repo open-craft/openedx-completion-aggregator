@@ -22,7 +22,7 @@ from django.utils import timezone
 
 from completion_aggregator import models
 from completion_aggregator.api.v1.views import CompletionViewMixin
-from completion_aggregator.serializers import AggregationUpdater
+from completion_aggregator.tasks.aggregation_tasks import AggregationUpdater
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubSequential
 

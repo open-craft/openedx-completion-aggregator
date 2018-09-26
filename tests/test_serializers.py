@@ -15,8 +15,8 @@ from django.test import TestCase
 from django.utils import timezone
 
 from completion_aggregator import models
-from completion_aggregator.serializers import (AggregationUpdater, AggregatorAdapter,
-                                               course_completion_serializer_factory)
+from completion_aggregator.serializers import AggregatorAdapter, course_completion_serializer_factory
+from completion_aggregator.tasks.aggregation_tasks import AggregationUpdater
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubSequential
 

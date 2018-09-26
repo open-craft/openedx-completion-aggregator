@@ -108,17 +108,15 @@ class AggregatorAdapter(object):
 
         # If requested, check for stale completions, to trigger recalculating the aggregators if any are found.
         if recalculate_stale:
-            stale_blocks = {
-                stale.block_key for stale in StaleCompletion.objects.filter(
-                    resolved=False,
-                    username=self.user.username,
-                    course_key=self.course_key,
-                )
-            }
+            is_stale = StaleCompletion.objects.filter(
+                resolved=False,
+                username=self.user.username,
+                course_key=self.course_key,
+            ).exists()
         else:
-            stale_blocks = []
+            is_stale = False
 
-        self.update_aggregators(aggregators or [], stale_blocks=stale_blocks)
+        self.update_aggregators(aggregators or [], is_stale=is_stale)
 
     def __getattr__(self, name):
         """
@@ -141,19 +139,18 @@ class AggregatorAdapter(object):
         if is_aggregation_name(aggregator.aggregation_name):
             self.aggregators[aggregator.aggregation_name].append(aggregator)
 
-    def update_aggregators(self, iterable, stale_blocks=frozenset()):
+    def update_aggregators(self, iterable, is_stale=False):
         """
         Add a number of Aggregators to the adapter.
 
         If stale completions are flagged, then recalculate and use the updated aggregations instead.
         """
-        if stale_blocks:
+        if is_stale:
             log.info("Stale completions found for %s+%s, recalculating.", self.user, self.course_key)
             updated_aggregators = calculate_updated_aggregators(
                 self.user,
                 self.course_key,
-                changed_blocks=stale_blocks,
-                force=False,
+                force=True,
             )
             updated_dict = {aggregator.block_key: aggregator for aggregator in updated_aggregators}
             iterable = (updated_dict.get(agg.block_key, agg) for agg in iterable)
