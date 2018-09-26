@@ -16,12 +16,11 @@ from xblock.core import XBlock
 from xblock.plugin import PluginMissingError
 
 from django.core.cache import cache
-from django.db import transaction
 from django.db.models import Sum
 
 from . import compat
 from .models import Aggregator, StaleCompletion
-from .tasks.aggregation_tasks import AggregationUpdater
+from .tasks.aggregation_tasks import calculate_updated_aggregators
 
 log = logging.getLogger(__name__)
 
@@ -101,31 +100,23 @@ class AggregatorAdapter(object):
         Initialize the adapter.
 
         Optionally, an initial collection of aggregators may be provided, though these may be recalculated if the course
-        is found to have stale completions.
+        is found to have stale completions.  Aggregators passed later will not be recalculated.
         """
         self.user = user
         self.course_key = course_key
         self.aggregators = defaultdict(list)
 
         # If requested, check for stale completions, to trigger recalculating the aggregators if any are found.
-        is_stale = False
         if recalculate_stale:
-            with transaction.atomic():
-                stale_completions = [
-                    stale.id for stale in StaleCompletion.objects.select_for_update().filter(
-                        resolved=False,
-                        username=self.user.username,
-                        course_key=self.course_key,
-                    )
-                ]
-                is_stale = bool(stale_completions)
+            is_stale = StaleCompletion.objects.filter(
+                resolved=False,
+                username=self.user.username,
+                course_key=self.course_key,
+            ).exists()
+        else:
+            is_stale = False
 
-                if is_stale:
-                    log.info("Resolving %s stale completions for %s+%s",
-                             len(stale_completions), self.user.username, self.course_key)
-                    StaleCompletion.objects.filter(id__in=stale_completions).update(resolved=True)
-
-        self.update_aggregators(aggregators or [], is_stale)
+        self.update_aggregators(aggregators or [], is_stale=is_stale)
 
     def __getattr__(self, name):
         """
@@ -156,9 +147,13 @@ class AggregatorAdapter(object):
         """
         if is_stale:
             log.info("Stale completions found for %s+%s, recalculating.", self.user, self.course_key)
-            updater = AggregationUpdater(self.user, self.course_key, compat.get_modulestore())
-            updater.update()
-            iterable = updater.aggregators.values()
+            updated_aggregators = calculate_updated_aggregators(
+                self.user,
+                self.course_key,
+                force=True,
+            )
+            updated_dict = {aggregator.block_key: aggregator for aggregator in updated_aggregators}
+            iterable = (updated_dict.get(agg.block_key, agg) for agg in iterable)
 
         for aggregator in iterable:
             self.add_aggregator(aggregator)

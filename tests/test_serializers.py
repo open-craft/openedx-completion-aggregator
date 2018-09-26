@@ -15,8 +15,8 @@ from django.test import TestCase
 from django.utils import timezone
 
 from completion_aggregator import models
-from completion_aggregator.serializers import (AggregationUpdater, AggregatorAdapter,
-                                               course_completion_serializer_factory)
+from completion_aggregator.serializers import AggregatorAdapter, course_completion_serializer_factory
+from completion_aggregator.tasks.aggregation_tasks import AggregationUpdater
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubSequential
 
@@ -204,8 +204,8 @@ class CourseCompletionSerializerTestCase(TestCase):
     @ddt.unpack
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
-    @patch.object(AggregationUpdater, 'update')
-    def test_aggregation_recalc_stale_completions(self, stale_block_key, stale_force, recalc_stale, mock_update):
+    @patch.object(AggregationUpdater, 'calculate_updated_aggregators')
+    def test_aggregation_recalc_stale_completions(self, stale_block_key, stale_force, recalc_stale, mock_calculate):
         """
         Ensure that requesting aggregation when recalculating stale completions causes the aggregations to be
         recalculated once, and the stale completion resolved.
@@ -221,10 +221,10 @@ class CourseCompletionSerializerTestCase(TestCase):
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
         self.assert_serialized_completions([], {}, recalc_stale)
         if recalc_stale:
-            assert mock_update.call_count == 1
-            assert models.StaleCompletion.objects.filter(resolved=False).count() == 0
+            assert mock_calculate.call_count == 1
+            assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
         else:
-            assert mock_update.call_count == 0
+            assert mock_calculate.call_count == 0
             assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
