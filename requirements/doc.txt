@@ -61,4 +61,4 @@ urllib3==1.23             # via requests
 web-fragments==0.2.2      # via xblock
 webencodings==0.5.1       # via html5lib
 webob==1.8.2              # via xblock
-xblock==1.2.1
+xblock==1.2.2

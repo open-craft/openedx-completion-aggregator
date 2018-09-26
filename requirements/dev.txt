@@ -80,4 +80,4 @@ web-fragments==0.2.2      # via xblock
 webob==1.8.2              # via xblock
 wheel==0.31.1
 wrapt==1.10.11            # via astroid
-xblock==1.2.1
+xblock==1.2.2
