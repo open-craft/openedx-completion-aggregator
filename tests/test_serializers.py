@@ -254,6 +254,17 @@ class CourseCompletionSerializerTestCase(TestCase):
         )
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
+    def test_mean_with_no_completions(self):
+        # A course that has no aggregators recorded.
+        course_key = CourseKey.from_string('course-v1:abc+def+ghj')
+        serial = course_completion_serializer_factory(['mean'])(AggregatorAdapter(
+            user=self.test_user,
+            course_key=course_key,
+            aggregators=[],
+        ), requested_fields={'mean'})
+        self.assertAlmostEqual(serial.data['mean'], 0)
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_mean(self):
         course_key = CourseKey.from_string('course-v1:abc+def+ghi')
         data = [

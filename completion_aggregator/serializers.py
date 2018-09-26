@@ -254,6 +254,24 @@ class CourseCompletionSerializer(serializers.Serializer):
         """
         return obj.user.username
 
+    def _calculate_mean(self, obj):
+        """
+        Caclulate mean completion percent for all enrolled users.
+        """
+        enrollments = compat.get_users_enrolled_in(obj.course_key)
+        enrollment_count = enrollments.count()
+        if enrollment_count == 0:
+            return 0.
+
+        total = Aggregator.objects.filter(
+            course_key=obj.course_key,
+            aggregation_name='course',
+        ).aggregate(Sum('percent')).get('percent__sum', 0.)
+
+        if total is None:
+            return 0.
+        return total / enrollment_count
+
     def get_mean(self, obj):
         """
         Return the mean completion percent for all enrolled users.
@@ -261,15 +279,7 @@ class CourseCompletionSerializer(serializers.Serializer):
         mean_cache_key = MEAN_CACHE_KEY_FORMAT.format(course_key=obj.course_key)
         mean = cache.get(mean_cache_key)
         if mean is None:
-            enrollments = compat.get_users_enrolled_in(obj.course_key)
-            enrollment_count = enrollments.count()
-            if enrollment_count == 0:
-                return 0.
-
-            mean = Aggregator.objects.filter(
-                course_key=obj.course_key,
-                aggregation_name='course',
-            ).aggregate(Sum('percent')).get('percent__sum', 0.) / enrollment_count
+            mean = self._calculate_mean(obj)
             cache.set(mean_cache_key, mean, 30 * 60)  # Cache for 30 mins
         return mean
 
