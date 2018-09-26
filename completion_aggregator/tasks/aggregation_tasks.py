@@ -117,6 +117,18 @@ def _update_aggregators(user, course_key, block_keys=frozenset(), force=False):
     else:
         updater.update(block_keys, force)
 
+def calculate_updated_aggregators(user, course_key, block_keys=frozenset(), force=False):
+    try:
+        updater = AggregationUpdater(user, course_key, compat.get_modulestore())
+    except compat.get_item_not_found_error():
+        log.exception("Course not found in modulestore.  Skipping aggregation for %s/%s.", user, course_key)
+        return []
+    except TypeError:
+        log.exception("Could not parse modulestore data.  Skipping aggregation for %s/%s.", user, course_key)
+        return []
+    else:
+        return updater.calculate_updated_aggregators(block_keys, force)
+
 
 class AggregationUpdater(object):
     """
@@ -158,6 +170,16 @@ class AggregationUpdater(object):
         else:
             return BagOfHolding()
 
+    def calculate_updated_aggregators(self, changed_blocks=frozenset(), force=False):
+        """
+        Return updated aggregators without sumitting them to the database.
+
+        And without clearing stale completions.
+        """
+        affected_aggregators = self.get_affected_aggregators(changed_blocks)
+        self.update_for_block(self.course_block_key, affected_aggregators, force)
+        return self.updated_aggregators
+
     def update(self, changed_blocks=frozenset(), force=False):
         """
         Update the aggregators for the course.
@@ -168,9 +190,8 @@ class AggregationUpdater(object):
         updated. Otherwise, the entire course tree will be updated.
         """
         start = timezone.now()
-        affected_aggregators = self.get_affected_aggregators(changed_blocks)
-        self.update_for_block(self.course_block_key, affected_aggregators, force)
-        Aggregator.objects.bulk_create_or_update(self.updated_aggregators)
+        updated_aggregators = self.calculate_updated_aggregators(changed_blocks, force)
+        Aggregator.objects.bulk_create_or_update(updated_aggregators)
         self.resolve_stale_completions(changed_blocks, start)
 
     def update_for_block(self, block, affected_aggregators, force=False):
@@ -179,7 +200,7 @@ class AggregationUpdater(object):
 
         Dispatches to an appropriate method given the block's completion_mode.
         """
-        mode = getattr(XBlock.load_class(block.block_type), 'completion_mode', XBlockCompletionMode.COMPLETABLE)
+        mode = XBlockCompletionMode.get_mode(XBlock.load_class(block.block_type))
         if mode == XBlockCompletionMode.EXCLUDED:
             return self.update_for_excluded()
         elif mode == XBlockCompletionMode.COMPLETABLE:

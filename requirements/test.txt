@@ -45,4 +45,4 @@ six==1.11.0
 stevedore==1.28.0         # via edx-opaque-keys
 web-fragments==0.2.2      # via xblock
 webob==1.8.2              # via xblock
-xblock==1.2.1
+xblock==1.2.2
