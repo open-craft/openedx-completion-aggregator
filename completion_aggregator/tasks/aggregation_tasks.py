@@ -117,6 +117,7 @@ def _update_aggregators(user, course_key, block_keys=frozenset(), force=False):
     else:
         updater.update(block_keys, force)
 
+
 def calculate_updated_aggregators(user, course_key, changed_blocks=frozenset(), force=False):
     try:
         updater = AggregationUpdater(user, course_key, compat.get_modulestore())
