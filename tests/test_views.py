@@ -192,11 +192,10 @@ class CompletionViewTestCase(TestCase):
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    @patch.object(AggregationUpdater, 'calculate_updated_aggregators')
-    def test_list_view_stale_completion(self, version, mock_calculate):
+    @patch.object(AggregationUpdater, 'update')
+    def test_list_view_stale_completion(self, version, mock_update):
         """
-        Ensure that a stale completion causes the aggregations to be recalculated, but not updated in the db,
-        and stale completion is not resolved.
+        Ensure that a stale completion causes the aggregations to be recalculated once, and stale completion resolved.
         """
         models.StaleCompletion.objects.create(
             username=self.test_user.username,
@@ -206,8 +205,8 @@ class CompletionViewTestCase(TestCase):
         )
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
         self.assert_expected_list_view(version)
-        assert mock_calculate.call_count == 1
-        assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
+        assert mock_update.call_count == 1
+        assert models.StaleCompletion.objects.filter(resolved=False).count() == 0
 
     @ddt.data(0, 1)
     def test_list_view_enrolled_no_progress(self, version):
@@ -302,10 +301,10 @@ class CompletionViewTestCase(TestCase):
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    @patch.object(AggregationUpdater, 'calculate_updated_aggregators')
-    def test_detail_view_stale_completion(self, version, mock_calculate):
+    @patch.object(AggregationUpdater, 'update')
+    def test_detail_view_stale_completion(self, version, mock_update):
         """
-        Ensure that a stale completion causes the aggregations to be recalculated once, and stale completion not resolved.
+        Ensure that a stale completion causes the aggregations to be recalculated once, and stale completion resolved.
         """
         models.StaleCompletion.objects.create(
             username=self.test_user.username,
@@ -315,8 +314,8 @@ class CompletionViewTestCase(TestCase):
         )
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
         self.assert_expected_detail_view(version)
-        assert mock_calculate.call_count == 1
-        assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
+        assert mock_update.call_count == 1
+        assert models.StaleCompletion.objects.filter(resolved=False).count() == 0
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
