@@ -128,7 +128,7 @@ def get_affected_aggregators(course_blocks, changed_blocks):
             AggregatorAnnotationTransformer,
             AggregatorAnnotationTransformer.AGGREGATORS
         )
-        affected_aggregators.update(block_aggregators)
+        affected_aggregators.update(block_aggregators or [])
     return affected_aggregators
 
 

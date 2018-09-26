@@ -306,7 +306,7 @@ class CompletionViewTestCase(TestCase):
     def test_detail_view_stale_completion(self, version, mock_calculate):
         """
         Ensure that a stale completion causes the aggregations to be recalculated once.
-        
+
         Verify that the stale completion not resolved.
         """
         models.StaleCompletion.objects.create(

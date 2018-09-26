@@ -117,7 +117,7 @@ def _update_aggregators(user, course_key, block_keys=frozenset(), force=False):
     else:
         updater.update(block_keys, force)
 
-def calculate_updated_aggregators(user, course_key, block_keys=frozenset(), force=False):
+def calculate_updated_aggregators(user, course_key, changed_blocks=frozenset(), force=False):
     try:
         updater = AggregationUpdater(user, course_key, compat.get_modulestore())
     except compat.get_item_not_found_error():
@@ -127,7 +127,7 @@ def calculate_updated_aggregators(user, course_key, block_keys=frozenset(), forc
         log.exception("Could not parse modulestore data.  Skipping aggregation for %s/%s.", user, course_key)
         return []
     else:
-        return updater.calculate_updated_aggregators(block_keys, force)
+        return updater.calculate_updated_aggregators(changed_blocks, force)
 
 
 class AggregationUpdater(object):

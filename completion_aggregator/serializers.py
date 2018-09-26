@@ -9,7 +9,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 from collections import defaultdict
 
-import six 
+import six
 from rest_framework import serializers
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
@@ -20,7 +20,7 @@ from django.db.models import Sum
 
 from . import compat
 from .models import Aggregator, StaleCompletion
-from .tasks.aggregation_tasks import AggregationUpdater, calculate_updated_aggregators
+from .tasks.aggregation_tasks import calculate_updated_aggregators
 
 log = logging.getLogger(__name__)
 
@@ -115,7 +115,8 @@ class AggregatorAdapter(object):
                     course_key=self.course_key,
                 )
             }
-        else: stale_blocks = []
+        else:
+            stale_blocks = []
 
         self.update_aggregators(aggregators or [], stale_blocks=stale_blocks)
 
@@ -151,8 +152,8 @@ class AggregatorAdapter(object):
             updated_aggregators = calculate_updated_aggregators(
                 self.user,
                 self.course_key,
-                block_keys=stale_blocks,
-                force=True,
+                changed_blocks=stale_blocks,
+                force=False,
             )
             updated_dict = {aggregator.block_key: aggregator for aggregator in updated_aggregators}
             iterable = (updated_dict.get(agg.block_key, agg) for agg in iterable)
