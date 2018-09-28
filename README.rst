@@ -12,13 +12,15 @@ Overview
 openedx-completion-aggregator uses the pluggable django app pattern to
 ease installation.  To use in edx-platform, do the following:
 
-1.  Install the app into your virtualenv.
-
-    ..code_block::
+1.  Install the app into your virtualenv::
 
         $ pip install openedx-completion-aggregator
 
-2.  [Optional] You may override the set of registered aggregator block types in
+2. Go to Django admin panel -> Waffle -> Switches, add new switch with name ``completion.enable_completion_tracking`` and set it to ``Active``. Now run::
+
+        $ ./manage.py lms migrate_progress --settings=devstack
+
+3.  [Optional] You may override the set of registered aggregator block types in
     your lms.env.json file::
 
         ...
@@ -30,8 +32,7 @@ ease installation.  To use in edx-platform, do the following:
         },
         ...
 
-
-3.  By default, completion is aggregated with each created or updated
+4.  By default, completion is aggregated with each created or updated
     BlockCompletion.  If this creates too much database activity for your
     installation, set the following in your lms.env.json file::
 
@@ -39,12 +40,11 @@ ease installation.  To use in edx-platform, do the following:
         "COMPLETION_AGGREGATOR_ASYNC_AGGREGATION": true,
         ...
 
-    Then configure up a pair of cron jobs to run `./manage.py
-    run_aggregator_service` and `./manage.py run_aggregator_cleanup` as often
-    as desired.
+    Then configure up a pair of cron jobs to run ``./manage.py lms run_aggregator_service --settings=devstack``
+    and ``./manage.py lms run_aggregator_cleanup --settings=devstack`` as often as desired.
 
 Note that if operating on a Hawthorne-or-later release of edx-platform, you may
-override the settings in `EDXAPP_ENV_EXTRA` instead.
+override the settings in ``EDXAPP_ENV_EXTRA`` instead.
 
 Documentation
 -------------
