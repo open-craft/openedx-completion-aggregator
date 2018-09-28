@@ -89,7 +89,9 @@ class CompletionViewMixin(object):
         Allow users authenticated via OAuth2 or normal session authentication.
         """
         from openedx.core.lib.api import authentication  # pylint: disable=import-error
+        from edx_rest_framework_extensions.authentication import JwtAuthentication  # pylint: disable=import-error
         return [
+            JwtAuthentication,
             authentication.OAuth2AuthenticationAllowInactiveUser,
             authentication.SessionAuthenticationAllowInactiveUser,
         ]
