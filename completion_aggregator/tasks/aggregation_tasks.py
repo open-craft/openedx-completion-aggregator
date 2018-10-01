@@ -233,7 +233,10 @@ class AggregationUpdater(object):
             if modified is not None:
                 last_modified = max(last_modified, modified)
         if self._aggregator_needs_update(block, last_modified, force):
-
+            if total_possible == 0.0:
+                percent = 1.0
+            else:
+                percent = total_earned / total_possible
             Aggregator.objects.validate(self.user, self.course_key, block)
             if block not in self.aggregators:
                 aggregator = Aggregator(
@@ -243,6 +246,7 @@ class AggregationUpdater(object):
                     aggregation_name=block.block_type,
                     earned=total_earned,
                     possible=total_possible,
+                    percent=percent,
                     last_modified=last_modified,
                 )
                 self.aggregators[block] = aggregator
@@ -250,6 +254,7 @@ class AggregationUpdater(object):
                 aggregator = self.aggregators[block]
                 aggregator.earned = total_earned
                 aggregator.possible = total_possible
+                aggregator.percent = percent
                 aggregator.last_modified = last_modified
                 aggregator.modified = timezone.now()
             self.updated_aggregators.append(aggregator)

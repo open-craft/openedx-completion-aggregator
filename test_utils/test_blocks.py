@@ -20,3 +20,10 @@ class StubSequential(XBlock):
     Stub sequential block
     """
     completion_mode = XBlockCompletionMode.AGGREGATOR
+
+
+class StubHTML(XBlock):
+    """
+    Stub HTML block
+    """
+    completion_mode = XBlockCompletionMode.COMPLETABLE

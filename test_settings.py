@@ -20,7 +20,7 @@ def root(*args):
 
 AUTH_USER_MODEL = 'auth.User'
 CELERY_ALWAYS_EAGER = True
-COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter'}
+COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter', 'sequential'}
 COMPLETION_AGGREGATOR_ASYNC_AGGREGATION = True
 
 DATABASES = {
@@ -63,6 +63,12 @@ REST_FRAMEWORK = {
 
 ROOT_URLCONF = 'completion_aggregator.urls'
 SECRET_KEY = 'insecure-secret-key'
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+    },
+]
 USE_TZ = True
 
 # pylint: disable=unused-import,wrong-import-position
