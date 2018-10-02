@@ -148,14 +148,11 @@ class AggregatorAdapter(object):
         """
         if is_stale:
             log.info("Stale completions found for %s+%s, recalculating.", self.user, self.course_key)
-            updated_aggregators = calculate_updated_aggregators(
+            iterable = calculate_updated_aggregators(
                 self.user,
                 self.course_key,
                 force=True,
             )
-            updated_dict = {aggregator.block_key: aggregator for aggregator in updated_aggregators}
-            iterable = (updated_dict.get(agg.block_key, agg) for agg in iterable)
-
         for aggregator in iterable:
             self.add_aggregator(aggregator)
 

@@ -4,6 +4,7 @@ Testing the functionality of asynchronous tasks
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from collections import namedtuple
 from datetime import timedelta
 
 import ddt
@@ -172,6 +173,154 @@ class AggregationUpdaterTestCase(TestCase):
             mock_update_constructor.side_effect = RuntimeError('test')
             with pytest.raises(RuntimeError):
                 update_aggregators(username='saskia', course_key='course-v1:OpenCraft+Onboarding+2018')
+
+
+class CalculateUpdatedAggregatorsTestCase(TestCase):
+    """
+    Test that AggragationUpdater.calculate_updated_aggregators() finds the latest completions.
+    """
+    expected_result = namedtuple('expected_result', ['block_key', 'earned', 'updated_earned', 'possible'])
+
+    def setUp(self):
+        self.user = get_user_model().objects.create(username='testuser', email='testuser@example.com')
+        self.course_key = CourseKey.from_string('OpenCraft/Onboarding/2018')
+        self.blocks = [
+            self.course_key.make_usage_key('course', 'course'),
+            self.course_key.make_usage_key('chapter', 'course-chapter1'),
+            self.course_key.make_usage_key('chapter', 'course-chapter2'),
+            self.course_key.make_usage_key('html', 'course-chapter1-block1'),
+            self.course_key.make_usage_key('html', 'course-chapter1-block2'),
+            self.course_key.make_usage_key('html', 'course-chapter2-block1'),
+            self.course_key.make_usage_key('html', 'course-chapter2-block2'),
+            self.course_key.make_usage_key('chapter', 'course-zeropossible'),
+        ]
+        patch = mock.patch('completion_aggregator.tasks.aggregation_tasks.compat', StubCompat(self.blocks))
+        patch.start()
+        self.addCleanup(patch.stop)
+
+        BlockCompletion.objects.create(
+            user=self.user,
+            course_key=self.course_key,
+            block_key=self.blocks[3],
+            completion=1.0,
+            modified=now(),
+        )
+
+    def _get_updater(self):
+        """
+        Return a fresh instance of an AggregationUpdater.
+        """
+        return AggregationUpdater(self.user, self.course_key, mock.MagicMock())
+
+    def assert_expected_results(self, updated, expected):
+        updated_dict = {agg.block_key: agg for agg in updated}
+        for outcome in expected:
+            if outcome.earned is None:
+                with self.assertRaises(Aggregator.DoesNotExist):
+                    Aggregator.objects.get(block_key=outcome.block_key)
+            else:
+                agg = Aggregator.objects.get(block_key=outcome.block_key)
+                assert agg.earned == outcome.earned
+                assert agg.possible == outcome.possible
+                assert agg.percent == outcome.earned / outcome.possible
+            updated_agg = updated_dict[outcome.block_key]
+            assert updated_agg.earned == outcome.updated_earned
+            assert updated_agg.possible == outcome.possible
+            assert updated_agg.percent == outcome.updated_earned / outcome.possible
+
+    @XBlock.register_temp_plugin(CourseBlock, 'course')
+    @XBlock.register_temp_plugin(OtherAggBlock, 'chapter')
+    @XBlock.register_temp_plugin(HTMLBlock, 'html')
+    def test_unmodified_course(self):
+        self._get_updater().update()
+        self.assert_expected_results(
+            self._get_updater().calculate_updated_aggregators(),
+            [
+                self.expected_result(
+                    block_key=self.blocks[0],
+                    earned=1.0,
+                    updated_earned=1.0,
+                    possible=4.0,
+                ),
+                self.expected_result(
+                    block_key=self.blocks[1],
+                    earned=1.0,
+                    updated_earned=1.0,
+                    possible=2.0,
+                ),
+                self.expected_result(
+                    block_key=self.blocks[2],
+                    earned=0.0,
+                    updated_earned=0.0,
+                    possible=2.0,
+                ),
+            ]
+        )
+
+    @XBlock.register_temp_plugin(CourseBlock, 'course')
+    @XBlock.register_temp_plugin(OtherAggBlock, 'chapter')
+    @XBlock.register_temp_plugin(HTMLBlock, 'html')
+    def test_modified_course(self):
+        self._get_updater().update()
+        for block in self.blocks[4], self.blocks[6]:
+            BlockCompletion.objects.create(
+                user=self.user,
+                course_key=self.course_key,
+                block_key=block,
+                completion=1.0,
+                modified=now(),
+            )
+        self.assert_expected_results(
+            self._get_updater().calculate_updated_aggregators(),
+            [
+                self.expected_result(
+                    block_key=self.blocks[0],
+                    earned=1.0,
+                    updated_earned=3.0,
+                    possible=4.0,
+                ),
+                self.expected_result(
+                    block_key=self.blocks[1],
+                    earned=1.0,
+                    updated_earned=2.0,
+                    possible=2.0,
+                ),
+                self.expected_result(
+                    block_key=self.blocks[2],
+                    earned=0.0,
+                    updated_earned=1.0,
+                    possible=2.0,
+                ),
+            ]
+        )
+
+    @XBlock.register_temp_plugin(CourseBlock, 'course')
+    @XBlock.register_temp_plugin(OtherAggBlock, 'chapter')
+    @XBlock.register_temp_plugin(HTMLBlock, 'html')
+    def test_never_aggregated(self):
+        self.assert_expected_results(
+            self._get_updater().calculate_updated_aggregators(),
+            [
+                self.expected_result(
+                    block_key=self.blocks[0],
+                    earned=None,
+                    updated_earned=1.0,
+                    possible=4.0,
+                ),
+                self.expected_result(
+                    block_key=self.blocks[1],
+                    earned=None,
+                    updated_earned=1.0,
+                    possible=2.0,
+                ),
+                self.expected_result(
+                    block_key=self.blocks[2],
+                    earned=None,
+                    updated_earned=0.0,
+                    possible=2.0,
+                ),
+            ]
+        )
 
 
 class PartialUpdateTest(TestCase):

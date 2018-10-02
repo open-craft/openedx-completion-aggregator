@@ -20,11 +20,12 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
 
+from completion.models import BlockCompletion
 from completion_aggregator import models
 from completion_aggregator.api.v1.views import CompletionViewMixin
 from completion_aggregator.tasks.aggregation_tasks import AggregationUpdater
 from test_utils.compat import StubCompat
-from test_utils.test_blocks import StubCourse, StubSequential
+from test_utils.test_blocks import StubCourse, StubHTML, StubSequential
 
 empty_compat = StubCompat([])
 
@@ -55,9 +56,6 @@ def _create_oauth2_token(user):
 
 
 @ddt.ddt
-@patch('completion_aggregator.api.common.compat', empty_compat)
-@patch('completion_aggregator.serializers.compat', empty_compat)
-@patch('completion_aggregator.tasks.aggregation_tasks.compat', empty_compat)
 class CompletionViewTestCase(TestCase):
     """
     Test that the CompletionView renders completion data properly.
@@ -76,6 +74,29 @@ class CompletionViewTestCase(TestCase):
             user=self.test_user,
             course_id=self.course_key,
         )
+        self.blocks = [
+            self.course_key.make_usage_key('course', 'course'),
+            self.course_key.make_usage_key('sequential', 'course-sequence1'),
+            self.course_key.make_usage_key('sequential', 'course-sequence2'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html1'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html2'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html3'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html4'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html5'),
+            self.course_key.make_usage_key('html', 'course-sequence2-html6'),
+            self.course_key.make_usage_key('html', 'course-sequence2-html7'),
+            self.course_key.make_usage_key('html', 'course-sequence2-html8'),
+        ]
+        compat = StubCompat(self.blocks)
+        for compat_import in (
+                'completion_aggregator.api.common.compat',
+                'completion_aggregator.serializers.compat',
+                'completion_aggregator.tasks.aggregation_tasks.compat',
+        ):
+            patcher = patch(compat_import, compat)
+            patcher.start()
+            self.addCleanup(patcher.__exit__, None, None, None)
+
         self.patch_object(
             CompletionViewMixin,
             'authentication_classes',
@@ -98,6 +119,7 @@ class CompletionViewTestCase(TestCase):
         """
         patcher = patch.object(obj, method, **kwargs)
         patcher.start()
+
         self.addCleanup(patcher.__exit__, None, None, None)
         return patcher
 
@@ -105,10 +127,18 @@ class CompletionViewTestCase(TestCase):
         """
         Create completion data to test against.
         """
+        BlockCompletion.objects.create(
+            user=self.test_user,
+            course_key=self.course_key,
+            block_key=self.blocks[3],
+            block_type='html',
+            completion=1.0,
+        )
+        models.StaleCompletion.objects.update(resolved=True)
         models.Aggregator.objects.submit_completion(
             user=self.test_user,
             course_key=self.course_key,
-            block_key=self.course_key.make_usage_key(block_type='sequential', block_id='vertical_sequential'),
+            block_key=self.course_key.make_usage_key(block_type='sequential', block_id='course-sequence1'),
             aggregation_name='sequential',
             earned=1.0,
             possible=5.0,
@@ -121,7 +151,7 @@ class CompletionViewTestCase(TestCase):
             block_key=self.course_key.make_usage_key(block_type='course', block_id='course'),
             aggregation_name='course',
             earned=1.0,
-            possible=12.0,
+            possible=8.0,
             last_modified=timezone.now(),
         )
 
@@ -134,7 +164,7 @@ class CompletionViewTestCase(TestCase):
             course_id=course_id,
         )
 
-    def _get_expected_completion(self, version, earned=1.0, possible=12.0, percent=0.0833333333333333):
+    def _get_expected_completion(self, version, earned=1.0, possible=8.0, percent=0.125):
         """
         Return completion section based on version.
         """
@@ -167,7 +197,7 @@ class CompletionViewTestCase(TestCase):
         """
         Ensures that the expected data is returned from the versioned list view.
         """
-        response = self.client.get(self.list_url.format(version))
+        response = self.client.get(self.list_url.format(version), params={'username': self.test_user.username})
         self.assertEqual(response.status_code, 200)
         expected = {
             'count': 1,
@@ -184,6 +214,8 @@ class CompletionViewTestCase(TestCase):
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     @patch.object(AggregationUpdater, 'update')
     def test_list_view(self, version, mock_update):
         self.assert_expected_list_view(version)
@@ -192,24 +224,30 @@ class CompletionViewTestCase(TestCase):
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    @patch.object(AggregationUpdater, 'calculate_updated_aggregators')
-    def test_list_view_stale_completion(self, version, mock_calculate):
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_list_view_stale_completion(self, version):
         """
-        Ensure that a stale completion causes the aggregations to be recalculated, but not updated in the db,
-        and stale completion is not resolved.
+        Ensure that a stale completion causes the aggregations to be
+        recalculated, but not updated in the db, and stale completion is not
+        resolved.
         """
         models.StaleCompletion.objects.create(
             username=self.test_user.username,
             course_key=self.course_key,
             block_key=None,
-            force=False,
+            force=True,
+            resolved=False,
         )
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
         self.assert_expected_list_view(version)
-        assert mock_calculate.call_count == 1
+        # assert mock_calculate.call_count == 1
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
 
     @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_list_view_enrolled_no_progress(self, version):
         """
         Test that the completion API returns a record for each course the user is enrolled in,
@@ -230,9 +268,9 @@ class CompletionViewTestCase(TestCase):
                     'course_key': 'edX/toy/2012_Fall',
                     'completion': self._get_expected_completion(
                         version,
-                        earned=0.0,
-                        possible=None,
-                        percent=0.0,
+                        earned=1.0,
+                        possible=8.0,
+                        percent=0.125,
                     ),
                 },
                 {
@@ -251,6 +289,7 @@ class CompletionViewTestCase(TestCase):
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_list_view_with_sequentials(self, version):
         response = self.client.get(self.get_list_url(version, requested_fields='sequential'))
         self.assertEqual(response.status_code, 200)
@@ -265,7 +304,7 @@ class CompletionViewTestCase(TestCase):
                     'sequential': [
                         {
                             'course_key': u'edX/toy/2012_Fall',
-                            'block_key': u'i4x://edX/toy/sequential/vertical_sequential',
+                            'block_key': u'i4x://edX/toy/sequential/course-sequence1',
                             'completion': self._get_expected_completion(
                                 version,
                                 earned=1.0,
@@ -294,6 +333,8 @@ class CompletionViewTestCase(TestCase):
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     @patch.object(AggregationUpdater, 'update')
     def test_detail_view(self, version, mock_update):
         self.assert_expected_detail_view(version)
@@ -302,8 +343,9 @@ class CompletionViewTestCase(TestCase):
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
-    @patch.object(AggregationUpdater, 'calculate_updated_aggregators')
-    def test_detail_view_stale_completion(self, version, mock_calculate):
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_detail_view_stale_completion(self, version):
         """
         Ensure that a stale completion causes the aggregations to be recalculated once.
 
@@ -317,11 +359,12 @@ class CompletionViewTestCase(TestCase):
         )
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
         self.assert_expected_detail_view(version)
-        assert mock_calculate.call_count == 1
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_detail_view_oauth2(self, version):
         """
         Test the detail view using OAuth2 Authentication
@@ -343,6 +386,9 @@ class CompletionViewTestCase(TestCase):
             self.assertEqual(response.data['results'][0]['completion']['earned'], 1.0)
 
     @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_detail_view_not_enrolled(self, version):
         """
         Test that requesting course completions for a course the user is not enrolled in
@@ -358,6 +404,9 @@ class CompletionViewTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
 
     @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_detail_view_inactive_enrollment(self, version):
         self.test_enrollment.is_active = False
         self.test_enrollment.save()
@@ -366,6 +415,8 @@ class CompletionViewTestCase(TestCase):
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_detail_view_no_completion(self, version):
         """
         Test that requesting course completions for a course which has started, but the user has not yet started,
@@ -387,6 +438,7 @@ class CompletionViewTestCase(TestCase):
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_detail_view_with_sequentials(self, version):
         response = self.client.get(self.get_detail_url(version, self.course_key, requested_fields='sequential'))
         self.assertEqual(response.status_code, 200)
@@ -396,7 +448,7 @@ class CompletionViewTestCase(TestCase):
             'sequential': [
                 {
                     'course_key': u'edX/toy/2012_Fall',
-                    'block_key': u'i4x://edX/toy/sequential/vertical_sequential',
+                    'block_key': u'i4x://edX/toy/sequential/course-sequence1',
                     'completion': self._get_expected_completion(version, earned=1.0, possible=5.0, percent=0.2),
                 },
             ]
@@ -406,6 +458,8 @@ class CompletionViewTestCase(TestCase):
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_detail_view_staff_requested_user(self, version):
         """
         Test that requesting course completions for a specific user filters out the other enrolled users
@@ -421,6 +475,8 @@ class CompletionViewTestCase(TestCase):
         self.assertEqual(response.data, expected)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     @patch.object(AggregationUpdater, 'update')
     def test_detail_view_staff_all_users(self, mock_update):
         """
@@ -436,7 +492,7 @@ class CompletionViewTestCase(TestCase):
         models.Aggregator.objects.submit_completion(
             user=another_user,
             course_key=self.course_key,
-            block_key=self.course_key.make_usage_key(block_type='sequential', block_id='vertical_sequential'),
+            block_key=self.course_key.make_usage_key(block_type='sequential', block_id='course-sequence1'),
             aggregation_name='sequential',
             earned=3.0,
             possible=5.0,
@@ -482,6 +538,9 @@ class CompletionViewTestCase(TestCase):
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 2
 
     @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_invalid_optional_fields(self, version):
         response = self.client.get(
             self.detail_url_fmt.format(version, 'edX/toy/2012_Fall') + '?requested_fields=INVALID'
@@ -489,6 +548,9 @@ class CompletionViewTestCase(TestCase):
         self.assertEqual(response.status_code, 400)
 
     @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_unauthenticated(self, version):
         self.client.force_authenticate(None)
         detailresponse = self.client.get(self.get_detail_url(version, self.course_key))
@@ -498,11 +560,16 @@ class CompletionViewTestCase(TestCase):
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_request_self(self, version):
         response = self.client.get(self.get_list_url(version, username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
 
     @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_wrong_user(self, version):
         user = User.objects.create(username='wrong')
         self.client.force_authenticate(user)
@@ -510,6 +577,9 @@ class CompletionViewTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
 
     @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_no_user(self, version):
         self.client.logout()
         response = self.client.get(self.get_list_url(version))
@@ -517,6 +587,8 @@ class CompletionViewTestCase(TestCase):
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_staff_access(self, version):
         self.client.force_authenticate(self.staff_user)
         response = self.client.get(self.get_list_url(version, username=self.test_user.username))
@@ -525,12 +597,14 @@ class CompletionViewTestCase(TestCase):
         self.assertEqual(response.data['results'][0]['completion'], expected_completion)
 
     @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_staff_access_non_user(self, version):
         self.client.force_authenticate(self.staff_user)
         response = self.client.get(self.get_list_url(version, username='who-dat'))
         self.assertEqual(response.status_code, 404)
 
-    @XBlock.register_temp_plugin(StubCourse, 'course')
     def get_detail_url(self, version, course_key, **params):
         """
         Given a course_key and a number of key-value pairs as keyword arguments,

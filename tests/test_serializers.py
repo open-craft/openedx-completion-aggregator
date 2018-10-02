@@ -83,7 +83,7 @@ class CourseCompletionSerializerTestCase(TestCase):
         for this set of submitted completions.
         """
         serializer_cls = course_completion_serializer_factory(serializer_cls_args)
-        completions = [
+        aggregators = [
             models.Aggregator.objects.submit_completion(
                 user=self.test_user,
                 course_key=self.course_key,
@@ -112,21 +112,27 @@ class CourseCompletionSerializerTestCase(TestCase):
                 last_modified=timezone.now(),
             )[0],
         ]
+        is_stale = recalc_stale and models.StaleCompletion.objects.filter(
+            username=self.test_user.username,
+            course_key=self.course_key,
+            resolved=False
+        )
         completion = AggregatorAdapter(
             user=self.test_user,
             course_key=self.course_key,
-            aggregators=completions,
+            aggregators=aggregators,
             recalculate_stale=recalc_stale,
         )
         serial = serializer_cls(completion)
         expected = {
             'course_key': str(self.course_key),
             'completion': {
-                'earned': 16.0,
-                'possible': 19.0,
-                'percent': 16 / 19,
+                'earned': 0.0 if is_stale else 16.0,
+                'possible': None if is_stale else 19.0,
+                'percent': 0.0 if is_stale else 16 / 19,
             },
         }
+
         expected.update(extra_body)
         # Need to allow for rounding error when retrieving the percent from the test database
         self.assertEqual(serial.data['course_key'], expected['course_key'])
@@ -177,11 +183,9 @@ class CourseCompletionSerializerTestCase(TestCase):
     @ddt.unpack
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
-    @patch.object(AggregationUpdater, 'update')
-    def test_serialize_student_progress_object(self, serializer_cls_args, extra_body, recalc_stale, mock_update):
+    def test_serialize_aggregators(self, serializer_cls_args, extra_body, recalc_stale):
+        assert not models.StaleCompletion.objects.filter(resolved=False).exists()
         self.assert_serialized_completions(serializer_cls_args, extra_body, recalc_stale)
-        # no stale completions, so aggregations are not updated
-        assert mock_update.call_count == 0
 
     @ddt.data(
         (None, True, False),
@@ -207,10 +211,9 @@ class CourseCompletionSerializerTestCase(TestCase):
     @patch.object(AggregationUpdater, 'calculate_updated_aggregators')
     def test_aggregation_recalc_stale_completions(self, stale_block_key, stale_force, recalc_stale, mock_calculate):
         """
-        Ensure that requesting aggregation when recalculating stale completions causes the aggregations to be
-        recalculated once, and the stale completion resolved.
-
-        If not recalculating the stale completion, then it should remain unresolved.
+        Ensure that requesting aggregation when recalculating stale completions
+        causes the aggregations to be recalculated once, but does not resolve
+        stale completions.
         """
         models.StaleCompletion.objects.create(
             username=self.test_user.username,
