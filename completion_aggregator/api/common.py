@@ -1,7 +1,7 @@
 """
 Common classes for api views
 """
-from rest_framework.exceptions import NotFound, ParseError
+from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
 from django.contrib.auth import get_user_model
@@ -120,8 +120,11 @@ class CompletionViewMixin(object):
 
         requested_username = self.request.GET.get('username')
         if not requested_username:
-            user = self.request.user
-            self._requested_user = None
+            if self.request.user.is_staff:
+                user = self.request.user
+                self._requested_user = None
+            else:
+                raise PermissionDenied()
         else:
             if self.request.user.is_staff:
                 try:
@@ -132,7 +135,7 @@ class CompletionViewMixin(object):
                 if self.request.user.username.lower() == requested_username.lower():
                     user = self.request.user
                 else:
-                    raise NotFound()
+                    raise PermissionDenied()
             self._requested_user = user
         self._effective_user = user
         return self._effective_user
