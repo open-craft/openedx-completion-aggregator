@@ -68,8 +68,8 @@ class CompletionListView(CompletionViewMixin, APIView):
 
         username (optional):
             The username of the specified user for whom the course data is
-            being accessed.  If not specified, this will show data for all users
-            if performed by a staff user, otherwise it will throw a 403 Error.
+            being accessed. If not specified, this will show data for all users
+            if requested by a staff user, otherwise it will throw a 403 Error.
 
         requested_fields (optional):
             A comma separated list of extra data to be returned.  This can be
@@ -258,7 +258,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
 
         username (optional):
             The username of the specified user for whom the course data is being
-            accessed. If a non-staff users tries to access another users data they
+            accessed. If a non-staff users try to access another user's data they
             will get a 403 Error.
             If omitted, and the requesting user has staff access, then data for
             all enrolled users is returned. If the requesting user does not have
