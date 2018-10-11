@@ -648,6 +648,24 @@ class CompletionViewTestCase(TestCase):
         response = self.client.get(self.get_list_url(version, username=test_user2.username))
         self.assertEqual(response.status_code, 403)
 
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_no_staff_access_no_user(self, version):
+        self.client.force_authenticate(self.test_user)
+        response = self.client.get(self.get_list_url(version))
+        self.assertEqual(response.status_code, 403)
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_staff_access_no_user(self, version):
+        self.client.force_authenticate(self.staff_user)
+        response = self.client.get(self.get_list_url(version))
+        self.assertEqual(response.status_code, 200)
+
     def get_detail_url(self, version, course_key, **params):
         """
         Given a course_key and a number of key-value pairs as keyword arguments,
