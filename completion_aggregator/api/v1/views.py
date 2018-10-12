@@ -258,7 +258,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
 
         username (optional):
             The username of the specified user for whom the course data is being
-            accessed. If a non-staff users try to access another user's data they
+            accessed. If non-staff users try to access another user's data they
             will get a 403 Error.
             If omitted, and the requesting user has staff access, then data for
             all enrolled users is returned. If the requesting user does not have
