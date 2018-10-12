@@ -197,7 +197,7 @@ class CompletionViewTestCase(TestCase):
         """
         Ensures that the expected data is returned from the versioned list view.
         """
-        response = self.client.get(self.list_url.format(version), params={'username': self.test_user.username})
+        response = self.client.get(self.get_list_url(version, username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
         expected = {
             'count': 1,
@@ -257,7 +257,7 @@ class CompletionViewTestCase(TestCase):
             user=self.test_user,
             course_id=self.other_org_course_key,
         )
-        response = self.client.get(self.list_url.format(version))
+        response = self.client.get(self.get_list_url(version, username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
         expected = {
             'count': 2,
@@ -291,7 +291,9 @@ class CompletionViewTestCase(TestCase):
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_list_view_with_sequentials(self, version):
-        response = self.client.get(self.get_list_url(version, requested_fields='sequential'))
+        response = self.client.get(self.get_list_url(version,
+                                                     username=self.test_user.username,
+                                                     requested_fields='sequential'))
         self.assertEqual(response.status_code, 200)
         expected = {
             'count': 1,
@@ -322,7 +324,9 @@ class CompletionViewTestCase(TestCase):
         """
         Ensures that the expected data is returned from the versioned detail view.
         """
-        response = self.client.get(self.get_detail_url(version, six.text_type(self.course_key)))
+        response = self.client.get(self.get_detail_url(version,
+                                                       six.text_type(self.course_key),
+                                                       username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
         expected_values = {
             'course_key': 'edX/toy/2012_Fall',
@@ -376,7 +380,7 @@ class CompletionViewTestCase(TestCase):
         # Now, try with a valid token header:
         token = _create_oauth2_token(self.test_user)
         response = self.client.get(
-            self.get_detail_url(version, self.course_key),
+            self.get_detail_url(version, self.course_key, username=self.test_user.username),
             HTTP_AUTHORIZATION="Bearer {0}".format(token)
         )
         self.assertEqual(response.status_code, 200)
@@ -410,7 +414,7 @@ class CompletionViewTestCase(TestCase):
     def test_detail_view_inactive_enrollment(self, version):
         self.test_enrollment.is_active = False
         self.test_enrollment.save()
-        response = self.client.get(self.get_detail_url(version, self.course_key))
+        response = self.client.get(self.get_detail_url(version, self.course_key, username=self.test_user.username))
         self.assertEqual(response.status_code, 404)
 
     @ddt.data(0, 1)
@@ -426,7 +430,9 @@ class CompletionViewTestCase(TestCase):
             user=self.test_user,
             course_id=self.other_org_course_key,
         )
-        response = self.client.get(self.get_detail_url(version, self.other_org_course_key))
+        response = self.client.get(self.get_detail_url(version,
+                                                       self.other_org_course_key,
+                                                       username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
         expected_values = {
             'course_key': 'otherOrg/toy/2012_Fall',
@@ -440,7 +446,11 @@ class CompletionViewTestCase(TestCase):
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_detail_view_with_sequentials(self, version):
-        response = self.client.get(self.get_detail_url(version, self.course_key, requested_fields='sequential'))
+        response = self.client.get(self.get_detail_url(version,
+                                                       self.course_key,
+                                                       username=self.test_user.username,
+                                                       requested_fields='sequential')
+                                   )
         self.assertEqual(response.status_code, 200)
         expected_values = {
             'course_key': 'edX/toy/2012_Fall',
@@ -543,7 +553,12 @@ class CompletionViewTestCase(TestCase):
     @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_invalid_optional_fields(self, version):
         response = self.client.get(
-            self.detail_url_fmt.format(version, 'edX/toy/2012_Fall') + '?requested_fields=INVALID'
+            self.get_detail_url(
+                version,
+                'edX/toy/2012_Fall',
+                username=self.test_user.username,
+                requested_fields="INVALID"
+            )
         )
         self.assertEqual(response.status_code, 400)
 
@@ -574,7 +589,7 @@ class CompletionViewTestCase(TestCase):
         user = User.objects.create(username='wrong')
         self.client.force_authenticate(user)
         response = self.client.get(self.get_list_url(version, username=self.test_user.username))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
@@ -604,6 +619,52 @@ class CompletionViewTestCase(TestCase):
         self.client.force_authenticate(self.staff_user)
         response = self.client.get(self.get_list_url(version, username='who-dat'))
         self.assertEqual(response.status_code, 404)
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_no_staff_access_other_user_detail(self, version):
+        self.client.force_authenticate(self.test_user)
+        test_user2 = User.objects.create(username='test_user2')
+        self.create_enrollment(
+            user=test_user2,
+            course_id=self.course_key,
+        )
+        response = self.client.get(self.get_detail_url(version, self.course_key, username=test_user2.username))
+        self.assertEqual(response.status_code, 403)
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_no_staff_access_other_user(self, version):
+        self.client.force_authenticate(self.test_user)
+        test_user2 = User.objects.create(username='test_user2')
+        self.create_enrollment(
+            user=test_user2,
+            course_id=self.course_key,
+        )
+        response = self.client.get(self.get_list_url(version, username=test_user2.username))
+        self.assertEqual(response.status_code, 403)
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_no_staff_access_no_user(self, version):
+        self.client.force_authenticate(self.test_user)
+        response = self.client.get(self.get_list_url(version))
+        self.assertEqual(response.status_code, 403)
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_staff_access_no_user(self, version):
+        self.client.force_authenticate(self.staff_user)
+        response = self.client.get(self.get_list_url(version))
+        self.assertEqual(response.status_code, 200)
 
     def get_detail_url(self, version, course_key, **params):
         """
