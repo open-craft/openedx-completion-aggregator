@@ -24,12 +24,45 @@ class Command(BaseCommand):
     run_aggregator_service management command.
     """
 
+    def add_arguments(self, parser):
+        """
+        Add command-line arguments
+        """
+        parser.add_argument(
+            '--batch-size',
+            help='Maximum number of CourseModuleCompletions to migrate, per celery task. (default: 10000)',
+            default=10000,
+            type=int,
+        )
+        parser.add_argument(
+            '--delay-between-batches',
+            help='Amount of time to wait between processing batches in seconds.  (default: 0.0)',
+            default=0.0,
+            type=float,
+        )
+        parser.add_argument(
+            '--limit',
+            help='',
+            default=500000,
+            type=int,
+        )
+        parser.add_argument(
+            '--routing-key',
+            dest='routing_key',
+            help='Celery routing key to use.',
+        )
+
     def handle(self, *args, **options):
         """
         Run the aggregator service.
         """
         self.set_logging(options['verbosity'])
-        perform_aggregation()
+        perform_aggregation(
+            batch_size=options['batch_size'],
+            delay=options['delay_between_batches'],
+            limit=options['limit'],
+            routing_key=options.get('routing_key'),
+        )
 
     def set_logging(self, verbosity):
         """
