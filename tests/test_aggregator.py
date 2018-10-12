@@ -115,8 +115,7 @@ def test_plethora_of_stale_completions(users):
         with patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async') as mock_task:
             perform_aggregation()
     mock_task.assert_called_once_with(
-        (),
-        {
+        kwargs={
             'username': users[0].username,
             'course_key': six.text_type(course_key),
             'block_keys': [],
