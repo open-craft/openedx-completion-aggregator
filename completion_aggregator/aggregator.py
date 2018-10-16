@@ -65,10 +65,10 @@ def perform_aggregation(batch_size=10000, delay=0.0, limit=None, routing_key=Non
     stale_blocks = collections.defaultdict(set)
     forced_updates = set()
     enqueued = 0
-    for idx in six.moves.range(min_id, max_id + 1, batch_size):
-        if enqueued > limit:
+    for idx in six.moves.range(max_id, min([min_id + batch_size, max_id]) - 1, -1 * batch_size):
+        if enqueued >= limit:
             break
-        evaluated = stale_queryset.filter(id__gte=idx, id__lt=idx + batch_size)
+        evaluated = stale_queryset.filter(id__gt=idx - batch_size, id__lte=idx)
         enqueued += len(evaluated)
         for stale in evaluated:
             enrollment = EnrollmentTuple(
