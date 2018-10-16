@@ -32,7 +32,8 @@ class CompletionListView(CompletionViewMixin, APIView):
         of results.
 
         * pagination: A dict of pagination information, containing the fields:
-            * page: The page number of the current set of results.
+            * page: The page number of the current set of results.  Page
+              numbering starts from 1.
             * next: The URL for the next page of results, or None if already on
               the last page.
             * previous: The URL for the previous page of results, or None if
@@ -168,6 +169,7 @@ class CompletionListView(CompletionViewMixin, APIView):
         if mobile_only:
             enrollments = compat.get_mobile_only_courses(enrollments)
 
+        print(request.GET)
         paginated = paginator.paginate_queryset(enrollments, self.request, view=self)
 
         # Grab the progress items for these enrollments
