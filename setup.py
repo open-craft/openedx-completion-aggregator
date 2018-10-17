@@ -52,7 +52,7 @@ setup(
         "Django>=1.8,<1.12",
         "django-model-utils>=2.0",
         "djangorestframework",
-        "XBlock",
+        "XBlock>=1.2.2",
         "celery>=3.1",
         "edx-celeryutils>=0.1.5",
         "edx-completion>=0.1.5",

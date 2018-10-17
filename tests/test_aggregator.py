@@ -57,6 +57,33 @@ def test_synchronous_aggregation(mock_task, users):
 
 
 @patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async')
+def test_with_multiple_batches(mock_task, users):
+    course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
+    block_keys = [
+        course_key.make_usage_key('video', 'video-1'),
+        course_key.make_usage_key('video', 'video-2'),
+    ]
+    for user in users:
+        for block_key in block_keys:
+            BlockCompletion.objects.create(
+                user=user,
+                course_key=course_key,
+                block_key=block_key,
+                completion=1.0,
+            )
+    perform_aggregation(batch_size=1, limit=2)
+    assert mock_task.call_count == 1
+    # Order of block_keys is not defined
+    mock_task.call_args[1]['kwargs']['block_keys'] = set(mock_task.call_args[1]['kwargs']['block_keys'])
+    assert mock_task.call_args[1]['kwargs'] == {
+        'username': users[1].username,
+        'course_key': six.text_type(course_key),
+        'block_keys': {six.text_type(key) for key in block_keys},
+        'force': False,
+    }
+
+
+@patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async')
 def test_with_stale_completions(mock_task, users):
     course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
     for user in users:
