@@ -282,6 +282,15 @@ class StaleCompletion(TimeStampedModel):
     force = models.BooleanField(default=False)
     resolved = models.BooleanField(default=False)
 
+    class Meta:
+        """
+        Metadata describing the StaleCompletion model.
+        """
+
+        index_together = [
+            ('username', 'course_key', 'created', 'resolved'),
+        ]
+
     def __str__(self):
         """
         Render the StaleCompletion.
