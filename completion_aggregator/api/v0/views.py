@@ -169,7 +169,13 @@ class CompletionListView(CompletionViewMixin, APIView):
         if mobile_only:
             enrollments = compat.get_mobile_only_courses(enrollments)
 
-        print(request.GET)
+        if request.query_params.get('page') == '0':
+            query_dict = request.query_params.copy()
+            query_dict['page'] = '1'
+            # request.query_params proxies request._request.GET, but does not
+            # implement a setter, so we have to set request._request.GET
+            # directly.
+            request._request.GET = query_dict
         paginated = paginator.paginate_queryset(enrollments, self.request, view=self)
 
         # Grab the progress items for these enrollments
