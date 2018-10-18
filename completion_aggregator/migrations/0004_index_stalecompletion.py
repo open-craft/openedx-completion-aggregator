@@ -71,22 +71,32 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='StaleCompletionNew',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
-                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
-                ('username', models.CharField(max_length=255)),
-                ('course_key', opaque_keys.edx.django.models.CourseKeyField(max_length=255)),
-                ('block_key', opaque_keys.edx.django.models.UsageKeyField(blank=True, max_length=255, null=True)),
-                ('force', models.BooleanField(default=False)),
-                ('resolved', models.BooleanField(default=False)),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.CreateModel(
+                    name='StaleCompletionNew',
+                    fields=[
+                        ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                        ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
+                        ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
+                        ('username', models.CharField(max_length=255)),
+                        ('course_key', opaque_keys.edx.django.models.CourseKeyField(max_length=255)),
+                        ('block_key', opaque_keys.edx.django.models.UsageKeyField(blank=True, max_length=255, null=True)),
+                        ('force', models.BooleanField(default=False)),
+                        ('resolved', models.BooleanField(default=False)),
+                    ],
+                ),
+                migrations.AlterIndexTogether(
+                    name='stalecompletionnew',
+                    index_together=set([('username', 'course_key', 'created', 'resolved')]),
+                ),
+                migrations.RunPython(copy_data)
             ],
-        ),
-        migrations.AlterIndexTogether(
-            name='stalecompletionnew',
-            index_together=set([('username', 'course_key', 'created', 'resolved')]),
-        ),
-        migrations.RunPython(copy_data)
+            state_operations=[
+                migrations.AlterIndexTogether(
+                    name='stalecompletion',
+                    index_together=set([('username', 'course_key', 'created', 'resolved')]),
+                )
+            ],
+        )
     ]
