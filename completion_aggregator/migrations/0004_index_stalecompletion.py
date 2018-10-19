@@ -7,6 +7,7 @@ import django.utils.timezone
 import model_utils.fields
 import opaque_keys.edx.django.models
 import six
+import time
 
 
 BATCH_SIZE = 1000
@@ -38,6 +39,7 @@ def copy_data(apps, schema_editor):
     }
     for offset in six.moves.range(0, count, BATCH_SIZE):
         cursor.execute(copy_sql, [0, BATCH_SIZE, offset])
+        time.sleep(0.1)
         if offset % 100000 == 0:
             print("Transferred {} records at {}".format(offset, django.utils.timezone.now()))
 
