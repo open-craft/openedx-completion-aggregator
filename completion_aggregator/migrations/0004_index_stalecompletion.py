@@ -38,6 +38,9 @@ def copy_data(apps, schema_editor):
     }
     for offset in six.moves.range(0, count, BATCH_SIZE):
         cursor.execute(copy_sql, [0, BATCH_SIZE, offset])
+        if offset % 100000 == 0:
+            print("Transferred {} records at {}".format(offset, datetime.utcnow()))
+
 
     cursor.execute(
         """
