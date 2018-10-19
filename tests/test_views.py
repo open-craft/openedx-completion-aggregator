@@ -655,7 +655,7 @@ class CompletionViewTestCase(TestCase):
     def test_no_staff_access_no_user(self, version):
         self.client.force_authenticate(self.test_user)
         response = self.client.get(self.get_list_url(version))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 403 if version == 1 else 200)
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
