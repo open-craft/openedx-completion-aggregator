@@ -28,7 +28,10 @@ def copy_data(apps, schema_editor):
     """
     StaleCompletion = apps.get_model("completion_aggregator", "StaleCompletion")
     cursor = schema_editor.connection.cursor()
-    initial_max_id = StaleCompletion.objects.order_by('-id')[0].id
+    try:
+        initial_max_id = StaleCompletion.objects.order_by('-id')[0].id
+    except IndexError:
+        initial_max_id = 0
     copy_sql = copy_sql_tmpl % {
         'source': 'completion_aggregator_stalecompletion',
         'target': 'completion_aggregator_stalecompletionnew',
@@ -57,7 +60,11 @@ def copy_data(apps, schema_editor):
             LIMIT 1
         """,
     )
-    final_max_id = cursor.fetchone()[0]
+    result = cursor.fetchone()
+    if result is None:
+        final_max_id = initial_max_id
+    else:
+        final_max_id = result[0]
 
     copy_sql = copy_sql_tmpl % {
         'source': 'completion_aggregator_stalecompletionold',
@@ -71,6 +78,7 @@ def copy_data(apps, schema_editor):
 
     print("Final tally: Transferred records up to {} by {}".format(final_max_id, django.utils.timezone.now()))
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -80,6 +88,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.SeparateDatabaseAndState(
             database_operations=[
+                migrations.RunSQL([("DROP TABLE IF EXISTS completion_aggregator_stalecompletionnew", None)]),
                 migrations.CreateModel(
                     name='StaleCompletionNew',
                     fields=[
