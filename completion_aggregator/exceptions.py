@@ -1,0 +1,2 @@
+class CourseIsNotCohorted(Exception):
+    pass

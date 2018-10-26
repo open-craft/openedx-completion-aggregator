@@ -12,8 +12,9 @@ from rest_framework.views import APIView
 
 from ... import compat
 from ...models import StaleCompletion
+from ...exceptions import CourseIsNotCohorted
 from ...serializers import AggregatorAdapter
-from ..common import CompletionViewMixin, UserEnrollments
+from ..common import CompletionViewMixin, UserCohorts, UserEnrollments
 
 
 class CompletionListView(CompletionViewMixin, APIView):
@@ -406,3 +407,107 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             many=True
         )
         return paginator.get_paginated_response(serializer.data)
+
+
+class CourseLevelCompletionView(CompletionViewMixin, APIView):
+    """
+    API view to render stats for a single course.
+
+    **Request Format**
+
+        GET /api/completion/v1/stats/<course_key>/
+
+    **Example Requests**
+
+        TODO
+
+    **Response Values**
+
+        TODO
+
+    **Parameters**
+        cohorts (int): TODO Determine if slugs are available too. But how?
+            Specify the cohorts for which to fetch the results.
+            Currently limited to a single cohort, but likely to be expanded
+            later.
+
+        exclude_roles (optional):
+            A comma separated list of roles to exclude from the results.
+
+    **Returns**
+
+        * 200 on success with above fields.
+        * 400 if an invalid value was sent for requested_fields.
+        * 403 for a user who does not have permission to masquerade as another
+          user specifies a username other than their own.
+        * 404 if the user is not enrolled in the requested course.
+
+        Example response:
+
+            TODO
+
+    """
+
+    def get(self, request, course_key):
+        """
+        Handler for GET requests
+        """
+        course_key = CourseKey.from_string(course_key)
+        paginator = self.pagination_class()  # pylint: disable=not-callable
+        requested_fields = self.get_requested_fields()
+        cohorts = UserCohorts(course_key)
+        try:
+            course_cohorts = cohorts.get_course_cohorts()
+        except CourseIsNotCohorted:
+            raise NotFound()
+
+        enrollments = UserEnrollments().get_course_enrollments(course_key)
+        filtered_enrollments = self.filter_enrollments(
+            enrollments=enrollments, course_key=course_key, cohorts=cohorts)
+        paginated = paginator.paginate_queryset(
+            filtered_enrollments, self.request, view=self)
+        aggregator_queryset = self.get_queryset().filter(course_key=course_key)
+
+        # Create the list of aggregate completions to be serialized
+        completions = [
+            AggregatorAdapter(
+                user=enrollment.user,
+                course_key=course_key,
+                aggregators=aggregator_queryset,
+                recalculate_stale=True
+            ) for enrollment in paginated
+        ]
+
+        # Return the paginated, serialized completions
+        serializer = self.get_serializer_class()(
+            instance=completions,
+            requested_fields=requested_fields,
+            many=True
+        )
+
+        return paginator.get_paginated_response(serializer.data)
+
+    def filter_enrollments(self, enrollments, course_key, cohorts):
+        """
+        Filter enrollments based on determined requirements
+        """
+        filtered_enrollments = []
+        roles_to_exclude = self.request.query_params.get('exclude_roles')
+        cohort_filter = int(self.request.query_params.get('cohorts'))
+        for enrollment in enrollments:
+            enrolled_user = enrollment.user
+            if not UserEnrollments(enrolled_user).is_enrolled(course_key):
+                # Check if user has active enrollment in the course
+                # TODO ensure this check is necessary
+                # (probably users from the enrollment are active)
+                continue
+            user_roles = [group.name for group in enrolled_user.groups.all()]
+            if any(role in user_roles for role in roles_to_exclude):
+                # User is a member of a role that should be excluded from
+                # the results.
+                continue
+            cohort_id = cohorts.get_user_cohorts(enrolled_user)
+            if cohort_id == cohort_filter:
+                # Keep user in the results
+                filtered_enrollments.append(enrollment)
+        return filtered_enrollments

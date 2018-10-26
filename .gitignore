@@ -76,3 +76,6 @@ tests/__init__.py
 
 # Development task artifacts
 default.db
+
+# Virtual environments
+.env

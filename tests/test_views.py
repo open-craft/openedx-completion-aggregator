@@ -132,6 +132,8 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
     other_org_course_key = CourseKey.from_string('otherOrg/toy/2012_Fall')
     list_url = '/v{}/course/'
     detail_url_fmt = '/v{}/course/{}/'
+    course_stat_url_fmt = '/v1/stats/{}/'
+    course_enrollment_model = StubCompat([]).course_enrollment_model()
 
     def setUp(self):
         super(CompletionViewTestCase, self).setUp()
@@ -307,9 +309,10 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_list_view_with_sequentials(self, version):
-        response = self.client.get(self.get_list_url(version,
-                                                     username=self.test_user.username,
-                                                     requested_fields='sequential'))
+        response = self.client.get(self.get_list_url(
+            version,
+            username=self.test_user.username,
+            requested_fields='sequential'))
         self.assertEqual(response.status_code, 200)
         expected = {
             'count': 1,
@@ -340,9 +343,10 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         """
         Ensures that the expected data is returned from the versioned detail view.
         """
-        response = self.client.get(self.get_detail_url(version,
-                                                       six.text_type(self.course_key),
-                                                       username=self.test_user.username))
+        response = self.client.get(self.get_detail_url(
+            version,
+            six.text_type(self.course_key),
+            username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
         expected_values = {
             'course_key': 'edX/toy/2012_Fall',
@@ -493,9 +497,10 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             user=self.test_user,
             course_id=self.other_org_course_key,
         )
-        response = self.client.get(self.get_detail_url(version,
-                                                       self.other_org_course_key,
-                                                       username=self.test_user.username))
+        response = self.client.get(self.get_detail_url(
+            version,
+            self.other_org_course_key,
+            username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
         expected_values = {
             'course_key': 'otherOrg/toy/2012_Fall',
@@ -509,11 +514,11 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_detail_view_with_sequentials(self, version):
-        response = self.client.get(self.get_detail_url(version,
-                                                       self.course_key,
-                                                       username=self.test_user.username,
-                                                       requested_fields='sequential')
-                                   )
+        response = self.client.get(self.get_detail_url(
+            version,
+            self.course_key,
+            username=self.test_user.username,
+            requested_fields='sequential'))
         self.assertEqual(response.status_code, 200)
         expected_values = {
             'course_key': 'edX/toy/2012_Fall',
@@ -609,6 +614,46 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         self.assertEqual(response.data, expected)
         assert mock_update.call_count == 0
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 2
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_stat_view(self):
+        response = self.client.get(self.get_course_stat_url(
+            'edX/toy/2012_Fall',
+            cohorts=1,
+            exclude_roles='staff'
+        ))
+
+        # TODO determine expectations for results
+        assert response
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    @patch.object(StubCompat, 'get_cohorts_for_course')
+    def test_stat_view_course_no_cohorts(self, get_cohorts_for_course_mock):
+        get_cohorts_for_course_mock.return_value = None
+        response = self.client.get(self.get_course_stat_url(
+            'edX/toy/2012_Fall',
+            cohorts=1,
+            exclude_roles='staf',
+        ))
+
+        self.assertEqual(response.status_code, 404)
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_stat_view_user_excluded_from_results(self):
+        self.create_enrollment(user=self.staff_user, course_id=self.course_key)
+        response = self.client.get(self.get_course_stat_url(
+            'edX/toy/2012_Fall',
+            cohorts=1,
+            exclude_roles='staff'
+        ))
+
+        self.assertEqual(response, 0)
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
@@ -728,6 +773,14 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         self.client.force_authenticate(self.staff_user)
         response = self.client.get(self.get_list_url(version))
         self.assertEqual(response.status_code, 200)
+
+    def get_course_stat_url(self, course_key, **params):
+        """
+        Given a course_key and a number of key-value pairs as keyword arguments,
+        create a URL to the stats view.
+        """
+        return append_params(
+            self.course_stat_url_fmt.format(six.text_type(course_key)), params)
 
     def get_detail_url(self, version, course_key, **params):
         """

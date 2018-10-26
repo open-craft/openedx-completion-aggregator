@@ -143,3 +143,31 @@ def get_mobile_only_courses(enrollments):
     course_overview_list = CourseOverview.objects.filter(id__in=course_keys, mobile_available=True)
     filtered_course_overview = [overview.id for overview in course_overview_list]
     return enrollments.filter(course_id__in=filtered_course_overview)
+
+
+def get_course(course_key):
+    """
+    Get course for given key.
+    """
+    from courseware.courses import _get_course  # pylint: disable=import-error
+    return _get_course(course_key)
+
+
+def get_cohorts_for_course(course_key):
+    """
+    Get cohorts for given course key.
+    """
+    from openedx.core.djangoapps.course_groups import cohorts
+    if cohorts.is_course_cohorted(course_key):
+        return cohorts.get_course_cohort_id(course_key)
+    return None
+
+
+def get_cohort_for_user(course_key, user):
+    """
+    Get the cohort for a given user with a course key.
+
+    Returns an integer when the user is part of a cohort, None when not.
+    """
+    from openedx.core.djangoapps.course_groups.cohorts import get_cohort_id
+    return get_cohort_id(user, course_key)

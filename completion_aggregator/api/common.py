@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 
 from .. import compat
+from ..exceptions import CourseIsNotCohorted
 from ..models import Aggregator
 from ..serializers import course_completion_serializer_factory, is_aggregation_name
 
@@ -181,3 +182,18 @@ class CompletionViewMixin(object):
         Return the appropriate serializer.
         """
         return course_completion_serializer_factory(self.get_requested_fields(), version=version)
+
+
+class UserCohorts(object):
+
+    def __init__(self, course_key):
+        self.course_key = course_key
+
+    def get_course_cohorts(self):
+        cohorts = compat.get_cohorts_for_course(self.course_key)
+        if not cohorts:
+            raise CourseIsNotCohorted()
+        return cohorts
+
+    def get_user_cohorts(self, user):
+        return compat.get_cohort_for_user(course_key=self.course_key, user=user)

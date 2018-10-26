@@ -32,7 +32,7 @@ class StubCompat(object):
 
     def init_course_blocks(self, user, course_block_key):  # pylint: disable=unused-argument
         """
-        Not actually used in this implmentation.
+        Not actually used in this implementation.
 
         Overridden here to prevent the default behavior, which relies on
         modulestore.
@@ -97,6 +97,18 @@ class StubCompat(object):
         # Simulate 5 users enrolled in course
         mock.count.return_value = 5
         return mock
+
+    def get_cohorts_for_course(self, course_key):
+        """
+        Return an integer as a replacement for a cohort id
+        """
+        return 1
+
+    def get_cohort_for_user(self, course_key, user):
+        """
+        Return an integer as a replacement for a cohort id
+        """
+        return 1
 
 
 CourseTreeNode = collections.namedtuple('CourseTreeNode', ['block', 'children'])
