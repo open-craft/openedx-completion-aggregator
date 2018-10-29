@@ -652,8 +652,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             cohorts=1,
             exclude_roles='staff'
         ))
-
-        self.assertEqual(response, 0)
+        self.assertEqual(len(response.data['results']), 1)
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')

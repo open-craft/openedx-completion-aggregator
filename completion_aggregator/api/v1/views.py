@@ -462,18 +462,24 @@ class CourseLevelCompletionView(CompletionViewMixin, APIView):
             raise NotFound()
 
         enrollments = UserEnrollments().get_course_enrollments(course_key)
-        filtered_enrollments = self.filter_enrollments(
+        filtered_enrollments = self._filter_enrollments(
             enrollments=enrollments, course_key=course_key, cohorts=cohorts)
         paginated = paginator.paginate_queryset(
             filtered_enrollments, self.request, view=self)
-        aggregator_queryset = self.get_queryset().filter(course_key=course_key)
+        aggregator_queryset = self.get_queryset().filter(
+            course_key=course_key,
+            user__in=[enrollment.user for enrollment in paginated])
+
+        aggregators_by_user = defaultdict(list)
+        for aggregator in aggregator_queryset:
+            aggregators_by_user[aggregator.user].append(aggregator)
 
         # Create the list of aggregate completions to be serialized
         completions = [
             AggregatorAdapter(
                 user=enrollment.user,
                 course_key=course_key,
-                aggregators=aggregator_queryset,
+                aggregators=aggregators_by_user[enrollment.user],
                 recalculate_stale=True
             ) for enrollment in paginated
         ]
@@ -487,12 +493,13 @@ class CourseLevelCompletionView(CompletionViewMixin, APIView):
 
         return paginator.get_paginated_response(serializer.data)
 
-    def filter_enrollments(self, enrollments, course_key, cohorts):
+    def _filter_enrollments(self, enrollments, course_key, cohorts):
         """
         Filter enrollments based on determined requirements
         """
         filtered_enrollments = []
         roles_to_exclude = self.request.query_params.get('exclude_roles')
+        roles_to_exclude = roles_to_exclude.split(',')
         cohort_filter = int(self.request.query_params.get('cohorts'))
         for enrollment in enrollments:
             enrolled_user = enrollment.user
@@ -505,6 +512,9 @@ class CourseLevelCompletionView(CompletionViewMixin, APIView):
             if any(role in user_roles for role in roles_to_exclude):
                 # User is a member of a role that should be excluded from
                 # the results.
+                continue
+            if 'staff' in roles_to_exclude and enrolled_user.is_staff:
+                # User is a staff member and staff needs to be excluded
                 continue
             cohort_id = cohorts.get_user_cohorts(enrolled_user)
             if cohort_id == cohort_filter:
