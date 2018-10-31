@@ -17,10 +17,11 @@ from rest_framework.test import APIClient
 from xblock.core import XBlock
 
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
 
-from completion.models import BlockCompletion
+from completion.models import BlockCompletion, BlockCompletionManager
 from completion_aggregator import models
 from completion_aggregator.api.v1.views import CompletionViewMixin
 from completion_aggregator.tasks.aggregation_tasks import AggregationUpdater
@@ -55,63 +56,14 @@ def _create_oauth2_token(user):
     return dot_access_token.token
 
 
-@ddt.ddt
-class CompletionViewTestCase(TestCase):
+class CompletionAPITestMixin(object):
     """
-    Test that the CompletionView renders completion data properly.
+    Common utility functions for completion tests
     """
 
-    course_key = CourseKey.from_string('edX/toy/2012_Fall')
-    other_org_course_key = CourseKey.from_string('otherOrg/toy/2012_Fall')
-    list_url = '/v{}/course/'
-    detail_url_fmt = '/v{}/course/{}/'
-    course_enrollment_model = StubCompat([]).course_enrollment_model()
-
-    def setUp(self):
-        self.test_user = User.objects.create(username='test_user')
-        self.staff_user = User.objects.create(username='staff', is_staff=True)
-        self.test_enrollment = self.create_enrollment(
-            user=self.test_user,
-            course_id=self.course_key,
-        )
-        self.blocks = [
-            self.course_key.make_usage_key('course', 'course'),
-            self.course_key.make_usage_key('sequential', 'course-sequence1'),
-            self.course_key.make_usage_key('sequential', 'course-sequence2'),
-            self.course_key.make_usage_key('html', 'course-sequence1-html1'),
-            self.course_key.make_usage_key('html', 'course-sequence1-html2'),
-            self.course_key.make_usage_key('html', 'course-sequence1-html3'),
-            self.course_key.make_usage_key('html', 'course-sequence1-html4'),
-            self.course_key.make_usage_key('html', 'course-sequence1-html5'),
-            self.course_key.make_usage_key('html', 'course-sequence2-html6'),
-            self.course_key.make_usage_key('html', 'course-sequence2-html7'),
-            self.course_key.make_usage_key('html', 'course-sequence2-html8'),
-        ]
-        compat = StubCompat(self.blocks)
-        for compat_import in (
-                'completion_aggregator.api.common.compat',
-                'completion_aggregator.serializers.compat',
-                'completion_aggregator.tasks.aggregation_tasks.compat',
-        ):
-            patcher = patch(compat_import, compat)
-            patcher.start()
-            self.addCleanup(patcher.__exit__, None, None, None)
-
-        self.patch_object(
-            CompletionViewMixin,
-            'authentication_classes',
-            new_callable=PropertyMock,
-            return_value=[OAuth2Authentication, SessionAuthentication]
-        )
-        self.patch_object(
-            CompletionViewMixin,
-            'pagination_class',
-            new_callable=PropertyMock,
-            return_value=PageNumberPagination
-        )
-        self.mark_completions()
-        self.client = APIClient()
-        self.client.force_authenticate(user=self.test_user)
+    @property
+    def course_enrollment_model(self):
+        return StubCompat([]).course_enrollment_model()
 
     def patch_object(self, obj, method, **kwargs):
         """
@@ -163,6 +115,64 @@ class CompletionViewTestCase(TestCase):
             user=user,
             course_id=course_id,
         )
+
+
+@ddt.ddt
+class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
+    """
+    Test that the CompletionView renders completion data properly.
+    """
+
+    course_key = CourseKey.from_string('edX/toy/2012_Fall')
+    other_org_course_key = CourseKey.from_string('otherOrg/toy/2012_Fall')
+    list_url = '/v{}/course/'
+    detail_url_fmt = '/v{}/course/{}/'
+
+    def setUp(self):
+        self.test_user = User.objects.create(username='test_user')
+        self.staff_user = User.objects.create(username='staff', is_staff=True)
+        self.test_enrollment = self.create_enrollment(
+            user=self.test_user,
+            course_id=self.course_key,
+        )
+        self.blocks = [
+            self.course_key.make_usage_key('course', 'course'),
+            self.course_key.make_usage_key('sequential', 'course-sequence1'),
+            self.course_key.make_usage_key('sequential', 'course-sequence2'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html1'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html2'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html3'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html4'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html5'),
+            self.course_key.make_usage_key('html', 'course-sequence2-html6'),
+            self.course_key.make_usage_key('html', 'course-sequence2-html7'),
+            self.course_key.make_usage_key('html', 'course-sequence2-html8'),
+        ]
+        compat = StubCompat(self.blocks)
+        for compat_import in (
+                'completion_aggregator.api.common.compat',
+                'completion_aggregator.serializers.compat',
+                'completion_aggregator.tasks.aggregation_tasks.compat',
+        ):
+            patcher = patch(compat_import, compat)
+            patcher.start()
+            self.addCleanup(patcher.__exit__, None, None, None)
+
+        self.patch_object(
+            CompletionViewMixin,
+            'authentication_classes',
+            new_callable=PropertyMock,
+            return_value=[OAuth2Authentication, SessionAuthentication]
+        )
+        self.patch_object(
+            CompletionViewMixin,
+            'pagination_class',
+            new_callable=PropertyMock,
+            return_value=PageNumberPagination
+        )
+        self.mark_completions()
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.test_user)
 
     def _get_expected_completion(self, version, earned=1.0, possible=8.0, percent=0.125):
         """
@@ -679,6 +689,105 @@ class CompletionViewTestCase(TestCase):
         create a URL to the list view.
         """
         return append_params(self.list_url.format(version), params)
+
+
+class CompletionBlockUpdateViewTestCase(CompletionAPITestMixin, TestCase):
+    """
+    Test that CompletionBlockUpdateView can be used to mark XBlocks as completed.
+
+    Ensure that it handles authorization as well.
+    """
+
+    course_key = CourseKey.from_string('edX/toy/2012_Fall')
+    usage_key = course_key.make_usage_key('html', 'course-sequence1-html1')
+
+    def setUp(self):
+
+        self.test_user = User.objects.create(username='test_user')
+        self.staff_user = User.objects.create(username='staff', is_staff=True)
+        self.test_enrollment = self.create_enrollment(
+            user=self.test_user,
+            course_id=self.course_key,
+        )
+        self.blocks = [
+            self.course_key.make_usage_key('course', 'course'),
+            self.course_key.make_usage_key('sequential', 'course-sequence1'),
+            self.course_key.make_usage_key('sequential', 'course-sequence2'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html1'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html2'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html3'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html4'),
+            self.course_key.make_usage_key('html', 'course-sequence1-html5'),
+            self.course_key.make_usage_key('html', 'course-sequence2-html6'),
+            self.course_key.make_usage_key('html', 'course-sequence2-html7'),
+            self.course_key.make_usage_key('html', 'course-sequence2-html8'),
+        ]
+        compat = StubCompat(self.blocks)
+        for compat_import in (
+                'completion_aggregator.api.common.compat',
+                'completion_aggregator.api.v0.views.compat',
+                'completion_aggregator.serializers.compat',
+                'completion_aggregator.tasks.aggregation_tasks.compat',
+        ):
+            patcher = patch(compat_import, compat)
+            patcher.start()
+            self.addCleanup(patcher.__exit__, None, None, None)
+
+        self.patch_object(
+            CompletionViewMixin,
+            'authentication_classes',
+            new_callable=PropertyMock,
+            return_value=[OAuth2Authentication, SessionAuthentication]
+        )
+        self.patch_object(
+            CompletionViewMixin,
+            'pagination_class',
+            new_callable=PropertyMock,
+            return_value=PageNumberPagination
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.test_user)
+        self.update_url = reverse(
+            'completion_api_v0:blockcompletion-update',
+            kwargs={'course_key': six.text_type(self.course_key), 'block_key': six.text_type(self.usage_key)}
+        )
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    @patch.object(BlockCompletionManager, 'submit_completion', return_value=(None, True))
+    def test_create_view(self, stub_submit):
+        create_response = self.client.post(self.update_url, {'completion': 1})
+        assert create_response.status_code == 201
+        stub_submit.assert_called_once()
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    @patch.object(BlockCompletionManager, 'submit_completion', return_value=(None, True))
+    def test_create_view_oauth2(self, stub_submit):
+        """
+        Test the create view using OAuth2 Authentication
+        """
+
+        self.client.logout()
+        response = self.client.post(self.update_url, {'completion': 1.0})
+        self.assertEqual(response.status_code, 401)
+        stub_submit.assert_not_called()
+
+        # Now, try with a valid token header:
+        token = _create_oauth2_token(self.test_user)
+        response = self.client.post(self.update_url, {'completion': 1.0}, HTTP_AUTHORIZATION="Bearer {0}".format(token))
+        self.assertEqual(response.status_code, 201)
+        stub_submit.assert_called_once()
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_unauthenticated(self):
+        self.client.force_authenticate(None)
+        response = self.client.post(self.update_url, {'completion': 1.0})
+        self.assertEqual(response.status_code, 401)
 
 
 def append_params(base, params):

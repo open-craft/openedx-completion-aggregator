@@ -6,10 +6,14 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from collections import defaultdict
 
-from opaque_keys.edx.keys import CourseKey
+from opaque_keys import InvalidKeyError
+from opaque_keys.edx.keys import CourseKey, UsageKey
+from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from completion.models import BlockCompletion
 
 from ... import compat
 from ...serializers import AggregatorAdapter
@@ -352,3 +356,76 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             requested_fields=requested_fields,
         )
         return Response(serializer.data)
+
+
+class CompletionBlockUpdateView(CompletionViewMixin, APIView):
+    """
+    API view to mark any course block as completed.
+
+    **Request Format**
+
+        POST /api/completion/v0/course/<course_key>/blocks/<block_key>/
+
+    **Example Requests**
+
+        POST /api/completion/v0/course/UniversityX/CS101/2017_T1/
+            blocks/i4x://UniversityX/CS101/html/f5a3dacbac164ac9b7d2b43f3cc1db26/
+
+    **Parameters (as a JSON object in the request body)**
+
+        completion:
+            A floating point value in the range [0.0, 1.0], indicating the
+            percent completion of the block in question.  Most blocks only
+            indicate 1.0 or 0.0.
+
+    **Returns**
+
+        * 200 if the request is valid but the object exists already.
+        * 201 if a BlockCompletion object is created.
+        * 400 if the `completion` value is not present or is not in the range [0.0, 1.0].
+        * 403 if a user who does not have permission to masquerade as another
+        user specifies a username other than their own.
+        * 404 if the course or content is not available, the user is not enrolled in the course,
+        or the content matching the usage_id is not part of the specified course.
+
+    This is a transitional implementation that uses the
+    edx-solutions/progress-edx-platform-extensions models as a backing store.
+    The replacement will have the same interface.
+    """
+
+    def post(self, request, course_key, block_key):
+        """
+        Handler for POST requests. Attempts to be forward-compatible with the completion API.
+        """
+        try:
+            completion = float(request.data.get('completion'))
+        except (TypeError, ValueError):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        if completion > 1.0 or completion < 0.0:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            course_key = CourseKey.from_string(course_key)
+        except InvalidKeyError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        # Check if the user is enrolled in this course.
+        if not compat.course_enrollment_model().is_enrolled(request.user, course_key):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        # Check if content exists for this usage_id.
+        try:
+            block_key = UsageKey.from_string(block_key)
+            compat.get_modulestore().get_item(block_key)
+        except (InvalidKeyError, compat.get_item_not_found_error()):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        _, created = BlockCompletion.objects.submit_completion(
+            user=request.user,
+            course_key=course_key,
+            block_key=block_key,
+            completion=completion,
+        )
+
+        return Response(status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
