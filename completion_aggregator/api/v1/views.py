@@ -333,10 +333,6 @@ class CompletionDetailView(CompletionViewMixin, APIView):
                 ...
               ]
             }
-
-    This is a transitional implementation that uses the
-    edx-solutions/progress-edx-platform-extensions models as a backing store.
-    The replacement will have the same interface.
     """
 
     def get(self, request, course_key):
@@ -363,6 +359,9 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             # Use enrollments for the effective user
             enrollments = UserEnrollments(self.user).get_course_enrollments(course_key)
 
+        if 'user_ids' in request.query_params:
+            user_ids = (int(id) for id in request.query_params['user_ids'].split(','))
+            enrollments = enrollments.filter(user_id__in=user_ids)
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.
         paginated = paginator.paginate_queryset(enrollments, self.request, view=self)
         aggregator_queryset = self.get_queryset().filter(
