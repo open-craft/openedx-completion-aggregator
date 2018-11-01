@@ -7,6 +7,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from collections import defaultdict
 
 from opaque_keys.edx.keys import CourseKey, UsageKey
+from django.db.models import Avg, Sum
+from opaque_keys.edx.keys import CourseKey
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
 
@@ -469,24 +471,15 @@ class CourseLevelCompletionView(CompletionViewMixin, APIView):
         aggregator_queryset = self.get_queryset().filter(
             course_key=course_key,
             user__in=[enrollment.user for enrollment in paginated])
-
-        aggregators_by_user = defaultdict(list)
-        for aggregator in aggregator_queryset:
-            aggregators_by_user[aggregator.user].append(aggregator)
-
-        # Create the list of aggregate completions to be serialized
-        completions = [
-            AggregatorAdapter(
-                user=enrollment.user,
-                course_key=course_key,
-                aggregators=aggregators_by_user[enrollment.user],
-                recalculate_stale=True
-            ) for enrollment in paginated
-        ]
+        completions = aggregator_queryset.aggregate(
+            possible=Avg('possible'),
+            earned=Avg('earned'),
+            percent=Sum('earned') / Sum('possible'))
+        completions['course_key'] = course_key
 
         # Return the paginated, serialized completions
         serializer = self.get_serializer_class()(
-            instance=completions,
+            instance=[completions,],
             requested_fields=requested_fields,
             many=True
         )

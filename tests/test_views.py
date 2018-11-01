@@ -19,6 +19,7 @@ from xblock.core import XBlock
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
+import pytest  # TODO remove me
 
 from completion.models import BlockCompletion, BlockCompletionManager
 from completion_aggregator import models
@@ -647,12 +648,54 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
     @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_stat_view_user_excluded_from_results(self):
         self.create_enrollment(user=self.staff_user, course_id=self.course_key)
+        models.Aggregator.objects.submit_completion(
+            user=self.staff_user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(
+                block_type='course', block_id='course'),
+            aggregation_name='course',
+            earned=4.0,
+            possible=8.0,
+            last_modified=timezone.now(),
+        )
         response = self.client.get(self.get_course_stat_url(
             'edX/toy/2012_Fall',
             cohorts=1,
             exclude_roles='staff'
         ))
-        self.assertEqual(len(response.data['results']), 1)
+
+        self.assertEqual(response.data['results'][0]['completion']['earned'], 1.0)
+        self.assertEqual(response.data['results'][0]['completion']['possible'], 8.0)
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    @pytest.mark.slow
+    def test_stat_view_multiple_users_correct_calculations(self):
+        for x in range(1, 5):
+            user = User.objects.create(username='test_user_{}'.format(x))
+            self.create_enrollment(user=user, course_id=self.course_key)
+
+            models.Aggregator.objects.submit_completion(
+                user=user,
+                course_key=self.course_key,
+                block_key=self.course_key.make_usage_key(
+                    block_type='course', block_id='course'),
+                aggregation_name='course',
+                earned=4.0,
+                possible=8.0,
+                last_modified=timezone.now(),
+            )
+
+        response = self.client.get(self.get_course_stat_url(
+            'edX/toy/2012_Fall',
+            cohorts=1,
+            exclude_roles='staff'
+        ))
+
+        self.assertEqual(response.data['results'][0]['completion']['possible'], 8.0)
+        self.assertEqual(response.data['results'][0]['completion']['earned'], 3.4)
+        self.assertEqual(response.data['results'][0]['completion']['percent'], 0.425)
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
