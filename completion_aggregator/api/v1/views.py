@@ -16,7 +16,8 @@ from ... import compat
 from ...models import StaleCompletion
 from ...exceptions import CourseIsNotCohorted
 from ...serializers import AggregatorAdapter
-from ..common import CompletionViewMixin, UserCohorts, UserEnrollments
+from ..common import (
+    CompletionViewMixin, UserCohorts, UserEnrollments, user_has_excluded_roles)
 
 
 class CompletionListView(CompletionViewMixin, APIView):
@@ -501,12 +502,13 @@ class CourseLevelCompletionView(CompletionViewMixin, APIView):
                 # TODO ensure this check is necessary
                 # (probably users from the enrollment are active)
                 continue
-            user_roles = [group.name for group in enrolled_user.groups.all()]
-            if any(role in user_roles for role in roles_to_exclude):
+            if user_has_excluded_roles(
+                    enrolled_user, course_key, roles_to_exclude):
                 # User is a member of a role that should be excluded from
                 # the results.
                 continue
             if 'staff' in roles_to_exclude and enrolled_user.is_staff:
+                # Double check in case staff role is handled by Django
                 # User is a staff member and staff needs to be excluded
                 continue
             cohort_id = cohorts.get_user_cohorts(enrolled_user)

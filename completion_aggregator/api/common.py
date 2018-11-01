@@ -197,3 +197,11 @@ class UserCohorts(object):
 
     def get_user_cohorts(self, user):
         return compat.get_cohort_for_user(course_key=self.course_key, user=user)
+
+
+def user_has_excluded_roles(user, course_key, roles_to_exclude):
+    """
+    Determine whether the user is part of any roles to exclude.
+    """
+    return user.courseaccessrole_set.filter(
+        course_id=course_key, role__in=roles_to_exclude).exists()
