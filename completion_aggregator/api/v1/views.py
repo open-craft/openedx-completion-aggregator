@@ -459,9 +459,9 @@ class CourseLevelCompletionView(CompletionViewMixin, APIView):
         paginator = self.pagination_class()  # pylint: disable=not-callable
         requested_fields = self.get_requested_fields()
         cohorts = UserCohorts(course_key)
-        try:
-            cohorts.get_course_cohorts()
-        except CourseIsNotCohorted:
+
+        course_cohorts = cohorts.get_course_cohorts()
+        if not course_cohorts:
             raise NotFound()
 
         enrollments = UserEnrollments().get_course_enrollments(course_key)

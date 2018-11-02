@@ -7,7 +7,6 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 
 from .. import compat
-from ..exceptions import CourseIsNotCohorted
 from ..models import Aggregator
 from ..serializers import course_completion_serializer_factory, is_aggregation_name
 
@@ -196,10 +195,7 @@ class UserCohorts(object):
         """
         Check if course has cohorts
         """
-        cohorts = compat.get_cohorts_for_course(self.course_key)
-        if not cohorts:
-            raise CourseIsNotCohorted()
-        return cohorts
+        return compat.get_cohorts_for_course(self.course_key)
 
     def get_user_cohorts(self, user):
         """
