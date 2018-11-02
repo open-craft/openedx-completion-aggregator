@@ -196,17 +196,3 @@ class UserCohorts(object):
         Check if course has cohorts
         """
         return compat.get_cohorts_for_course(self.course_key)
-
-    def get_user_cohorts(self, user):
-        """
-        Get the cohort for the specified user
-        """
-        return compat.get_cohort_for_user(course_key=self.course_key, user=user)
-
-
-def user_has_excluded_roles(user, course_key, roles_to_exclude):
-    """
-    Determine whether the user is part of any roles to exclude.
-    """
-    return user.courseaccessrole_set.filter(
-        course_id=course_key, role__in=roles_to_exclude).exists()

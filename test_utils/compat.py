@@ -104,12 +104,6 @@ class StubCompat(object):
         """
         return 1
 
-    def get_cohort_for_user(self, course_key, user):  # pylint: disable=unused-argument
-        """
-        Return an integer as a replacement for a cohort id
-        """
-        return 1
-
 
 CourseTreeNode = collections.namedtuple('CourseTreeNode', ['block', 'children'])
 

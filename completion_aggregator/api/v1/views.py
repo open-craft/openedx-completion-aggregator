@@ -18,7 +18,7 @@ from ... import compat
 from ...models import StaleCompletion
 from ...exceptions import CourseIsNotCohorted
 from ...serializers import AggregatorAdapter
-from ..common import CompletionViewMixin, UserCohorts, UserEnrollments, user_has_excluded_roles
+from ..common import CompletionViewMixin, UserCohorts, UserEnrollments
 
 
 class CompletionListView(CompletionViewMixin, APIView):
@@ -460,20 +460,27 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         paginator = self.pagination_class()  # pylint: disable=not-callable
         requested_fields = self.get_requested_fields()
         cohorts = UserCohorts(course_key)
-
         course_cohorts = cohorts.get_course_cohorts()
         if not course_cohorts:
             raise NotFound()
+        roles_to_exclude = self.request.query_params.get('exclude_roles', '').split(',')
+        cohort_filter = self.request.query_params.get('cohorts')
+        if cohort_filter and not isinstance(int, cohort_filter):
+            raise NotFound()
 
         enrollments = UserEnrollments().get_course_enrollments(course_key)
-        filtered_enrollments = self._filter_enrollments(
-            enrollments=enrollments, course_key=course_key, cohorts=cohorts)
         paginated = paginator.paginate_queryset(
-            filtered_enrollments, self.request, view=self)
-        aggregator_queryset = self.get_queryset().filter(
+            enrollments, self.request, view=self)
+        aggregator_qs = self.get_queryset().filter(
             course_key=course_key,
             user__in=[enrollment.user for enrollment in paginated])
-        completions = aggregator_queryset.aggregate(
+        if roles_to_exclude:
+            aggregator_qs = aggregator_qs.exclude(
+                user__courseaccessrole__role__in=roles_to_exclude)
+        if cohort_filter:
+            aggregator_qs = aggregator_qs.exclude(
+                user__cohortmembership__course_user_group__pk=cohort_filter)
+        completions = aggregator_qs.aggregate(
             possible=Avg('possible'),
             earned=Avg('earned'),
             percent=Sum('earned') / Sum('possible'))
@@ -487,33 +494,3 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         )
 
         return paginator.get_paginated_response(serializer.data)
-
-    def _filter_enrollments(self, enrollments, course_key, cohorts):
-        """
-        Filter enrollments based on determined requirements
-        """
-        filtered_enrollments = []
-        roles_to_exclude = self.request.query_params.get('exclude_roles')
-        roles_to_exclude = roles_to_exclude.split(',')
-        cohort_filter = int(self.request.query_params.get('cohorts'))
-        for enrollment in enrollments:
-            enrolled_user = enrollment.user
-            if not UserEnrollments(enrolled_user).is_enrolled(course_key):
-                # Check if user has active enrollment in the course
-                # TODO ensure this check is necessary
-                # (probably users from the enrollment are active)
-                continue
-            if user_has_excluded_roles(
-                    enrolled_user, course_key, roles_to_exclude):
-                # User is a member of a role that should be excluded from
-                # the results.
-                continue
-            if 'staff' in roles_to_exclude and enrolled_user.is_staff:
-                # Double check in case staff role is handled by Django
-                # User is a staff member and staff needs to be excluded
-                continue
-            cohort_id = cohorts.get_user_cohorts(enrolled_user)
-            if cohort_id == cohort_filter:
-                # Keep user in the results
-                filtered_enrollments.append(enrollment)
-        return filtered_enrollments

@@ -632,9 +632,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
-    @patch('completion_aggregator.api.v1.views.user_has_excluded_roles')
-    def test_stat_view_staff_user_excluded_from_results(self, excluded_roles_mock):
-        excluded_roles_mock.side_effect = [False, False]
+    def test_stat_view_staff_user_excluded_from_results(self):
         self.create_enrollment(user=self.staff_user, course_id=self.course_key)
         models.Aggregator.objects.submit_completion(
             user=self.staff_user,
@@ -658,9 +656,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
-    @patch('completion_aggregator.api.v1.views.user_has_excluded_roles')
-    def test_stat_view_exclude_user_based_on_role(self, excluded_roles_mock):
-        excluded_roles_mock.side_effect = [False, True]
+    def test_stat_view_exclude_user_based_on_role(self):
         beta_user = User.objects.create(username='beta_user')
         self.create_enrollment(user=beta_user, course_id=self.course_key)
 
@@ -680,16 +676,14 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             cohorts=1,
             exclude_roles='beta'
         ))
-        self.assertEqual(excluded_roles_mock.call_count, 2)
+
         self.assertEqual(response.data['results'][0]['completion']['earned'], 1.0)
         self.assertEqual(response.data['results'][0]['completion']['possible'], 8.0)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
-    @patch('completion_aggregator.api.v1.views.user_has_excluded_roles')
-    def test_stat_view_multiple_users_correct_calculations(self, excluded_roles_mock):
-        excluded_roles_mock.side_effect = [False, False, False, False, False]
+    def test_stat_view_multiple_users_correct_calculations(self):
         for x in range(1, 5):
             user = User.objects.create(username='test_user_{}'.format(x))
             self.create_enrollment(user=user, course_id=self.course_key)

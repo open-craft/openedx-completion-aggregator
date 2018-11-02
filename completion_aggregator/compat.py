@@ -161,13 +161,3 @@ def get_cohorts_for_course(course_key):
     if cohorts.is_course_cohorted(course_key):
         return cohorts.get_course_cohort_id(course_key)
     return None
-
-
-def get_cohort_for_user(course_key, user):
-    """
-    Get the cohort for a given user with a course key.
-
-    Returns an integer when the user is part of a cohort, None when not.
-    """
-    from openedx.core.djangoapps.course_groups.cohorts import get_cohort_id  # pylint: disable=import-error
-    return get_cohort_id(user, course_key)
