@@ -423,14 +423,36 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
 
     **Example Requests**
 
-        TODO
+        GET /api/completion/v1/stats/edX/toy/2012_Fall/
+        GET /api/completion/v1/stats/edX/toy/2012_Fall/?exclude_roles=beta,staff
+        GET /api/completion/v1/stats/edX/toy/2012_Fall/?cohorts=1&exclude_roles=staff
 
     **Response Values**
 
-        TODO
+        The response is a dictionary comprising the course key and a result
+        of the mean completion of said course key.
+
+        * course_key (CourseKey): The unique course identifier.
+        * result (list): A list currently only containing the mean completion
+            of all selected users in the course.
+            * mean_completion: a dictionary containing the following fields:
+                * earned (float): The average completion achieved by all
+                    selected students in the course.
+                * possible (float): The total number of completions available
+                    in the course.
+                * percent (float in the range [0.0, 1.0]): The percentage of
+                    earned completions.
+        * filters: A dictionary containing fields based on parameters.
+            Possible fields are:
+            * cohorts (int): The id of the requested cohort. Users should at
+                least be a member of this cohort to be included in the result.
+            * exclude_roles (list): Members of any of the listed roles should
+                be excluded from the total results.
+                If no roles are excluded, include all active learners in the
+                result.
 
     **Parameters**
-        cohorts (int): TODO Determine if slugs are available too. But how?
+        cohorts (int):
             Specify the cohorts for which to fetch the results.
             Currently limited to a single cohort, but likely to be expanded
             later.
@@ -442,13 +464,29 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
 
         * 200 on success with above fields.
         * 400 if an invalid value was sent for requested_fields.
-        * 403 for a user who does not have permission to masquerade as another
-          user specifies a username other than their own.
-        * 404 if the user is not enrolled in the requested course.
+        * 404 If the course is not cohorted
 
         Example response:
 
-            TODO
+            {
+                "course_key": "edX/toy/2012_Fall",
+                "filters": {
+                    "cohorts": 2,
+                    "exclude_roles": [
+                        "beta",
+                        "staff"
+                    ]
+                },
+                "results": [
+                    {
+                        "mean_completion": {
+                            "earned": 3.4,
+                            "possible": 8.0,
+                            "percent": 0.425
+                        }
+                    }
+                ]
+            }
 
     """
 
