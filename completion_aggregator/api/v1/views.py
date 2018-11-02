@@ -460,7 +460,7 @@ class CourseLevelCompletionView(CompletionViewMixin, APIView):
         requested_fields = self.get_requested_fields()
         cohorts = UserCohorts(course_key)
         try:
-            course_cohorts = cohorts.get_course_cohorts()
+            cohorts.get_course_cohorts()
         except CourseIsNotCohorted:
             raise NotFound()
 

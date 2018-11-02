@@ -98,13 +98,13 @@ class StubCompat(object):
         mock.count.return_value = 5
         return mock
 
-    def get_cohorts_for_course(self, course_key):
+    def get_cohorts_for_course(self, course_key):  # pylint: disable=unused-argument
         """
         Return an integer as a replacement for a cohort id
         """
         return 1
 
-    def get_cohort_for_user(self, course_key, user):
+    def get_cohort_for_user(self, course_key, user):  # pylint: disable=unused-argument
         """
         Return an integer as a replacement for a cohort id
         """

@@ -185,17 +185,26 @@ class CompletionViewMixin(object):
 
 
 class UserCohorts(object):
+    """
+    Common functionality for users' cohorts
+    """
 
     def __init__(self, course_key):
         self.course_key = course_key
 
     def get_course_cohorts(self):
+        """
+        Check if course has cohorts
+        """
         cohorts = compat.get_cohorts_for_course(self.course_key)
         if not cohorts:
             raise CourseIsNotCohorted()
         return cohorts
 
     def get_user_cohorts(self, user):
+        """
+        Get the cohort for the specified user
+        """
         return compat.get_cohort_for_user(course_key=self.course_key, user=user)
 
 
