@@ -413,7 +413,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         return paginator.get_paginated_response(serializer.data)
 
 
-class CourseLevelCompletionView(CompletionViewMixin, APIView):
+class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
     """
     API view to render stats for a single course.
 
