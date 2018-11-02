@@ -12,12 +12,13 @@ from opaque_keys.edx.keys import CourseKey
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
 
+from django.db.models import Avg, Sum
+
 from ... import compat
 from ...models import StaleCompletion
 from ...exceptions import CourseIsNotCohorted
 from ...serializers import AggregatorAdapter
-from ..common import (
-    CompletionViewMixin, UserCohorts, UserEnrollments, user_has_excluded_roles)
+from ..common import CompletionViewMixin, UserCohorts, UserEnrollments, user_has_excluded_roles
 
 
 class CompletionListView(CompletionViewMixin, APIView):
@@ -480,7 +481,7 @@ class CourseLevelCompletionView(CompletionViewMixin, APIView):
 
         # Return the paginated, serialized completions
         serializer = self.get_serializer_class()(
-            instance=[completions,],
+            instance=[completions],
             requested_fields=requested_fields,
             many=True
         )
