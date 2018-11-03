@@ -55,7 +55,7 @@
 [MASTER]
 ignore = migrations
 persistent = yes
-load-plugins = edx_lint.pylint,pylint_django,pylint_celery
+load-plugins = caniusepython3.pylint_checker,edx_lint.pylint,pylint_django,pylint_celery
 
 [MESSAGES CONTROL]
 enable = useless-suppression
@@ -234,4 +234,4 @@ int-import-graph =
 [EXCEPTIONS]
 overgeneral-exceptions = Exception
 
-# 043e3c2ff4fad7e6f79eb2c889b785767ea6c69d
+# 273f44dd0a6b357614d440ac75978018536190e2
