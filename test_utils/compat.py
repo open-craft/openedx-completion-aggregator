@@ -37,7 +37,10 @@ class StubCompat(object):
         Overridden here to prevent the default behavior, which relies on
         modulestore.
         """
-        return CompatCourseBlocks(*self.blocks)
+        root_segments = course_block_key.block_id.split('-')
+        return CompatCourseBlocks(
+            *(block for block in self.blocks if block.block_id.split('-')[:len(root_segments)] == root_segments)
+        )
 
     def get_affected_aggregators(self, course_blocks, changed_blocks):
         """

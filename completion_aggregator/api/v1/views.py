@@ -6,11 +6,12 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from collections import defaultdict
 
-from opaque_keys.edx.keys import CourseKey
+from opaque_keys.edx.keys import CourseKey, UsageKey
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
 
 from ... import compat
+from ...models import StaleCompletion
 from ...serializers import AggregatorAdapter
 from ..common import CompletionViewMixin, UserEnrollments
 
@@ -264,6 +265,9 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             all enrolled users is returned. If the requesting user does not have
             staff access, it will return a 403 Error.
 
+        root_block (optional):
+            Get aggregators under a certain block, not for the whole course.
+
         requested_fields (optional):
             A comma separated list of extra data to be returned.  This can be
             one of the block types specified in `AGGREGATE_CATEGORIES`.  If
@@ -351,10 +355,16 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             enrollments = UserEnrollments().get_course_enrollments(course_key)
             requested_fields.add('username')
             recalculate_stale = False
+            is_stale = False
         else:
             if not UserEnrollments(self.user).is_enrolled(course_key):
                 # Return 404 if effective user does not have an active enrollment in the requested course
                 raise NotFound()
+            is_stale = StaleCompletion.objects.filter(
+                username=self.user.username,
+                course_key=course_key,
+                resolved=False,
+            ).exists()
 
             # Use enrollments for the effective user
             enrollments = UserEnrollments(self.user).get_course_enrollments(course_key)
@@ -364,10 +374,17 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             enrollments = enrollments.filter(user_id__in=user_ids)
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.
         paginated = paginator.paginate_queryset(enrollments, self.request, view=self)
-        aggregator_queryset = self.get_queryset().filter(
-            course_key=course_key,
-            user__in=[enrollment.user for enrollment in paginated],
-        )
+
+        root_block = request.query_params.get('root_block')
+        if root_block:
+            root_block = UsageKey.from_string(root_block).map_into_course(course_key)
+        if is_stale:
+            aggregator_queryset = []
+        else:
+            aggregator_queryset = self.get_queryset().filter(
+                course_key=course_key,
+                user__in=[enrollment.user for enrollment in paginated],
+            )
         aggregators_by_user = defaultdict(list)
         for aggregator in aggregator_queryset:
             aggregators_by_user[aggregator.user].append(aggregator)
@@ -377,6 +394,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
                 user=enrollment.user,
                 course_key=enrollment.course_id,
                 aggregators=aggregators_by_user[enrollment.user],
+                root_block=root_block,
                 recalculate_stale=recalculate_stale,
             ) for enrollment in paginated
         ]

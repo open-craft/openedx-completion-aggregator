@@ -118,9 +118,9 @@ def _update_aggregators(user, course_key, block_keys=frozenset(), force=False):
         updater.update(block_keys, force)
 
 
-def calculate_updated_aggregators(user, course_key, changed_blocks=frozenset(), force=False):
+def calculate_updated_aggregators(user, course_key, changed_blocks=frozenset(), root_block=None, force=False):
     try:
-        updater = AggregationUpdater(user, course_key, compat.get_modulestore())
+        updater = AggregationUpdater(user, course_key, compat.get_modulestore(), root_block=root_block)
     except compat.get_item_not_found_error():
         log.exception("Course not found in modulestore.  Skipping aggregation for %s/%s.", user, course_key)
         return []
@@ -136,7 +136,7 @@ class AggregationUpdater(object):
     Class to update aggregators for a given course and user.
     """
 
-    def __init__(self, user, course_key, modulestore):
+    def __init__(self, user, course_key, modulestore, root_block=None):
         """
         Create an aggregation updater for the given user and course.
 
@@ -146,8 +146,11 @@ class AggregationUpdater(object):
         self.course_key = course_key
 
         with modulestore.bulk_operations(self.course_key):
-            self.course_block_key = compat.init_course_block_key(modulestore, self.course_key)
-            self.course_blocks = compat.init_course_blocks(self.user, self.course_block_key)
+            if root_block:
+                self.root_block = root_block
+            else:
+                self.root_block = compat.init_course_block_key(modulestore, self.course_key)
+            self.course_blocks = compat.init_course_blocks(self.user, self.root_block)
 
         self.aggregators = {
             aggregator.block_key: aggregator for aggregator in Aggregator.objects.filter(
@@ -178,7 +181,7 @@ class AggregationUpdater(object):
         And without clearing stale completions.
         """
         affected_aggregators = self.get_affected_aggregators(changed_blocks)
-        self.update_for_block(self.course_block_key, affected_aggregators, force)
+        self.update_for_block(self.root_block, affected_aggregators, force)
         return self.updated_aggregators
 
     def update(self, changed_blocks=frozenset(), force=False):

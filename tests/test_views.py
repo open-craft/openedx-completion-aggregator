@@ -375,6 +375,53 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         self.assert_expected_detail_view(version)
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
 
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_detail_view_root_block(self):
+        """
+        Ensure that a stale completion causes the aggregations to be recalculated once.
+
+        Verify that the stale completion not resolved.
+        """
+        models.StaleCompletion.objects.create(
+            username=self.test_user.username,
+            course_key=self.course_key,
+            block_key=None,
+            force=False,
+        )
+        response = self.client.get(
+            self.get_detail_url(
+                1,
+                six.text_type(self.course_key),
+                username=self.test_user.username,
+                root_block=six.text_type(self.blocks[1]),
+                requested_fields='sequential',
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['results'], [
+            {
+                'completion': {
+                    'earned': 0.0,
+                    'possible': None,
+                    'percent': 0.0,
+                },
+                'course_key': six.text_type(self.course_key),
+                'sequential': [
+                    {
+                        'course_key': six.text_type(self.course_key),
+                        'block_key': six.text_type(self.blocks[1]),
+                        'completion': {
+                            'earned': 1.0,
+                            'possible': 5.0,
+                            'percent': 0.2,
+                        }
+                    },
+                ],
+            }
+        ])
+
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
