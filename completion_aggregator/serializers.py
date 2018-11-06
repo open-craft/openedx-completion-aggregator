@@ -96,7 +96,7 @@ class AggregatorAdapter(object):
     The adapter or list of adapters can then be passed to the serializer for processing.
     """
 
-    def __init__(self, user, course_key, aggregators=None, recalculate_stale=False):
+    def __init__(self, user, course_key, aggregators=None, root_block=None, recalculate_stale=False):
         """
         Initialize the adapter.
 
@@ -117,7 +117,7 @@ class AggregatorAdapter(object):
         else:
             is_stale = False
 
-        self.update_aggregators(aggregators or [], is_stale=is_stale)
+        self.update_aggregators(aggregators or [], root_block=root_block, is_stale=is_stale)
 
     def __getattr__(self, name):
         """
@@ -140,7 +140,7 @@ class AggregatorAdapter(object):
         if is_aggregation_name(aggregator.aggregation_name):
             self.aggregators[aggregator.aggregation_name].append(aggregator)
 
-    def update_aggregators(self, iterable, is_stale=False):
+    def update_aggregators(self, iterable, root_block=None, is_stale=False):
         """
         Add a number of Aggregators to the adapter.
 
@@ -151,8 +151,10 @@ class AggregatorAdapter(object):
             iterable = calculate_updated_aggregators(
                 self.user,
                 self.course_key,
+                root_block=root_block,
                 force=True,
             )
+
         for aggregator in iterable:
             self.add_aggregator(aggregator)
 
