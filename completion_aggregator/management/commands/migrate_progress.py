@@ -56,21 +56,37 @@ class Command(BaseCommand):
             default=0.0,
             type=float,
         )
+        parser.add_argument(
+            '--ids',
+            help='Migrate specific CourseModuleCompletion IDs',
+        )
 
     def handle(self, *args, **options):
         if not PROGRESS_IMPORTED:
             raise CommandError("Unable to import progress models.  Aborting")
         self._configure_logging(options)
         task_options = self.get_task_options(options)
-        cmc_count = CourseModuleCompletion.objects.all().count()
-        stop = min(cmc_count, options['stop_index'] or float('inf'))
-        for index in range(options['start_index'], stop, options['batch_size']):
-            batch_size = min(options['batch_size'], stop - index)
-            aggregation_tasks.migrate_batch.apply_async(
-                kwargs={'offset': index, 'batch_size': batch_size},
-                **task_options
-            )
-            time.sleep(options['delay_between_tasks'])
+
+        if options['ids']:
+            migrate_ids = [int(id_) for id_ in options['ids'].split(',')]
+            migrate_ids.sort()
+            for index in migrate_ids:
+                aggregation_tasks.migrate_batch.apply_async(
+                    kwargs={'start': index, 'stop': index + 1},
+                    **task_options
+                )
+                time.sleep(options['delay_between_tasks'])
+        else:
+            cmc_max_id = CourseModuleCompletion.objects.all().order_by('-id')[:1][0].id
+            cmc_min_id = CourseModuleCompletion.objects.all().order_by('id')[:1][0].id
+            start = max(options['start_index'], cmc_min_id)
+            stop = min(cmc_max_id + 1, options['stop_index'] or float('inf'))
+            for index in range(start, stop, options['batch_size']):
+                aggregation_tasks.migrate_batch.apply_async(
+                    kwargs={'start': index, 'stop': min(stop, index + options['batch_size'])},
+                    **task_options
+                )
+                time.sleep(options['delay_between_tasks'])
 
     def get_task_options(self, options):
         """
