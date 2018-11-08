@@ -310,20 +310,21 @@ class AggregationUpdater(object):
 
 
 @shared_task
-def migrate_batch(offset, batch_size):  # Cannot pass a queryset to a task.
+def migrate_batch(start, stop):  # Cannot pass a queryset to a task.
     """
     Convert a batch of CourseModuleCompletions to BlockCompletions.
 
-    Given an offset and batch_size, this task will:
+    Given a starting ID and a stopping ID, this task will:
 
-    * Fetch a subset of the existing CourseModuleCompletions,
-    * Update the BlockCompletions table
+    * Fetch all CourseModuleCompletions with an ID in range(start_id, stop_id).
+    * Update the BlockCompletion table with those CourseModuleCompletion
+      records.
     """
     if not PROGRESS_IMPORTED:
         log.error("Cannot perform migration: CourseModuleCompletion not importable.")
 
-    queryset = CourseModuleCompletion.objects.all().order_by('id')
-    course_module_completions = queryset[offset:offset + batch_size]
+    queryset = CourseModuleCompletion.objects.all().select_related('user')
+    course_module_completions = queryset.filter(id__gte=start, id__lt=stop)
 
     processed = {}  # Dict has format: {course: {user: [blocks]}
     insert_params = []
@@ -365,4 +366,4 @@ def migrate_batch(offset, batch_size):  # Cannot pass a queryset to a task.
     StaleCompletion.objects.bulk_create(
         stale_completions,
     )
-    log.info("Completed progress migration batch from %s to %s", offset, offset + batch_size)
+    log.info("Completed progress migration batch from %s to %s", start, stop)
