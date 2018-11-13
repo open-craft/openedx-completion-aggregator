@@ -17,7 +17,6 @@ from rest_framework.test import APIClient
 from xblock.core import XBlock
 
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
 
@@ -27,6 +26,12 @@ from completion_aggregator.api.v1.views import CompletionViewMixin
 from completion_aggregator.tasks.aggregation_tasks import AggregationUpdater
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubHTML, StubSequential
+
+try:
+    from django.urls import reverse
+except ImportError:  # Django 1.8 compatibility
+    from django.core.urlresolvers import reverse
+
 
 empty_compat = StubCompat([])
 
@@ -129,6 +134,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
     detail_url_fmt = '/v{}/course/{}/'
 
     def setUp(self):
+        super(CompletionViewTestCase, self).setUp()
         self.test_user = User.objects.create(username='test_user')
         self.staff_user = User.objects.create(username='staff', is_staff=True)
         self.test_enrollment = self.create_enrollment(
@@ -749,7 +755,7 @@ class CompletionBlockUpdateViewTestCase(CompletionAPITestMixin, TestCase):
     usage_key = course_key.make_usage_key('html', 'course-sequence1-html1')
 
     def setUp(self):
-
+        super(CompletionBlockUpdateViewTestCase, self).setUp()
         self.test_user = User.objects.create(username='test_user')
         self.staff_user = User.objects.create(username='staff', is_staff=True)
         self.test_enrollment = self.create_enrollment(
