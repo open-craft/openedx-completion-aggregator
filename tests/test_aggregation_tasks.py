@@ -19,7 +19,7 @@ from django.test import TestCase
 from django.utils.timezone import now
 
 from completion.models import BlockCompletion
-from completion_aggregator.models import Aggregator
+from completion_aggregator.models import Aggregator, StaleCompletion
 from completion_aggregator.tasks.aggregation_tasks import OLD_DATETIME, AggregationUpdater, update_aggregators
 from test_utils.compat import StubCompat
 from test_utils.xblocks import CourseBlock, HiddenBlock, HTMLBlock, InvalidModeBlock, OtherAggBlock
@@ -49,6 +49,7 @@ class AggregationUpdaterTestCase(TestCase):
         only `course` is registered to store aggregations), `html` is
         COMPLETABLE, and `hidden` is EXCLUDED.
         """
+        super(AggregationUpdaterTestCase, self).setUp()
         self.agg_modified = now() - timedelta(days=1)
         course_key = CourseKey.from_string('course-v1:edx+course+test')
         patch = mock.patch('completion_aggregator.tasks.aggregation_tasks.compat', StubCompat([
@@ -119,6 +120,13 @@ class AggregationUpdaterTestCase(TestCase):
         assert self.agg.earned == 1.0
         assert self.agg.possible == 5.0
 
+    def test_task_with_unknown_user(self):
+        StaleCompletion.objects.create(username='unknown', course_key='course-v1:edx+course+test', resolved=False)
+        with mock.patch('completion_aggregator.tasks.aggregation_tasks._update_aggregators') as mock_task_handler:
+            update_aggregators(username='unknown', course_key='course-v1:edx+course+test')
+        assert StaleCompletion.objects.get(username='unknown').resolved
+        mock_task_handler.assert_not_called()
+
     @XBlock.register_temp_plugin(CourseBlock, 'course')
     @XBlock.register_temp_plugin(HTMLBlock, 'html')
     @XBlock.register_temp_plugin(HiddenBlock, 'hidden')
@@ -182,6 +190,7 @@ class CalculateUpdatedAggregatorsTestCase(TestCase):
     expected_result = namedtuple('expected_result', ['block_key', 'earned', 'updated_earned', 'possible'])
 
     def setUp(self):
+        super(CalculateUpdatedAggregatorsTestCase, self).setUp()
         self.user = get_user_model().objects.create(username='testuser', email='testuser@example.com')
         self.course_key = CourseKey.from_string('OpenCraft/Onboarding/2018')
         self.blocks = [
@@ -213,6 +222,10 @@ class CalculateUpdatedAggregatorsTestCase(TestCase):
         return AggregationUpdater(self.user, self.course_key, mock.MagicMock())
 
     def assert_expected_results(self, updated, expected):
+        """
+        Assert that the specified completion values are actually present in
+        the database
+        """
         updated_dict = {agg.block_key: agg for agg in updated}
         for outcome in expected:
             if outcome.earned is None:
@@ -329,6 +342,7 @@ class PartialUpdateTest(TestCase):
     blocks, that only part of the course tree gets aggregated.
     """
     def setUp(self):
+        super(PartialUpdateTest, self).setUp()
         self.user = get_user_model().objects.create()
         self.course_key = CourseKey.from_string('OpenCraft/Onboarding/2018')
         self.blocks = [
@@ -429,7 +443,7 @@ class PartialUpdateTest(TestCase):
         self.assertEqual(course_agg.last_modified, new_completions[1].modified)
 
 
-class TaskArgumentHandling(TestCase):
+class TaskArgumentHandlingTestCase(TestCase):
     """
     Celery tasks must be called with primitive python types.
 
@@ -438,6 +452,7 @@ class TaskArgumentHandling(TestCase):
     """
 
     def setUp(self):
+        super(TaskArgumentHandlingTestCase, self).setUp()
         self.user = get_user_model().objects.create(username='sandystudent')
         self.course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
         self.block_keys = {
@@ -470,8 +485,3 @@ class TaskArgumentHandling(TestCase):
             self.block_keys,
             False,
         )
-
-    def test_unknown_username(self):
-        with pytest.raises(get_user_model().DoesNotExist):
-            with self.assertNumQueries(0):
-                update_aggregators(username='sanfordstudent', course_key='course-v1:OpenCraft+Onboarding+2018')

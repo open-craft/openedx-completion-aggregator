@@ -12,7 +12,7 @@ from opaque_keys.edx.keys import CourseKey
 from xblock.core import XBlock
 
 from django.contrib.auth import get_user_model
-from django.test import override_settings
+from django.test import TestCase, override_settings
 
 from completion.models import BlockCompletion
 from completion_aggregator.aggregator import perform_aggregation, perform_cleanup
@@ -152,26 +152,40 @@ def test_plethora_of_stale_completions(users):
     assert mock_task.call_count == 1
 
 
-@XBlock.register_temp_plugin(CourseBlock, 'course')
-@XBlock.register_temp_plugin(OtherAggBlock, 'vertical')
-@XBlock.register_temp_plugin(HTMLBlock, 'html')
-@pytest.mark.django_db
-def test_stale_completion_resolution():
-    user_objs = users(get_user_model())  # XBlock.register_temp_plugin decorator breaks pytest fixtures
-    course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
-    for user in user_objs:
-        StaleCompletion.objects.create(username=user.username, course_key=course_key, block_key=None, force=True)
-    assert not StaleCompletion.objects.filter(resolved=True).exists()
-    assert StaleCompletion.objects.filter(resolved=False).exists()
-    with compat_patch(course_key):
-        perform_aggregation()
-    assert StaleCompletion.objects.filter(resolved=True).exists()
-    assert not StaleCompletion.objects.filter(resolved=False).exists()
-    for user in user_objs:
-        StaleCompletion.objects.create(username=user.username, course_key=course_key, block_key=None, force=False)
-    perform_cleanup()
-    assert not StaleCompletion.objects.filter(resolved=True).exists()
-    assert StaleCompletion.objects.filter(resolved=False).exists()
+class StaleCompletionResolutionTestCase(TestCase):
+    """
+    XBlock.register_temp_plugin decorator breaks pytest fixtures, so we
+    do this one test as a unittest test case.
+
+    TODO: Update the XBlock.register_temp_plugin decorator to play nice with
+    pytest.
+    """
+    def setUp(self):
+        super(StaleCompletionResolutionTestCase, self).setUp()
+        self.users = [
+            get_user_model().objects.create(username='Spy'),
+            get_user_model().objects.create(username='VsSpy'),
+        ]
+
+    @XBlock.register_temp_plugin(CourseBlock, 'course')
+    @XBlock.register_temp_plugin(OtherAggBlock, 'vertical')
+    @XBlock.register_temp_plugin(HTMLBlock, 'html')
+    @pytest.mark.django_db
+    def test_stale_completion_resolution(self):
+        course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
+        for user in self.users:
+            StaleCompletion.objects.create(username=user.username, course_key=course_key, block_key=None, force=True)
+        assert not StaleCompletion.objects.filter(resolved=True).exists()
+        assert StaleCompletion.objects.filter(resolved=False).exists()
+        with compat_patch(course_key):
+            perform_aggregation()
+        assert StaleCompletion.objects.filter(resolved=True).exists()
+        assert not StaleCompletion.objects.filter(resolved=False).exists()
+        for user in self.users:
+            StaleCompletion.objects.create(username=user.username, course_key=course_key, block_key=None, force=False)
+        perform_cleanup()
+        assert not StaleCompletion.objects.filter(resolved=True).exists()
+        assert StaleCompletion.objects.filter(resolved=False).exists()
 
 
 def compat_patch(course_key):

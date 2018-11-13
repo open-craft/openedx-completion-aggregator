@@ -8,6 +8,8 @@ from django.conf.urls import url
 
 from . import views
 
+app_name = 'completion_aggregator'
+
 urlpatterns = [
     url(
         r'^course/(?P<course_key>.+)/blocks/(?P<block_key>.+)/$',

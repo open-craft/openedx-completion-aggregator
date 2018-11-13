@@ -74,23 +74,21 @@ class AggregatorManager(models.Manager):
         """
         if not isinstance(user, User):
             raise TypeError(
-                _("user must be an instance of `django.contrib.auth.models.User`.  Got {}".format(
+                _("user must be an instance of `django.contrib.auth.models.User`.  Got {}").format(
                     type(user)
-                ))
+                )
             )
         if not isinstance(course_key, CourseKey):
             raise TypeError(
-                _(
-                    "course_key must be an instance of `opaque_keys.edx.keys.CourseKey`.  Got {}".format(
-                        type(course_key)
-                    ))
+                _("course_key must be an instance of `opaque_keys.edx.keys.CourseKey`.  Got {}").format(
+                    type(course_key)
+                )
             )
         if not isinstance(block_key, UsageKey):
             raise TypeError(
-                _(
-                    "block_key must be an instance of `opaque_keys.edx.keys.UsageKey`.  Got {}".format(
-                        type(block_key)
-                    ))
+                _("block_key must be an instance of `opaque_keys.edx.keys.UsageKey`.  Got {}").format(
+                    type(block_key)
+                )
             )
 
     @staticmethod

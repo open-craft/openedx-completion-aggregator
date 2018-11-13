@@ -26,6 +26,7 @@ class SignalsTestCase(TestCase):
     is saved
     """
     def setUp(self):
+        super(SignalsTestCase, self).setUp()
         user_model = get_user_model()
         self.user = user_model.objects.create()
         self.extra_users = [

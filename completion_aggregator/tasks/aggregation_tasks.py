@@ -82,7 +82,13 @@ def update_aggregators(username, course_key, block_keys=(), force=False):
     optimizations in how aggregators are recalculated.
 
     """
-    user = User.objects.get(username=username)
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        log.warning("User %s does not exist.  Marking stale completions resolved.", username)
+        StaleCompletion.objects.filter(username=username).update(resolved=True)
+        return
+
     course_key = CourseKey.from_string(course_key)
     block_keys = set(UsageKey.from_string(key).map_into_course(course_key) for key in block_keys)
     log.info("Updating aggregators in %s for %s. Changed blocks: %s", course_key, user.username, block_keys)
