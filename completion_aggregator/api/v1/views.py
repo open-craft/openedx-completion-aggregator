@@ -9,7 +9,7 @@ from collections import defaultdict
 from opaque_keys.edx.keys import CourseKey, UsageKey
 from django.db.models import Avg, Sum
 from opaque_keys.edx.keys import CourseKey
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.views import APIView
 
 from django.db.models import Avg, Sum
@@ -433,7 +433,7 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         of the mean completion of said course key.
 
         * course_key (CourseKey): The unique course identifier.
-        * result (list): A list currently only containing the mean completion
+        * results (list): A list currently only containing the mean completion
             of all selected users in the course.
             * mean_completion: a dictionary containing the following fields:
                 * earned (float): The average completion achieved by all
@@ -490,6 +490,18 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
 
     """
 
+    def _parse_cohort_filter(self, value):
+        if cohort_filter is not None:
+            try:
+                cohort_filter = int(cohort_filter)
+            except TypeError:
+                raise ParseError(
+                    'could not parse cohort_filter={!r} as an integer'.format(
+                        cohort_filter,
+                    )
+                )
+        return cohort_filter
+
     def get(self, request, course_key):
         """
         Handler for GET requests
@@ -499,12 +511,9 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         requested_fields = self.get_requested_fields()
         cohorts = UserCohorts(course_key)
         course_cohorts = cohorts.get_course_cohorts()
-        if not course_cohorts:
-            raise NotFound()
         roles_to_exclude = self.request.query_params.get('exclude_roles', '').split(',')
-        cohort_filter = self.request.query_params.get('cohorts')
-        if cohort_filter and not isinstance(int, cohort_filter):
-            raise NotFound()
+        cohort_filter = self._parse_cohort_filter(
+            self.request.query_params.get('cohorts'))
 
         enrollments = UserEnrollments().get_course_enrollments(course_key)
         paginated = paginator.paginate_queryset(
@@ -515,7 +524,7 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         if roles_to_exclude:
             aggregator_qs = aggregator_qs.exclude(
                 user__courseaccessrole__role__in=roles_to_exclude)
-        if cohort_filter:
+        if cohort_filter is not None:
             aggregator_qs = aggregator_qs.exclude(
                 user__cohortmembership__course_user_group__pk=cohort_filter)
         completions = aggregator_qs.aggregate(
