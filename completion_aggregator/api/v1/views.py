@@ -496,6 +496,9 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
     block_completion_serializer = serializers.BlockCompletionSerializer
 
     def _parse_cohort_filter(self, cohort_filter):
+        """
+        Helper function to parse cohort filter query parameter.
+        """
         if cohort_filter is not None:
             try:
                 cohort_filter = int(cohort_filter)

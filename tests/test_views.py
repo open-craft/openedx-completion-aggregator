@@ -616,6 +616,9 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 2
 
     def _create_cohort(self, owner, users):
+        """
+        Create and populate a user group, as well as a cohort.
+        """
         user_group = empty_compat.course_user_group().objects.create(
             name='test',
             course_id=self.course_key,
