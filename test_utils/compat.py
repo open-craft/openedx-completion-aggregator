@@ -10,9 +10,7 @@ from mock import MagicMock
 
 from completion.models import BlockCompletion
 
-from .test_app.models import (
-    CourseEnrollment, CourseAccessRole, CourseUserGroup, CohortMembership
-)
+from .test_app.models import CohortMembership, CourseAccessRole, CourseEnrollment, CourseUserGroup
 
 
 class StubCompat(object):

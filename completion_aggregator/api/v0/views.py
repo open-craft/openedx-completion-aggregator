@@ -15,8 +15,7 @@ from rest_framework.views import APIView
 
 from completion.models import BlockCompletion
 
-from ... import compat
-from ... import serializers
+from ... import compat, serializers
 from ..common import CompletionViewMixin, UserEnrollments
 
 

@@ -14,9 +14,8 @@ from rest_framework.views import APIView
 
 from django.db.models import Avg, Sum
 
-from ... import compat
+from ... import compat, serializers
 from ...models import StaleCompletion
-from ... import serializers
 from ..common import CompletionViewMixin, UserEnrollments
 
 
