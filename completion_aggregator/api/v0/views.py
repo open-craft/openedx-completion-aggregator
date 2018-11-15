@@ -201,7 +201,7 @@ class CompletionListView(CompletionViewMixin, APIView):
         ]
 
         # Return the paginated, serialized completions
-        serializer = self.get_serializer_class(version=0)(
+        serializer = self.get_serializer_class()(
             instance=completions,
             requested_fields=self.get_requested_fields(),
             many=True
@@ -355,7 +355,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         )
 
         # Return the paginated, serialized completions
-        serializer = self.get_serializer_class(version=0)(
+        serializer = self.get_serializer_class()(
             instance=completions,
             requested_fields=requested_fields,
         )
