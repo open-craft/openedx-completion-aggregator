@@ -179,7 +179,7 @@ class CompletionViewMixin(object):
             raise ParseError(msg.format(invalid))
         return fields
 
-    def get_serializer_class(self, version=1):
+    def get_serializer_class(self):
         """
         Return the appropriate serializer.
         """
