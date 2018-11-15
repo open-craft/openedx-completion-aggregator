@@ -15,6 +15,7 @@ from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey, UsageKey
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
+from xblock.plugin import PluginMissingError
 
 from django.contrib.auth.models import User
 from django.db import connection
@@ -116,12 +117,19 @@ def _update_aggregators(user, course_key, block_keys=frozenset(), force=False):
     """
     try:
         updater = AggregationUpdater(user, course_key, compat.get_modulestore())
-    except compat.get_item_not_found_error():
-        log.exception("Course not found in modulestore.  Skipping aggregation for %s/%s.", user, course_key)
-    except TypeError:
-        log.exception("Could not parse modulestore data.  Skipping aggregation for %s/%s.", user, course_key)
+    except (compat.get_item_not_found_error(), TypeError):
+        log.exception("An error occurred.  Skipping aggregation for %s/%s.", user, course_key)
+        StaleCompletion.objects.filter(
+            username=user.username,
+            course_key=course_key,
+            resolved=False
+        ).update(resolved=True)
     else:
-        updater.update(block_keys, force)
+        try:
+            updater.update(block_keys, force)
+        except PluginMissingError:
+            log.exception("An error occurred.  Skipping aggregation for %s/%s.", user, course_key)
+            updater.resolve_stale_completions(changed_blocks=block_keys, start=timezone.now())
 
 
 def calculate_updated_aggregators(user, course_key, changed_blocks=frozenset(), root_block=None, force=False):
