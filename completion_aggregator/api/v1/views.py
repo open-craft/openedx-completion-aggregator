@@ -373,7 +373,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             user_ids = (int(id) for id in request.query_params['user_ids'].split(','))
             enrollments = enrollments.filter(user_id__in=user_ids)
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.
-        paginated = paginator.paginate_queryset(enrollments, self.request, view=self)
+        paginated = paginator.paginate_queryset(enrollments.select_related('user'), self.request, view=self)
 
         root_block = request.query_params.get('root_block')
         if root_block:
