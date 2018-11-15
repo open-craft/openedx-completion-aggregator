@@ -615,25 +615,39 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         assert mock_update.call_count == 0
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 2
 
+    def _create_cohort(self, owner, users):
+        user_group = empty_compat.course_user_group().objects.create(
+            name='test',
+            course_id=self.course_key,
+            group_type='cohort',
+        )
+        user_group.users.set(users)
+        owner.cohortmembership_set.set([
+            empty_compat.cohort_membership_model().objects.create(
+                course_user_group=user_group,
+                user=owner,
+                course_id=self.course_key,
+            ),
+        ])
+
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
-    @patch.object(StubCompat, 'get_cohorts_for_course')
-    def test_stat_view_course_no_cohorts(self, get_cohorts_for_course_mock):
-        get_cohorts_for_course_mock.return_value = None
+    def test_stat_view_course_no_cohorts(self):
         response = self.client.get(self.get_course_stat_url(
             'edX/toy/2012_Fall',
             cohorts=1,
             exclude_roles='staff',
         ))
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_stat_view_staff_user_excluded_from_results(self):
         self.create_enrollment(user=self.staff_user, course_id=self.course_key)
+        self._create_cohort(self.staff_user, [self.staff_user])
         models.Aggregator.objects.submit_completion(
             user=self.staff_user,
             course_key=self.course_key,
@@ -650,7 +664,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             exclude_roles='staff'
         ))
 
-        self.assertEqual(response.data['results'][0]['completion']['earned'], 1.0)
+        self.assertEqual(response.data['results'][0]['completion']['earned'], 2.5)
         self.assertEqual(response.data['results'][0]['completion']['possible'], 8.0)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
@@ -659,7 +673,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
     def test_stat_view_exclude_user_based_on_role(self):
         beta_user = User.objects.create(username='beta_user')
         self.create_enrollment(user=beta_user, course_id=self.course_key)
-
+        self._create_cohort(beta_user, [beta_user])
         models.Aggregator.objects.submit_completion(
             user=beta_user,
             course_key=self.course_key,
@@ -676,7 +690,6 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             cohorts=1,
             exclude_roles='beta'
         ))
-
         self.assertEqual(response.data['results'][0]['completion']['earned'], 1.0)
         self.assertEqual(response.data['results'][0]['completion']['possible'], 8.0)
 
@@ -684,8 +697,10 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
     def test_stat_view_multiple_users_correct_calculations(self):
+        users_in_cohort = []
         for x in range(1, 5):
             user = User.objects.create(username='test_user_{}'.format(x))
+            users_in_cohort.append(user)
             self.create_enrollment(user=user, course_id=self.course_key)
 
             models.Aggregator.objects.submit_completion(
@@ -698,6 +713,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
                 possible=8.0,
                 last_modified=timezone.now(),
             )
+        self._create_cohort(users_in_cohort[0], users_in_cohort)
 
         response = self.client.get(self.get_course_stat_url(
             'edX/toy/2012_Fall',

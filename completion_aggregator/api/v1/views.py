@@ -535,10 +535,6 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
             earned=Avg('earned'),
             percent=Sum('earned') / Sum('possible'))
         completions['course_key'] = course_key
-        completions['filters'] = {
-            'cohorts': [] if cohort_filter is None else [cohort_filter],
-            'exclude_roles': roles_to_exclude,
-        }
 
         # Return the paginated, serialized completions
         serializer = self.get_serializer_class()(

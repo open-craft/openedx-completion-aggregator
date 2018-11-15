@@ -10,7 +10,9 @@ from mock import MagicMock
 
 from completion.models import BlockCompletion
 
-from .test_app.models import CourseEnrollment
+from .test_app.models import (
+    CourseEnrollment, CourseAccessRole, CourseUserGroup, CohortMembership
+)
 
 
 class StubCompat(object):
@@ -98,11 +100,23 @@ class StubCompat(object):
         mock.count.return_value = 5
         return mock
 
-    def get_cohorts_for_course(self, course_key):  # pylint: disable=unused-argument
+    def course_access_role_model(self):
         """
-        Return an integer as a replacement for a cohort id
+        Return this replacement for CourseAccessRole
         """
-        return 1
+        return CourseAccessRole
+
+    def course_user_group(self):
+        """
+        Return this replacement for CourseUserGroup
+        """
+        return CourseUserGroup
+
+    def cohort_membership_model(self):
+        """
+        Return this replacement for CohortMembership
+        """
+        return CohortMembership
 
 
 CourseTreeNode = collections.namedtuple('CourseTreeNode', ['block', 'children'])

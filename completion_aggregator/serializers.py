@@ -291,6 +291,7 @@ class CourseCompletionStatsSerializer(serializers.Serializer):
 
     course_key = serializers.CharField()
     completion = _CompletionSerializer(source='*')
+    username = serializers.SerializerMethodField()
     mean = serializers.SerializerMethodField()
 
     optional_fields = {'mean', 'username'}
@@ -305,6 +306,12 @@ class CourseCompletionStatsSerializer(serializers.Serializer):
             instance, *args, **kwargs)
         for field in self.optional_fields - requested_fields:
             del self.fields[field]
+
+    def get_username(self, obj):
+        """
+        Serialize the username.
+        """
+        return obj.user.username
 
     def _calculate_mean(self, obj):
         """

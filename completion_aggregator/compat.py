@@ -161,3 +161,20 @@ def get_cohorts_for_course(course_key):
     if cohorts.is_course_cohorted(course_key):
         return cohorts.get_course_cohort_id(course_key)
     return None
+
+
+def course_access_role_model():
+    """
+    Return the student.models.CourseAccessRole model.
+    """
+    # pragma: no-cover
+    from student.models import CourseAccessRole  # pylint: disable=import-error
+    return CourseAccessRole
+
+
+def cohort_membership_model():
+    """
+    Return the course_groups.models.CohortMembership model.
+    """
+    from course_groups.models import CohortMembership  # pylint: disable=import-error
+    return CohortMembership
