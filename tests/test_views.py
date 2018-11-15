@@ -624,14 +624,14 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             course_id=self.course_key,
             group_type='cohort',
         )
-        user_group.users.set(users)
-        owner.cohortmembership_set.set([
+        user_group.users.add(*users)
+        owner.cohortmembership_set.add(
             empty_compat.cohort_membership_model().objects.create(
                 course_user_group=user_group,
                 user=owner,
                 course_id=self.course_key,
             ),
-        ])
+        )
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
