@@ -16,9 +16,8 @@ from django.db.models import Avg, Sum
 
 from ... import compat
 from ...models import StaleCompletion
-from ...exceptions import CourseIsNotCohorted
-from ...serializers import AggregatorAdapter
-from ..common import CompletionViewMixin, UserCohorts, UserEnrollments
+from ... import serializers
+from ..common import CompletionViewMixin, UserEnrollments
 
 
 class CompletionListView(CompletionViewMixin, APIView):
@@ -158,6 +157,8 @@ class CompletionListView(CompletionViewMixin, APIView):
               ]
             }
     """
+    course_completion_serializer = serializers.CourseCompletionSerializer
+    block_completion_serializer = serializers.BlockCompletionSerializer
 
     def get(self, request):
         """
@@ -186,7 +187,7 @@ class CompletionListView(CompletionViewMixin, APIView):
         # Create the list of aggregate completions to be serialized,
         # recalculating any stale completions for this single user.
         completions = [
-            AggregatorAdapter(
+            serializers.AggregatorAdapter(
                 user=self.user,
                 course_key=enrollment.course_id,
                 aggregators=aggregators_by_enrollment[self.user, enrollment.course_id],
@@ -343,6 +344,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
               ]
             }
     """
+    course_completion_serializer = serializers.CourseCompletionSerializer
+    block_completion_serializer = serializers.BlockCompletionSerializer
 
     def get(self, request, course_key):
         """
@@ -395,7 +398,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             aggregators_by_user[aggregator.user].append(aggregator)
         # Create the list of aggregate completions to be serialized.
         completions = [
-            AggregatorAdapter(
+            serializers.AggregatorAdapter(
                 user=enrollment.user,
                 course_key=enrollment.course_id,
                 aggregators=aggregators_by_user[enrollment.user],
@@ -463,7 +466,7 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
     **Returns**
 
         * 200 on success with above fields.
-        * 400 if an invalid value was sent for requested_fields.
+        * 400 if an invalid value was sent for requested_fields and cohorts,
         * 404 If the course is not cohorted
 
         Example response:
@@ -489,8 +492,10 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
             }
 
     """
+    course_completion_serializer = serializers.CourseCompletionStatsSerializer
+    block_completion_serializer = serializers.BlockCompletionSerializer
 
-    def _parse_cohort_filter(self, value):
+    def _parse_cohort_filter(self, cohort_filter):
         if cohort_filter is not None:
             try:
                 cohort_filter = int(cohort_filter)
@@ -509,8 +514,6 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         course_key = CourseKey.from_string(course_key)
         paginator = self.pagination_class()  # pylint: disable=not-callable
         requested_fields = self.get_requested_fields()
-        cohorts = UserCohorts(course_key)
-        course_cohorts = cohorts.get_course_cohorts()
         roles_to_exclude = self.request.query_params.get('exclude_roles', '').split(',')
         cohort_filter = self._parse_cohort_filter(
             self.request.query_params.get('cohorts'))
@@ -532,6 +535,10 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
             earned=Avg('earned'),
             percent=Sum('earned') / Sum('possible'))
         completions['course_key'] = course_key
+        completions['filters'] = {
+            'cohorts': [] if cohort_filter is None else [cohort_filter],
+            'exclude_roles': roles_to_exclude,
+        }
 
         # Return the paginated, serialized completions
         serializer = self.get_serializer_class()(

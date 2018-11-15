@@ -284,6 +284,58 @@ class CourseCompletionSerializer(serializers.Serializer):
         return mean
 
 
+class CourseCompletionStatsSerializer(serializers.Serializer):
+    """
+    Serialize completions stats at the course level.
+    """
+
+    course_key = serializers.CharField()
+    completion = _CompletionSerializer(source='*')
+    mean = serializers.SerializerMethodField()
+
+    optional_fields = {'mean', 'username'}
+
+    def __init__(self, instance, requested_fields=frozenset(), *args, **kwargs):
+        """
+        Initialize a course completion stats serializer.
+
+        Add any requested optional fields.
+        """
+        super(CourseCompletionStatsSerializer, self).__init__(
+            instance, *args, **kwargs)
+        for field in self.optional_fields - requested_fields:
+            del self.fields[field]
+
+    def _calculate_mean(self, obj):
+        """
+        Caclulate mean completion percent for all enrolled users.
+        """
+        enrollments = compat.get_users_enrolled_in(obj.course_key)
+        enrollment_count = enrollments.count()
+        if enrollment_count == 0:
+            return 0.
+
+        total = Aggregator.objects.filter(
+            course_key=obj.course_key,
+            aggregation_name='course',
+        ).aggregate(
+            total=Sum(Coalesce('percent', Value(0.)))
+        ).get('total') or 0.
+
+        return total / enrollment_count
+
+    def get_mean(self, obj):
+        """
+        Return the mean completion percent for all enrolled users.
+        """
+        mean_cache_key = MEAN_CACHE_KEY_FORMAT.format(course_key=obj.course_key)
+        mean = cache.get(mean_cache_key)
+        if mean is None:
+            mean = self._calculate_mean(obj)
+            cache.set(mean_cache_key, mean, 30 * 60)  # Cache for 30 mins
+        return mean
+
+
 class CourseCompletionSerializerV0(CourseCompletionSerializer):
     """
     Serializer for V0 API (to include ratio field).
@@ -310,19 +362,16 @@ class BlockCompletionSerializerV0(BlockCompletionSerializer):
     completion = _CompletionSerializerV0(source='*')
 
 
-def course_completion_serializer_factory(requested_fields, version=1):
+def course_completion_serializer_factory(
+        requested_fields,
+        course_completion_serializer,
+        block_completion_serializer):
     """
     Configure and create a serializer for aggregators.
 
     The created serializer nests appropriate
     BlockCompletionSerializers for the specified requested_fields.
     """
-    if version == 0:
-        course_completion_serializer = CourseCompletionSerializerV0
-        block_completion_serializer = BlockCompletionSerializerV0
-    else:
-        course_completion_serializer = CourseCompletionSerializer
-        block_completion_serializer = BlockCompletionSerializer
     dunder_dict = {
         field: block_completion_serializer(many=True) for field in requested_fields
         if is_aggregation_name(field)

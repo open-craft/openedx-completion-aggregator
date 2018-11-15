@@ -83,6 +83,9 @@ class CompletionViewMixin(object):
     _effective_user = None
     _requested_user = None
 
+    course_completion_serializer = None
+    block_completion_serializer = None
+
     @property
     def authentication_classes(self):  # pragma: no cover
         """
@@ -180,19 +183,8 @@ class CompletionViewMixin(object):
         """
         Return the appropriate serializer.
         """
-        return course_completion_serializer_factory(self.get_requested_fields(), version=version)
-
-
-class UserCohorts(object):
-    """
-    Common functionality for users' cohorts
-    """
-
-    def __init__(self, course_key):
-        self.course_key = course_key
-
-    def get_course_cohorts(self):
-        """
-        Check if course has cohorts
-        """
-        return compat.get_cohorts_for_course(self.course_key)
+        return course_completion_serializer_factory(
+            self.get_requested_fields(),
+            self.course_completion_serializer,
+            self.block_completion_serializer,
+        )
