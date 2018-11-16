@@ -10,8 +10,8 @@ from opaque_keys.edx.keys import CourseKey, UsageKey
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.views import APIView
 
-from django.http import JsonResponse
 from django.db.models import Avg, Sum
+from django.http import JsonResponse
 
 from ... import compat, serializers
 from ...models import StaleCompletion
