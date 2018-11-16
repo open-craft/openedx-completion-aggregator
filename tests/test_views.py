@@ -3,6 +3,7 @@ Test serialization of completion data.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import json
 from datetime import timedelta
 
 import ddt
@@ -666,9 +667,10 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             cohorts=1,
             exclude_roles='staff'
         ))
+        data = json.loads(response.content.decode('utf-8'))
 
-        self.assertEqual(response.data['results'][0]['completion']['earned'], 2.5)
-        self.assertEqual(response.data['results'][0]['completion']['possible'], 8.0)
+        self.assertEqual(data['results'][0]['completion']['earned'], 2.5)
+        self.assertEqual(data['results'][0]['completion']['possible'], 8.0)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
@@ -693,8 +695,10 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             cohorts=1,
             exclude_roles='beta'
         ))
-        self.assertEqual(response.data['results'][0]['completion']['earned'], 1.0)
-        self.assertEqual(response.data['results'][0]['completion']['possible'], 8.0)
+        data = json.loads(response.content.decode('utf-8'))
+
+        self.assertEqual(data['results'][0]['completion']['earned'], 1.0)
+        self.assertEqual(data['results'][0]['completion']['possible'], 8.0)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
@@ -723,10 +727,11 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             cohorts=1,
             exclude_roles='staff'
         ))
+        data = json.loads(response.content.decode('utf-8'))
 
-        self.assertEqual(response.data['results'][0]['completion']['possible'], 8.0)
-        self.assertEqual(response.data['results'][0]['completion']['earned'], 3.4)
-        self.assertEqual(response.data['results'][0]['completion']['percent'], 0.425)
+        self.assertEqual(data['results'][0]['completion']['possible'], 8.0)
+        self.assertEqual(data['results'][0]['completion']['earned'], 3.4)
+        self.assertEqual(data['results'][0]['completion']['percent'], 0.425)
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')

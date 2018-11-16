@@ -10,6 +10,7 @@ from opaque_keys.edx.keys import CourseKey, UsageKey
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.views import APIView
 
+from django.http import JsonResponse
 from django.db.models import Avg, Sum
 
 from ... import compat, serializers
@@ -505,18 +506,16 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         Handler for GET requests
         """
         course_key = CourseKey.from_string(course_key)
-        paginator = self.pagination_class()  # pylint: disable=not-callable
         requested_fields = self.get_requested_fields()
         roles_to_exclude = self.request.query_params.get('exclude_roles', '').split(',')
         cohort_filter = self._parse_cohort_filter(
             self.request.query_params.get('cohorts'))
 
         enrollments = UserEnrollments().get_course_enrollments(course_key)
-        paginated = paginator.paginate_queryset(
-            enrollments, self.request, view=self)
         aggregator_qs = self.get_queryset().filter(
             course_key=course_key,
-            user__in=[enrollment.user for enrollment in paginated])
+            aggregation_name='course',
+            user__in=[enrollment.user for enrollment in enrollments])
         if roles_to_exclude:
             aggregator_qs = aggregator_qs.exclude(
                 user__courseaccessrole__role__in=roles_to_exclude)
@@ -529,11 +528,9 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
             percent=Sum('earned') / Sum('possible'))
         completion_stats['course_key'] = course_key
 
-        # Return the paginated, serialized completions
         serializer = self.get_serializer_class()(
-            instance=[completion_stats],
+            instance=completion_stats,
             requested_fields=requested_fields,
-            many=True
         )
 
-        return paginator.get_paginated_response(serializer.data)
+        return JsonResponse({'results': [serializer.data]}, status=200)
