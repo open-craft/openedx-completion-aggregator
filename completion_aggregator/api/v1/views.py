@@ -471,16 +471,9 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         Example response:
 
             {
-                "course_key": "edX/toy/2012_Fall",
-                "filters": {
-                    "cohorts": 2,
-                    "exclude_roles": [
-                        "beta",
-                        "staff"
-                    ]
-                },
                 "results": [
                     {
+                        "course_key": "edX/toy/2012_Fall",
                         "mean_completion": {
                             "earned": 3.4,
                             "possible": 8.0,
