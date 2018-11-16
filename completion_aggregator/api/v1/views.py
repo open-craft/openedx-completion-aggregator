@@ -525,15 +525,15 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         if cohort_filter is not None:
             aggregator_qs = aggregator_qs.exclude(
                 user__cohortmembership__course_user_group__pk=cohort_filter)
-        completions = aggregator_qs.aggregate(
+        completion_stats = aggregator_qs.aggregate(
             possible=Avg('possible'),
             earned=Avg('earned'),
             percent=Sum('earned') / Sum('possible'))
-        completions['course_key'] = course_key
+        completion_stats['course_key'] = course_key
 
         # Return the paginated, serialized completions
         serializer = self.get_serializer_class()(
-            instance=[completions],
+            instance=[completion_stats],
             requested_fields=requested_fields,
             many=True
         )
