@@ -291,10 +291,9 @@ class CourseCompletionStatsSerializer(serializers.Serializer):
 
     course_key = serializers.CharField()
     completion = _CompletionSerializer(source='*')
-    username = serializers.SerializerMethodField()
     mean = serializers.SerializerMethodField()
 
-    optional_fields = {'mean', 'username'}
+    optional_fields = {'mean'}
 
     def __init__(self, instance, requested_fields=frozenset(), *args, **kwargs):
         """
@@ -307,30 +306,6 @@ class CourseCompletionStatsSerializer(serializers.Serializer):
         for field in self.optional_fields - requested_fields:
             del self.fields[field]
 
-    def get_username(self, obj):
-        """
-        Serialize the username.
-        """
-        return obj.user.username
-
-    def _calculate_mean(self, obj):
-        """
-        Caclulate mean completion percent for all enrolled users.
-        """
-        enrollments = compat.get_users_enrolled_in(obj.course_key)
-        enrollment_count = enrollments.count()
-        if enrollment_count == 0:
-            return 0.
-
-        total = Aggregator.objects.filter(
-            course_key=obj.course_key,
-            aggregation_name='course',
-        ).aggregate(
-            total=Sum(Coalesce('percent', Value(0.)))
-        ).get('total') or 0.
-
-        return total / enrollment_count
-
     def get_mean(self, obj):
         """
         Return the mean completion percent for all enrolled users.
@@ -338,7 +313,7 @@ class CourseCompletionStatsSerializer(serializers.Serializer):
         mean_cache_key = MEAN_CACHE_KEY_FORMAT.format(course_key=obj.course_key)
         mean = cache.get(mean_cache_key)
         if mean is None:
-            mean = self._calculate_mean(obj)
+            mean = obj.mean
             cache.set(mean_cache_key, mean, 30 * 60)  # Cache for 30 mins
         return mean
 
