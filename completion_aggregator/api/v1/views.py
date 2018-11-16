@@ -464,9 +464,9 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
 
     **Returns**
 
-        * 200 on success with above fields.
+        * 200 on success with above fields
+              (this includes the case if the course is not cohorted).
         * 400 if an invalid value was sent for requested_fields and cohorts,
-        * 404 If the course is not cohorted
 
         Example response:
 
