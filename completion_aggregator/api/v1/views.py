@@ -7,8 +7,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from collections import defaultdict
 
 from opaque_keys.edx.keys import CourseKey, UsageKey
-from django.db.models import Avg, Sum
-from opaque_keys.edx.keys import CourseKey
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.views import APIView
 
