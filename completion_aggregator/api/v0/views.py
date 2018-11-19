@@ -15,8 +15,7 @@ from rest_framework.views import APIView
 
 from completion.models import BlockCompletion
 
-from ... import compat
-from ...serializers import AggregatorAdapter
+from ... import compat, serializers
 from ..common import CompletionViewMixin, UserEnrollments
 
 
@@ -158,6 +157,8 @@ class CompletionListView(CompletionViewMixin, APIView):
               ]
             }
     """
+    course_completion_serializer = serializers.CourseCompletionSerializerV0
+    block_completion_serializer = serializers.BlockCompletionSerializerV0
 
     def get(self, request):
         """
@@ -190,7 +191,7 @@ class CompletionListView(CompletionViewMixin, APIView):
         # Create the list of aggregate completions to be serialized,
         # recalculating any stale completions for this single user.
         completions = [
-            AggregatorAdapter(
+            serializers.AggregatorAdapter(
                 user=self.user,
                 course_key=enrollment.course_id,
                 aggregators=aggregators_by_enrollment[self.user, enrollment.course_id],
@@ -199,7 +200,7 @@ class CompletionListView(CompletionViewMixin, APIView):
         ]
 
         # Return the paginated, serialized completions
-        serializer = self.get_serializer_class(version=0)(
+        serializer = self.get_serializer_class()(
             instance=completions,
             requested_fields=self.get_requested_fields(),
             many=True
@@ -320,6 +321,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             }
     """
     # pylint: enable=line-too-long
+    course_completion_serializer = serializers.CourseCompletionSerializerV0
+    block_completion_serializer = serializers.BlockCompletionSerializerV0
 
     def get(self, request, course_key):
         """
@@ -343,7 +346,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
 
         # Create the list of aggregate completions to be serialized,
         # recalculating any stale completions for this single user.
-        completions = AggregatorAdapter(
+        completions = serializers.AggregatorAdapter(
             user=enrollment.user,
             course_key=enrollment.course_id,
             aggregators=aggregator_queryset,
@@ -351,7 +354,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         )
 
         # Return the paginated, serialized completions
-        serializer = self.get_serializer_class(version=0)(
+        serializer = self.get_serializer_class()(
             instance=completions,
             requested_fields=requested_fields,
         )
@@ -392,6 +395,8 @@ class CompletionBlockUpdateView(CompletionViewMixin, APIView):
     edx-solutions/progress-edx-platform-extensions models as a backing store.
     The replacement will have the same interface.
     """
+    course_completion_serializer = serializers.CourseCompletionSerializerV0
+    block_completion_serializer = serializers.BlockCompletionSerializerV0
 
     def post(self, request, course_key, block_key):
         """

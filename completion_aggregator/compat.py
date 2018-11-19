@@ -143,3 +143,38 @@ def get_mobile_only_courses(enrollments):
     course_overview_list = CourseOverview.objects.filter(id__in=course_keys, mobile_available=True)
     filtered_course_overview = [overview.id for overview in course_overview_list]
     return enrollments.filter(course_id__in=filtered_course_overview)
+
+
+def get_course(course_key):
+    """
+    Get course for given key.
+    """
+    from courseware.courses import _get_course  # pylint: disable=import-error
+    return _get_course(course_key)
+
+
+def get_cohorts_for_course(course_key):
+    """
+    Get cohorts for given course key.
+    """
+    from openedx.core.djangoapps.course_groups import cohorts  # pylint: disable=import-error
+    if cohorts.is_course_cohorted(course_key):
+        return cohorts.get_course_cohort_id(course_key)
+    return None
+
+
+def course_access_role_model():
+    """
+    Return the student.models.CourseAccessRole model.
+    """
+    # pragma: no-cover
+    from student.models import CourseAccessRole  # pylint: disable=import-error
+    return CourseAccessRole
+
+
+def cohort_membership_model():
+    """
+    Return the course_groups.models.CohortMembership model.
+    """
+    from course_groups.models import CohortMembership  # pylint: disable=import-error
+    return CohortMembership

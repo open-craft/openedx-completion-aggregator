@@ -83,6 +83,9 @@ class CompletionViewMixin(object):
     _effective_user = None
     _requested_user = None
 
+    course_completion_serializer = None
+    block_completion_serializer = None
+
     @property
     def authentication_classes(self):  # pragma: no cover
         """
@@ -176,8 +179,12 @@ class CompletionViewMixin(object):
             raise ParseError(msg.format(invalid))
         return fields
 
-    def get_serializer_class(self, version=1):
+    def get_serializer_class(self):
         """
         Return the appropriate serializer.
         """
-        return course_completion_serializer_factory(self.get_requested_fields(), version=version)
+        return course_completion_serializer_factory(
+            self.get_requested_fields(),
+            self.course_completion_serializer,
+            self.block_completion_serializer,
+        )

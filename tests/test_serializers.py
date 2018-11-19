@@ -14,8 +14,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
 
-from completion_aggregator import models
-from completion_aggregator.serializers import AggregatorAdapter, course_completion_serializer_factory
+from completion_aggregator import models, serializers
 from completion_aggregator.tasks.aggregation_tasks import AggregationUpdater
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubSequential
@@ -53,7 +52,7 @@ class AggregatorAdapterTestCase(TestCase):
             possible=3.4,
             last_modified=timezone.now(),
         )
-        agstruct = AggregatorAdapter(
+        agstruct = serializers.AggregatorAdapter(
             user=self.test_user,
             course_key=self.course_key,
         )
@@ -62,6 +61,14 @@ class AggregatorAdapterTestCase(TestCase):
 
         self.assertEqual(agstruct.course, course_completion)
         self.assertEqual(agstruct.sequential, [sequential_completion])
+
+
+def _course_completion_serializer_factory(serializer_cls_args):
+    return serializers.course_completion_serializer_factory(
+        serializer_cls_args,
+        course_completion_serializer=serializers.CourseCompletionSerializer,
+        block_completion_serializer=serializers.BlockCompletionSerializer,
+    )
 
 
 @ddt.ddt
@@ -82,7 +89,7 @@ class CourseCompletionSerializerTestCase(TestCase):
         Ensures that the course completion serializer returns the expected results
         for this set of submitted completions.
         """
-        serializer_cls = course_completion_serializer_factory(serializer_cls_args)
+        serializer_cls = _course_completion_serializer_factory(serializer_cls_args)
         aggregators = [
             models.Aggregator.objects.submit_completion(
                 user=self.test_user,
@@ -117,7 +124,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             course_key=self.course_key,
             resolved=False
         )
-        completion = AggregatorAdapter(
+        completion = serializers.AggregatorAdapter(
             user=self.test_user,
             course_key=self.course_key,
             aggregators=aggregators,
@@ -242,7 +249,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             possible=0.0,
             last_modified=timezone.now(),
         )
-        serial = course_completion_serializer_factory([])(AggregatorAdapter(
+        serial = _course_completion_serializer_factory([])(serializers.AggregatorAdapter(
             user=self.test_user,
             course_key=course_key,
             aggregators=[completion]
@@ -260,7 +267,7 @@ class CourseCompletionSerializerTestCase(TestCase):
     def test_mean_with_no_completions(self):
         # A course that has no aggregators recorded.
         course_key = CourseKey.from_string('course-v1:abc+def+ghj')
-        serial = course_completion_serializer_factory(['mean'])(AggregatorAdapter(
+        serial = _course_completion_serializer_factory(['mean'])(serializers.AggregatorAdapter(
             user=self.test_user,
             course_key=course_key,
             aggregators=[],
@@ -290,7 +297,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             )[0]
             for idx in range(4)
         ]
-        serial = course_completion_serializer_factory(['mean'])(AggregatorAdapter(
+        serial = _course_completion_serializer_factory(['mean'])(serializers.AggregatorAdapter(
             user=self.test_user,
             course_key=course_key,
             aggregators=completions
@@ -309,7 +316,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             possible=0.0,
             last_modified=timezone.now(),
         )
-        agg = AggregatorAdapter(
+        agg = serializers.AggregatorAdapter(
             user=self.test_user,
             course_key=course_key,
             aggregators=[completion]
@@ -320,7 +327,7 @@ class CourseCompletionSerializerTestCase(TestCase):
 
     def test_aggregation_without_completions(self):
         course_key = CourseKey.from_string('course-v1:abc+def+ghi')
-        serial = course_completion_serializer_factory([])(AggregatorAdapter(
+        serial = _course_completion_serializer_factory([])(serializers.AggregatorAdapter(
             user=self.test_user,
             course_key=course_key,
             aggregators=[]
@@ -360,7 +367,7 @@ class CourseCompletionSerializerTestCase(TestCase):
         ]
         for agg in aggregators:
             with pytest.raises(ValueError):
-                AggregatorAdapter(
+                serializers.AggregatorAdapter(
                     user=self.test_user,
                     course_key=course_key,
                     aggregators=[agg],
@@ -377,7 +384,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             possible=2.0,
             last_modified=timezone.now(),
         )[0]
-        adapted = AggregatorAdapter(
+        adapted = serializers.AggregatorAdapter(
             user=self.test_user,
             course_key=course_key,
             aggregators=[aggregator],

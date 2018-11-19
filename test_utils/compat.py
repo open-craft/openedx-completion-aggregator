@@ -10,7 +10,7 @@ from mock import MagicMock
 
 from completion.models import BlockCompletion
 
-from .test_app.models import CourseEnrollment
+from .test_app.models import CohortMembership, CourseAccessRole, CourseEnrollment, CourseUserGroup
 
 
 class StubCompat(object):
@@ -32,7 +32,7 @@ class StubCompat(object):
 
     def init_course_blocks(self, user, course_block_key):  # pylint: disable=unused-argument
         """
-        Not actually used in this implmentation.
+        Not actually used in this implementation.
 
         Overridden here to prevent the default behavior, which relies on
         modulestore.
@@ -97,6 +97,24 @@ class StubCompat(object):
         # Simulate 5 users enrolled in course
         mock.count.return_value = 5
         return mock
+
+    def course_access_role_model(self):
+        """
+        Return this replacement for CourseAccessRole
+        """
+        return CourseAccessRole
+
+    def course_user_group(self):
+        """
+        Return this replacement for CourseUserGroup
+        """
+        return CourseUserGroup
+
+    def cohort_membership_model(self):
+        """
+        Return this replacement for CohortMembership
+        """
+        return CohortMembership
 
 
 CourseTreeNode = collections.namedtuple('CourseTreeNode', ['block', 'children'])
