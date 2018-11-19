@@ -645,7 +645,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         ))
 
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(data['results'][0]['mean_completion']['earned'], 1.0)
         self.assertEqual(data['results'][0]['mean_completion']['possible'], 8.0)
         self.assertEqual(data['results'][0]['mean_completion']['percent'], .125)
