@@ -290,7 +290,7 @@ class CourseCompletionStatsSerializer(serializers.Serializer):
     """
 
     course_key = serializers.CharField()
-    completion = _CompletionSerializer(source='*')
+    mean_completion = _CompletionSerializer(source='*')
     mean = serializers.SerializerMethodField()
 
     optional_fields = {'mean'}

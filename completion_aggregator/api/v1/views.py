@@ -510,22 +510,21 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         roles_to_exclude = self.request.query_params.get('exclude_roles', '').split(',')
         cohort_filter = self._parse_cohort_filter(
             self.request.query_params.get('cohorts'))
-
         enrollments = UserEnrollments().get_course_enrollments(course_key)
+        if roles_to_exclude:
+            enrollments = enrollments.exclude(
+                user__courseaccessrole__role__in=roles_to_exclude)
+        if cohort_filter is not None:
+            enrollments = enrollments.exclude(
+                user__cohortmembership__course_user_group__pk=cohort_filter)
         aggregator_qs = self.get_queryset().filter(
             course_key=course_key,
             aggregation_name='course',
-            user__in=[enrollment.user for enrollment in enrollments])
-        if roles_to_exclude:
-            aggregator_qs = aggregator_qs.exclude(
-                user__courseaccessrole__role__in=roles_to_exclude)
-        if cohort_filter is not None:
-            aggregator_qs = aggregator_qs.exclude(
-                user__cohortmembership__course_user_group__pk=cohort_filter)
+            user_id__in=[enrollment.user_id for enrollment in enrollments])
         completion_stats = aggregator_qs.aggregate(
             possible=Avg('possible'),
-            earned=Avg('earned'),
-            percent=Sum('earned') / Sum('possible'))
+            earned=Sum('earned') / len(enrollments),
+            percent=Sum('earned') / (Avg('possible') * len(enrollments)))
         completion_stats['course_key'] = course_key
 
         serializer = self.get_serializer_class()(

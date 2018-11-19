@@ -645,6 +645,10 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         ))
 
         self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(data['results'][0]['mean_completion']['earned'], 1.0)
+        self.assertEqual(data['results'][0]['mean_completion']['possible'], 8.0)
+        self.assertEqual(data['results'][0]['mean_completion']['percent'], .125)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
@@ -669,8 +673,21 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         ))
         data = json.loads(response.content.decode('utf-8'))
 
-        self.assertEqual(data['results'][0]['completion']['earned'], 2.5)
-        self.assertEqual(data['results'][0]['completion']['possible'], 8.0)
+        self.assertEqual(data['results'][0]['mean_completion']['earned'], 2.5)
+        self.assertEqual(data['results'][0]['mean_completion']['possible'], 8.0)
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_stat_view_unengaged_user(self):
+        self.create_enrollment(user=self.staff_user, course_id=self.course_key)
+        response = self.client.get(self.get_course_stat_url(
+            'edX/toy/2012_Fall',
+        ))
+        data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(data['results'][0]['mean_completion']['earned'], 0.5)
+        self.assertEqual(data['results'][0]['mean_completion']['possible'], 8.0)
+        self.assertEqual(data['results'][0]['mean_completion']['percent'], 0.0625)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
@@ -697,8 +714,8 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         ))
         data = json.loads(response.content.decode('utf-8'))
 
-        self.assertEqual(data['results'][0]['completion']['earned'], 1.0)
-        self.assertEqual(data['results'][0]['completion']['possible'], 8.0)
+        self.assertEqual(data['results'][0]['mean_completion']['earned'], 1.0)
+        self.assertEqual(data['results'][0]['mean_completion']['possible'], 8.0)
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
@@ -729,9 +746,9 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         ))
         data = json.loads(response.content.decode('utf-8'))
 
-        self.assertEqual(data['results'][0]['completion']['possible'], 8.0)
-        self.assertEqual(data['results'][0]['completion']['earned'], 3.4)
-        self.assertEqual(data['results'][0]['completion']['percent'], 0.425)
+        self.assertEqual(data['results'][0]['mean_completion']['possible'], 8.0)
+        self.assertEqual(data['results'][0]['mean_completion']['earned'], 3.4)
+        self.assertEqual(data['results'][0]['mean_completion']['percent'], 0.425)
 
     @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
