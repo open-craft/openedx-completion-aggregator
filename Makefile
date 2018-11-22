@@ -104,4 +104,4 @@ build_dummy_translations: extract_translations dummy_translations compile_transl
 validate_translations: build_dummy_translations detect_changed_source_translations ## validate translations
 
 sort_imports:
-	isort --recursive completion_aggregator test_utils tests test_settings.py
+	isort --recursive tests test_utils completion_aggregator manage.py setup.py test_settings.py
