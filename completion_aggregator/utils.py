@@ -9,6 +9,8 @@ from django.utils.translation import ugettext as _
 DJANGO_MAJOR_VERSION = django.VERSION[0]
 DJANGO_MINOR_VERSION = django.VERSION[1]
 
+WAFFLE_AGGREGATE_STALE_FROM_SCRATCH = 'completion_aggregator.aggregate_stale_from_scratch'
+
 
 class BagOfHolding(object):
     """

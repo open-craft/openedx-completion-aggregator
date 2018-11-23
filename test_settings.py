@@ -42,6 +42,7 @@ INSTALLED_APPS = (
     'completion_aggregator',
     'completion',
     'oauth2_provider',
+    'waffle',
     'test_utils.test_app',
 )
 

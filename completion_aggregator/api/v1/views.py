@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from collections import defaultdict
 
+import waffle
 from opaque_keys.edx.keys import CourseKey, UsageKey
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.views import APIView
@@ -15,6 +16,7 @@ from django.http import JsonResponse
 
 from ... import compat, serializers
 from ...models import StaleCompletion
+from ...utils import WAFFLE_AGGREGATE_STALE_FROM_SCRATCH
 from ..common import CompletionViewMixin, UserEnrollments
 
 
@@ -384,22 +386,23 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         root_block = request.query_params.get('root_block')
         if root_block:
             root_block = UsageKey.from_string(root_block).map_into_course(course_key)
-        if is_stale:
+
+        if is_stale and waffle.flag_is_active(request, WAFFLE_AGGREGATE_STALE_FROM_SCRATCH):
             aggregator_queryset = []
         else:
             aggregator_queryset = self.get_queryset().filter(
                 course_key=course_key,
                 user__in=[enrollment.user for enrollment in paginated],
-            )
+            ).select_related('user')
         aggregators_by_user = defaultdict(list)
         for aggregator in aggregator_queryset:
-            aggregators_by_user[aggregator.user].append(aggregator)
+            aggregators_by_user[aggregator.user_id].append(aggregator)
         # Create the list of aggregate completions to be serialized.
         completions = [
             serializers.AggregatorAdapter(
                 user=enrollment.user,
                 course_key=enrollment.course_id,
-                aggregators=aggregators_by_user[enrollment.user],
+                aggregators=aggregators_by_user[enrollment.user_id],
                 root_block=root_block,
                 recalculate_stale=recalculate_stale,
             ) for enrollment in paginated

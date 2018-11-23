@@ -15,6 +15,7 @@ from opaque_keys.edx.keys import CourseKey
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.test import APIClient
+from waffle.testutils import override_flag
 from xblock.core import XBlock
 
 from django.contrib.auth.models import User
@@ -25,6 +26,7 @@ from completion.models import BlockCompletion, BlockCompletionManager
 from completion_aggregator import models
 from completion_aggregator.api.v1.views import CompletionViewMixin
 from completion_aggregator.tasks.aggregation_tasks import AggregationUpdater
+from completion_aggregator.utils import WAFFLE_AGGREGATE_STALE_FROM_SCRATCH
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubHTML, StubSequential
 
@@ -356,21 +358,34 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         expected = self._get_expected_detail(version, expected_values)
         self.assertEqual(response.data, expected)
 
-    @ddt.data(0, 1)
+    @ddt.data(
+        (0, True),
+        (0, False),
+        (1, True),
+        (1, False)
+    )
+    @ddt.unpack
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
     @patch.object(AggregationUpdater, 'update')
-    def test_detail_view(self, version, mock_update):
-        self.assert_expected_detail_view(version)
+    def test_detail_view(self, version, waffle_active, mock_update):
+        with override_flag(WAFFLE_AGGREGATE_STALE_FROM_SCRATCH, active=waffle_active):
+            self.assert_expected_detail_view(version)
         # no stale completions, so aggregations were not updated
         assert mock_update.call_count == 0
 
-    @ddt.data(0, 1)
+    @ddt.data(
+        (0, True),
+        (0, False),
+        (1, True),
+        (1, False)
+    )
+    @ddt.unpack
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
-    def test_detail_view_stale_completion(self, version):
+    def test_detail_view_stale_completion(self, version, waffle_active):
         """
         Ensure that a stale completion causes the aggregations to be recalculated once.
 
@@ -383,7 +398,8 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             force=False,
         )
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
-        self.assert_expected_detail_view(version)
+        with override_flag('completion_aggregator.aggregate_stale_from_scratch', active=waffle_active):
+            self.assert_expected_detail_view(version)
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 1
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
