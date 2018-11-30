@@ -687,7 +687,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         )
 
         self.client.force_authenticate(self.staff_user)
-        user_ids = f'{some_user.id},{yet_another_user.id}'
+        user_ids = str(some_user.id) + str(yet_another_user.id)
         response = self.client.get(self.get_detail_url(version, self.course_key, user_ids=user_ids))
         self.assertEqual(response.status_code, 200)
         expected_values = [
