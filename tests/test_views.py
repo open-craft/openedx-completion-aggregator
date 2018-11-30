@@ -632,6 +632,78 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         assert mock_update.call_count == 0
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 2
 
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_detail_view_staff_requested_multiple_users(self, version):
+        """
+        Test that requesting course completions for a set of users filters out the other enrolled users
+        """
+
+        some_user = User.objects.create(username='test_user_2')
+        self.create_enrollment(
+            user=some_user,
+            course_id=self.course_key,
+        )
+        models.Aggregator.objects.submit_completion(
+            user=some_user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type='course', block_id='course'),
+            aggregation_name='course',
+            earned=3.0,
+            possible=12.0,
+            last_modified=timezone.now(),
+        )
+
+        some_other_user = User.objects.create(username='test_user_3')
+        self.create_enrollment(
+            user=some_other_user,
+            course_id=self.course_key,
+        )
+        models.Aggregator.objects.submit_completion(
+            user=some_other_user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type='course', block_id='course'),
+            aggregation_name='course',
+            earned=9.0,
+            possible=12.0,
+            last_modified=timezone.now(),
+        )
+
+        yet_another_user = User.objects.create(username='test_user_4')
+        self.create_enrollment(
+            user=yet_another_user,
+            course_id=self.course_key,
+        )
+        models.Aggregator.objects.submit_completion(
+            user=yet_another_user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type='course', block_id='course'),
+            aggregation_name='course',
+            earned=6.0,
+            possible=12.0,
+            last_modified=timezone.now(),
+        )
+
+        self.client.force_authenticate(self.staff_user)
+        response = self.client.get(self.get_detail_url(version, self.course_key, user_ids='test_user_2,test_user_4'))
+        self.assertEqual(response.status_code, 200)
+        expected_values = [
+            {
+                'username': 'test_user_2',
+                'course_key': 'edX/toy/2012_Fall',
+                'completion': self._get_expected_completion(1, earned=3.0, possible=12.0, percent=0.25),
+            },
+            {
+                'username': 'test_user_4',
+                'course_key': 'edX/toy/2012_Fall',
+                'completion': self._get_expected_completion(1, earned=6.0, possible=12.0, percent=0.5),
+            },
+        ]
+        expected = self._get_expected_detail(version, expected_values)
+        self.assertEqual(response.data, expected)
+
     def _create_cohort(self, owner, users):
         """
         Create and populate a user group, as well as a cohort.
