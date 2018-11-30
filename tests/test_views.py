@@ -702,7 +702,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
                 'completion': self._get_expected_completion(1, earned=6.0, possible=12.0, percent=0.5),
             },
         ]
-        expected = self._get_expected_detail(version, expected_values)
+        expected = self._get_expected_detail(version, expected_values, count=2)
         self.assertEqual(response.data, expected)
 
     def _create_cohort(self, owner, users):
