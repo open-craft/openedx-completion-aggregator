@@ -632,15 +632,14 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         assert mock_update.call_count == 0
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 2
 
-    @ddt.data(0, 1)
     @XBlock.register_temp_plugin(StubCourse, 'course')
     @XBlock.register_temp_plugin(StubSequential, 'sequential')
     @XBlock.register_temp_plugin(StubHTML, 'html')
-    def test_detail_view_staff_requested_multiple_users(self, version):
+    def test_detail_view_staff_requested_multiple_users(self):
         """
         Test that requesting course completions for a set of users filters out the other enrolled users
         """
-
+        version = 1
         some_user = User.objects.create(username='test_user_2')
         self.create_enrollment(
             user=some_user,
@@ -687,7 +686,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         )
 
         self.client.force_authenticate(self.staff_user)
-        user_ids = str(some_user.id) + "," + str(yet_another_user.id)
+        user_ids = "{},{}".format(some_user.id, yet_another_user.id)
         response = self.client.get(self.get_detail_url(version, self.course_key, user_ids=user_ids))
         self.assertEqual(response.status_code, 200)
         expected_values = [
