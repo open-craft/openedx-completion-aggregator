@@ -124,6 +124,35 @@ class CompletionAPITestMixin(object):
             course_id=course_id,
         )
 
+    def create_enrolled_users(self, count):
+        """
+        Create 'count' number of enrolled users.
+        """
+        users = []
+        for user_id in range(count):
+            username = 'user{}'.format(user_id)
+            user = User.objects.create(username=username)
+            users.append(user)
+            self.create_enrollment(
+                user=user,
+                course_id=self.course_key,
+            )
+        return users
+
+    def create_course_completion_data(self, user, earned, possible):
+        """
+        Create course-level completion data.
+        """
+        models.Aggregator.objects.submit_completion(
+            user=user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type='course', block_id='course'),
+            aggregation_name='course',
+            earned=earned,
+            possible=possible,
+            last_modified=timezone.now()
+        )
+
 
 @ddt.ddt
 class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
@@ -640,63 +669,22 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         Test that requesting course completions for a set of users filters out the other enrolled users
         """
         version = 1
-        some_user = User.objects.create(username='test_user_2')
-        self.create_enrollment(
-            user=some_user,
-            course_id=self.course_key,
-        )
-        models.Aggregator.objects.submit_completion(
-            user=some_user,
-            course_key=self.course_key,
-            block_key=self.course_key.make_usage_key(block_type='course', block_id='course'),
-            aggregation_name='course',
-            earned=3.0,
-            possible=12.0,
-            last_modified=timezone.now(),
-        )
-
-        some_other_user = User.objects.create(username='test_user_3')
-        self.create_enrollment(
-            user=some_other_user,
-            course_id=self.course_key,
-        )
-        models.Aggregator.objects.submit_completion(
-            user=some_other_user,
-            course_key=self.course_key,
-            block_key=self.course_key.make_usage_key(block_type='course', block_id='course'),
-            aggregation_name='course',
-            earned=9.0,
-            possible=12.0,
-            last_modified=timezone.now(),
-        )
-
-        yet_another_user = User.objects.create(username='test_user_4')
-        self.create_enrollment(
-            user=yet_another_user,
-            course_id=self.course_key,
-        )
-        models.Aggregator.objects.submit_completion(
-            user=yet_another_user,
-            course_key=self.course_key,
-            block_key=self.course_key.make_usage_key(block_type='course', block_id='course'),
-            aggregation_name='course',
-            earned=6.0,
-            possible=12.0,
-            last_modified=timezone.now(),
-        )
-
+        users = self.create_enrolled_users(3)
+        self.create_course_completion_data(users[0], 3.0, 12.0)
+        self.create_course_completion_data(users[1], 9.0, 12.0)
+        self.create_course_completion_data(users[2], 6.0, 12.0)
         self.client.force_authenticate(self.staff_user)
-        user_ids = "{},{}".format(some_user.id, yet_another_user.id)
+        user_ids = "{},{}".format(users[0].id, users[2].id)
         response = self.client.get(self.get_detail_url(version, self.course_key, user_ids=user_ids))
         self.assertEqual(response.status_code, 200)
         expected_values = [
             {
-                'username': 'test_user_2',
+                'username': users[0].username,
                 'course_key': 'edX/toy/2012_Fall',
                 'completion': self._get_expected_completion(1, earned=3.0, possible=12.0, percent=0.25),
             },
             {
-                'username': 'test_user_4',
+                'username': users[2].username,
                 'course_key': 'edX/toy/2012_Fall',
                 'completion': self._get_expected_completion(1, earned=6.0, possible=12.0, percent=0.5),
             },
