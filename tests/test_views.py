@@ -124,6 +124,35 @@ class CompletionAPITestMixin(object):
             course_id=course_id,
         )
 
+    def create_enrolled_users(self, count):
+        """
+        Create 'count' number of enrolled users.
+        """
+        users = []
+        for user_id in range(count):
+            username = 'user{}'.format(user_id)
+            user = User.objects.create(username=username)
+            users.append(user)
+            self.create_enrollment(
+                user=user,
+                course_id=self.course_key,
+            )
+        return users
+
+    def create_course_completion_data(self, user, earned, possible):
+        """
+        Create course-level completion data.
+        """
+        models.Aggregator.objects.submit_completion(
+            user=user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type='course', block_id='course'),
+            aggregation_name='course',
+            earned=earned,
+            possible=possible,
+            last_modified=timezone.now()
+        )
+
 
 @ddt.ddt
 class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
@@ -631,6 +660,37 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         self.assertEqual(response.data, expected)
         assert mock_update.call_count == 0
         assert models.StaleCompletion.objects.filter(resolved=False).count() == 2
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_detail_view_staff_requested_multiple_users(self):
+        """
+        Test that requesting course completions for a set of users filters out the other enrolled users
+        """
+        version = 1
+        users = self.create_enrolled_users(3)
+        self.create_course_completion_data(users[0], 3.0, 12.0)
+        self.create_course_completion_data(users[1], 9.0, 12.0)
+        self.create_course_completion_data(users[2], 6.0, 12.0)
+        self.client.force_authenticate(self.staff_user)
+        user_ids = "{},{}".format(users[0].id, users[2].id)
+        response = self.client.get(self.get_detail_url(version, self.course_key, user_ids=user_ids))
+        self.assertEqual(response.status_code, 200)
+        expected_values = [
+            {
+                'username': users[0].username,
+                'course_key': 'edX/toy/2012_Fall',
+                'completion': self._get_expected_completion(1, earned=3.0, possible=12.0, percent=0.25),
+            },
+            {
+                'username': users[2].username,
+                'course_key': 'edX/toy/2012_Fall',
+                'completion': self._get_expected_completion(1, earned=6.0, possible=12.0, percent=0.5),
+            },
+        ]
+        expected = self._get_expected_detail(version, expected_values, count=2)
+        self.assertEqual(response.data, expected)
 
     def _create_cohort(self, owner, users):
         """
