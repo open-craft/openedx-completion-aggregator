@@ -14,7 +14,7 @@ from django.test import TestCase
 from django.utils.timezone import now
 
 from completion.models import BlockCompletion
-from completion_aggregator.aggregator import perform_aggregation
+from completion_aggregator.batch import perform_aggregation
 from completion_aggregator.models import Aggregator, StaleCompletion
 from completion_aggregator.signals import cohort_updated_handler, course_published_handler, item_deleted_handler
 from test_utils.compat import StubCompat
@@ -107,6 +107,6 @@ class SignalsTestCase(TestCase):
     def test_cohort_signal_handler(self):
         course_key = CourseKey.from_string('course-v1:edX+test+2018')
         user = get_user_model().objects.create(username='deleter')
-        with patch('completion_aggregator.tasks.aggregation_tasks.compat', StubCompat([])):
+        with patch('completion_aggregator.core.compat', StubCompat([])):
             cohort_updated_handler(user, course_key)
             assert StaleCompletion.objects.filter(username=user.username, course_key=course_key, force=True).exists()

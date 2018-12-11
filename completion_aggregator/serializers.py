@@ -20,8 +20,8 @@ from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 
 from . import compat
+from .core import calculate_updated_aggregators
 from .models import Aggregator, StaleCompletion
-from .tasks.aggregation_tasks import calculate_updated_aggregators
 
 log = logging.getLogger(__name__)
 

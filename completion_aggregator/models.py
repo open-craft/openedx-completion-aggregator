@@ -299,3 +299,15 @@ class StaleCompletion(TimeStampedModel):
         if self.resolved:
             parts.append('*')
         return ''.join(parts)
+
+
+@python_2_unicode_compatible
+class CacheGroupInvalidation(models.Model):
+    group = models.CharField(max_length=150, unique=True)
+    invalidated_at = models.DateTimeField(db_index=True)
+
+    def __str__(self):
+        """
+        Get a string representation of this model instance.
+        """
+        return "{} invalidated at {}".format(self.group, self.invalidated_at)

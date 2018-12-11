@@ -16,7 +16,7 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-from ...aggregator import perform_aggregation
+from ...batch import perform_aggregation
 
 
 class Command(BaseCommand):

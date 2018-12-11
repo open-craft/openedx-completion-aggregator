@@ -8,7 +8,7 @@ import logging
 from django.conf import settings
 from django.db.models.signals import post_save
 
-from . import aggregator, compat, models
+from . import batch, compat, models
 from .tasks import handler_tasks
 
 log = logging.getLogger(__name__)
@@ -107,5 +107,5 @@ def completion_updated_handler(signal, sender, instance, created, raw, using, up
         block_key=instance.block_key
     )
     if not getattr(settings, 'COMPLETION_AGGREGATOR_ASYNC_AGGREGATION', False):
-        aggregator.perform_aggregation()
-        aggregator.perform_cleanup()
+        batch.perform_aggregation()
+        batch.perform_cleanup()
