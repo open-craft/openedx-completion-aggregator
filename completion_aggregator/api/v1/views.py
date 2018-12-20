@@ -438,6 +438,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
 
         return self._parse_aggregator(course_key, params)
 
+
 class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
     """
     API view to render stats for a single course.
