@@ -422,7 +422,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         """
         params = {}
         if request.query_params.get('user_ids', None):
-            params['user_ids'] = (int(id) for id in re.split(',|\.', request.query_params['user_ids']))
+            params['user_ids'] = (int(id) for id in re.split(r',|\.', request.query_params['user_ids']))
 
         params['root_block'] = request.query_params.get('root_block', None)
 

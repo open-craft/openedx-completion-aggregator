@@ -175,7 +175,7 @@ class CompletionViewMixin(object):
                 field for field in self.request.GET.get('requested_fields', '').split(',') if field
             }
         else:
-            fields = { field for field in self.request.data.get('requested_fields', []) }
+            fields = {field for field in self.request.data.get('requested_fields', [])}
         invalid = set()
         for field in fields:
             if not (is_aggregation_name(field) or field in self._allowed_requested_fields):
