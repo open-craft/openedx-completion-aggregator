@@ -122,6 +122,9 @@ class CompletionViewMixin(object):
             return self._effective_user
 
         requested_username = self.request.GET.get('username')
+        if self.request.method == "POST":
+            requested_username = self.request.data.get('username', None)
+
         if not requested_username:
             if self.request.user.is_staff:
                 user = self.request.user
@@ -166,9 +169,13 @@ class CompletionViewMixin(object):
         """
         Parse and return value for requested_fields parameter.
         """
-        fields = {
-            field for field in self.request.GET.get('requested_fields', '').split(',') if field
-        }
+        fields = {}
+        if self.request.method == "GET":
+            fields = {
+                field for field in self.request.GET.get('requested_fields', '').split(',') if field
+            }
+        else:
+            fields = { field for field in self.request.data.get('requested_fields', []) }
         invalid = set()
         for field in fields:
             if not (is_aggregation_name(field) or field in self._allowed_requested_fields):
