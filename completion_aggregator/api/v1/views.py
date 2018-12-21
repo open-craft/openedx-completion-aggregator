@@ -212,6 +212,14 @@ class CompletionDetailView(CompletionViewMixin, APIView):
     **Request Format**
 
         GET /api/completion/v1/course/<course_key>/
+        or
+        POST /api/completion/v1/course/<course_key>/ w/ body
+        {
+            "user_ids": [1,2,3,5],
+            "requested_fields": ["chapter", "vertical"],
+            "root_block": "root_block",
+            "username": "username"
+        }
 
     **Example Requests**
 
