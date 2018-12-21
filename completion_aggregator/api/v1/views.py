@@ -4,9 +4,9 @@ API views to read completion information.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import re
 from collections import defaultdict
 
-import re
 import waffle
 from opaque_keys.edx.keys import CourseKey, UsageKey
 from rest_framework.exceptions import NotFound, ParseError
