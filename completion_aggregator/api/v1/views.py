@@ -213,7 +213,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
 
         GET /api/completion/v1/course/<course_key>/
         or
-        POST /api/completion/v1/course/<course_key>/ w/ body
+        POST /api/completion/v1/course/<course_key>/
+        With filters on the body of the request:
         {
             "user_ids": [1,2,3,5],
             "requested_fields": ["chapter", "vertical"],
