@@ -19,8 +19,9 @@ from django.test import TestCase
 from django.utils.timezone import now
 
 from completion.models import BlockCompletion
+from completion_aggregator.core import OLD_DATETIME, AggregationUpdater
 from completion_aggregator.models import Aggregator, StaleCompletion
-from completion_aggregator.tasks.aggregation_tasks import OLD_DATETIME, AggregationUpdater, update_aggregators
+from completion_aggregator.tasks import aggregation_tasks
 from test_utils.compat import StubCompat
 from test_utils.xblocks import CourseBlock, HiddenBlock, HTMLBlock, InvalidModeBlock, OtherAggBlock
 
@@ -52,7 +53,7 @@ class AggregationUpdaterTestCase(TestCase):
         super(AggregationUpdaterTestCase, self).setUp()
         self.agg_modified = now() - timedelta(days=1)
         course_key = CourseKey.from_string('course-v1:edx+course+test')
-        patch = mock.patch('completion_aggregator.tasks.aggregation_tasks.compat', StubCompat([
+        stubcompat = StubCompat([
             course_key.make_usage_key('course', 'course'),
             course_key.make_usage_key('html', 'course-html0'),
             course_key.make_usage_key('html', 'course-html1'),
@@ -62,9 +63,11 @@ class AggregationUpdaterTestCase(TestCase):
             course_key.make_usage_key('hidden', 'course-hidden0'),
             course_key.make_usage_key('html', 'course-other-html4'),
             course_key.make_usage_key('hidden', 'course-other-hidden1'),
-        ]))
-        patch.start()
-        self.addCleanup(patch.stop)
+        ])
+        for compat_module in 'completion_aggregator.core.compat', 'completion_aggregator.core.compat':
+            patch = mock.patch(compat_module, stubcompat)
+            patch.start()
+            self.addCleanup(patch.stop)
         user = get_user_model().objects.create(username='saskia')
         self.course_key = CourseKey.from_string('course-v1:edx+course+test')
         self.agg, _ = Aggregator.objects.submit_completion(
@@ -114,7 +117,7 @@ class AggregationUpdaterTestCase(TestCase):
                 - completion_aggregator_stalecompletion (user specific)
         '''
         with self.assertNumQueries(6):
-            update_aggregators(username='saskia', course_key='course-v1:edx+course+test')
+            aggregation_tasks.update_aggregators(username='saskia', course_key='course-v1:edx+course+test')
         self.agg.refresh_from_db()
         assert self.agg.last_modified > self.agg_modified
         assert self.agg.earned == 1.0
@@ -122,10 +125,10 @@ class AggregationUpdaterTestCase(TestCase):
 
     def test_task_with_unknown_user(self):
         StaleCompletion.objects.create(username='unknown', course_key='course-v1:edx+course+test', resolved=False)
-        with mock.patch('completion_aggregator.tasks.aggregation_tasks._update_aggregators') as mock_task_handler:
-            update_aggregators(username='unknown', course_key='course-v1:edx+course+test')
+        with mock.patch('completion_aggregator.core.update_aggregators') as mock_update_handler:
+            aggregation_tasks.update_aggregators(username='unknown', course_key='course-v1:edx+course+test')
         assert StaleCompletion.objects.get(username='unknown').resolved
-        mock_task_handler.assert_not_called()
+        mock_update_handler.assert_not_called()
 
     @XBlock.register_temp_plugin(CourseBlock, 'course')
     @XBlock.register_temp_plugin(HTMLBlock, 'html')
@@ -168,7 +171,10 @@ class AggregationUpdaterTestCase(TestCase):
         with mock.patch.object(AggregationUpdater, '__init__') as mock_update_constructor:
             mock_update_constructor.side_effect = exception_class('test')
             with mock.patch.object(AggregationUpdater, 'update') as mock_update_action:
-                update_aggregators(username='saskia', course_key='course-v1:OpenCraft+Onboarding+2018')
+                aggregation_tasks.update_aggregators(
+                    username='saskia',
+                    course_key='course-v1:OpenCraft+Onboarding+2018'
+                )
                 assert not mock_update_action.called
 
     @XBlock.register_temp_plugin(CourseBlock, 'course')
@@ -180,7 +186,10 @@ class AggregationUpdaterTestCase(TestCase):
         with mock.patch.object(AggregationUpdater, '__init__') as mock_update_constructor:
             mock_update_constructor.side_effect = RuntimeError('test')
             with pytest.raises(RuntimeError):
-                update_aggregators(username='saskia', course_key='course-v1:OpenCraft+Onboarding+2018')
+                aggregation_tasks.update_aggregators(
+                    username='saskia',
+                    course_key='course-v1:OpenCraft+Onboarding+2018'
+                )
 
 
 class CalculateUpdatedAggregatorsTestCase(TestCase):
@@ -203,7 +212,7 @@ class CalculateUpdatedAggregatorsTestCase(TestCase):
             self.course_key.make_usage_key('html', 'course-chapter2-block2'),
             self.course_key.make_usage_key('chapter', 'course-zeropossible'),
         ]
-        patch = mock.patch('completion_aggregator.tasks.aggregation_tasks.compat', StubCompat(self.blocks))
+        patch = mock.patch('completion_aggregator.core.compat', StubCompat(self.blocks))
         patch.start()
         self.addCleanup(patch.stop)
 
@@ -335,6 +344,18 @@ class CalculateUpdatedAggregatorsTestCase(TestCase):
             ]
         )
 
+    @XBlock.register_temp_plugin(CourseBlock, 'course')
+    @XBlock.register_temp_plugin(OtherAggBlock, 'chapter')
+    @XBlock.register_temp_plugin(HTMLBlock, 'html')
+    def test_blockstructure_caching(self):
+        mock_modulestore = mock.MagicMock()
+        updater = AggregationUpdater(self.user, self.course_key, mock_modulestore)
+        updater.calculate_updated_aggregators()
+        mock_modulestore.bulk_operations.assert_called_once()
+        mock_modulestore.bulk_operations.reset_mock()
+        updater.calculate_updated_aggregators()
+        mock_modulestore.bulk_operations.assert_not_called()
+
 
 class PartialUpdateTest(TestCase):
     """
@@ -354,7 +375,7 @@ class PartialUpdateTest(TestCase):
             self.course_key.make_usage_key('html', 'course-chapter2-block1'),
             self.course_key.make_usage_key('html', 'course-chapter2-block2'),
         ]
-        patch = mock.patch('completion_aggregator.tasks.aggregation_tasks.compat', StubCompat(self.blocks))
+        patch = mock.patch('completion_aggregator.core.compat', StubCompat(self.blocks))
         patch.start()
         self.addCleanup(patch.stop)
 
@@ -407,7 +428,7 @@ class PartialUpdateTest(TestCase):
         '''   # pylint: disable=pointless-string-statement
 
         with self.assertNumQueries(6):
-            update_aggregators(self.user.username, six.text_type(self.course_key), {
+            aggregation_tasks.update_aggregators(self.user.username, six.text_type(self.course_key), {
                 six.text_type(completion.block_key)})
 
         new_completions = [
@@ -426,7 +447,7 @@ class PartialUpdateTest(TestCase):
         ]
 
         with self.assertNumQueries(6):
-            update_aggregators(
+            aggregation_tasks.update_aggregators(
                 username=self.user.username,
                 course_key=six.text_type(self.course_key),
                 block_keys=[six.text_type(comp.block_key) for comp in new_completions]
@@ -460,18 +481,21 @@ class TaskArgumentHandlingTestCase(TestCase):
             self.course_key.make_usage_key('html', 'course-chapter-html1'),
         }
 
-    @mock.patch('completion_aggregator.tasks.aggregation_tasks._update_aggregators')
+    @mock.patch('completion_aggregator.core.update_aggregators')
     def test_calling_task_with_no_blocks(self, mock_update):
         with self.assertNumQueries(1):
-            update_aggregators(username='sandystudent', course_key='course-v1:OpenCraft+Onboarding+2018')
+            aggregation_tasks.update_aggregators(
+                username='sandystudent',
+                course_key='course-v1:OpenCraft+Onboarding+2018'
+            )
         mock_update.assert_called_once_with(
             self.user, self.course_key, frozenset(), False
         )
 
-    @mock.patch('completion_aggregator.tasks.aggregation_tasks._update_aggregators')
+    @mock.patch('completion_aggregator.core.update_aggregators')
     def test_calling_task_with_changed_blocks(self, mock_update):
         with self.assertNumQueries(1):
-            update_aggregators(
+            aggregation_tasks.update_aggregators(
                 username='sandystudent',
                 course_key='course-v1:OpenCraft+Onboarding+2018',
                 block_keys=[

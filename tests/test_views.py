@@ -25,7 +25,7 @@ from django.utils import timezone
 from completion.models import BlockCompletion, BlockCompletionManager
 from completion_aggregator import models
 from completion_aggregator.api.v1.views import CompletionViewMixin
-from completion_aggregator.tasks.aggregation_tasks import AggregationUpdater
+from completion_aggregator.core import AggregationUpdater
 from completion_aggregator.utils import WAFFLE_AGGREGATE_STALE_FROM_SCRATCH
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubHTML, StubSequential
@@ -192,7 +192,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         for compat_import in (
                 'completion_aggregator.api.common.compat',
                 'completion_aggregator.serializers.compat',
-                'completion_aggregator.tasks.aggregation_tasks.compat',
+                'completion_aggregator.core.compat',
         ):
             patcher = patch(compat_import, compat)
             patcher.start()
@@ -1004,7 +1004,7 @@ class CompletionBlockUpdateViewTestCase(CompletionAPITestMixin, TestCase):
                 'completion_aggregator.api.common.compat',
                 'completion_aggregator.api.v0.views.compat',
                 'completion_aggregator.serializers.compat',
-                'completion_aggregator.tasks.aggregation_tasks.compat',
+                'completion_aggregator.core.compat',
         ):
             patcher = patch(compat_import, compat)
             patcher.start()

@@ -14,7 +14,7 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-from ...aggregator import perform_cleanup
+from ...batch import perform_cleanup
 
 
 class Command(BaseCommand):

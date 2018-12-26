@@ -15,7 +15,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 
 from completion.models import BlockCompletion
-from completion_aggregator.aggregator import perform_aggregation, perform_cleanup
+from completion_aggregator.batch import perform_aggregation, perform_cleanup
 from completion_aggregator.models import StaleCompletion
 from test_utils.compat import StubCompat
 from test_utils.xblocks import CourseBlock, HTMLBlock, OtherAggBlock
@@ -132,7 +132,7 @@ def test_with_no_blocks(mock_task, users):
 def test_plethora_of_stale_completions(users):
     course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
 
-    with patch('completion_aggregator.aggregator.MAX_KEYS_PER_TASK', new=3) as max_keys:
+    with patch('completion_aggregator.batch.MAX_KEYS_PER_TASK', new=3) as max_keys:
         for i in range(max_keys + 1):
             StaleCompletion.objects.create(
                 username=users[0].username,
@@ -192,7 +192,7 @@ def compat_patch(course_key):
     """
     Patch compat with a stub including a simple course.
     """
-    return patch('completion_aggregator.tasks.aggregation_tasks.compat', StubCompat([
+    return patch('completion_aggregator.core.compat', StubCompat([
         course_key.make_usage_key('course', 'course'),
         course_key.make_usage_key('vertical', 'course-vertical'),
         course_key.make_usage_key('html', 'course-vertical-html'),

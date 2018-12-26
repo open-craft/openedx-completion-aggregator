@@ -15,7 +15,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from completion_aggregator import models, serializers
-from completion_aggregator.tasks.aggregation_tasks import AggregationUpdater
+from completion_aggregator.core import AggregationUpdater
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubSequential
 
@@ -73,7 +73,7 @@ def _course_completion_serializer_factory(serializer_cls_args):
 
 @ddt.ddt
 @patch('completion_aggregator.serializers.compat', empty_compat)
-@patch('completion_aggregator.tasks.aggregation_tasks.compat', empty_compat)
+@patch('completion_aggregator.core.compat', empty_compat)
 class CourseCompletionSerializerTestCase(TestCase):
     """
     Test that the CourseCompletionSerializer returns appropriate results.
