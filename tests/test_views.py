@@ -707,14 +707,15 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         self.create_course_completion_data(users[2], 6.0, 12.0)
         self.client.force_authenticate(self.staff_user)
         body = {
-            'user_ids': [users[0].id, users[2].id]
+            'user_ids': [int(users[0].id), int(users[2].id)]
         }
         response = self.client.post(
             self.get_detail_url(
                 version,
                 self.course_key
             ),
-            body
+            data=json.dumps(body),
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
         expected_values = [
@@ -753,17 +754,17 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
                 version,
                 self.course_key,
             ),
-            body
+            data=json.dumps(body),
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
         expected_values = [
             {
-                'username': users[0].username,
                 'course_key': 'edX/toy/2012_Fall',
                 'completion': self._get_expected_completion(1, earned=3.0, possible=12.0, percent=0.25),
             }
         ]
-        expected = self._get_expected_detail(version, expected_values, count=2)
+        expected = self._get_expected_detail(version, expected_values, count=1)
         self.assertEqual(response.data, expected)
 
     def _create_cohort(self, owner, users):

@@ -359,7 +359,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
 
     def _parse_aggregator(self, course_key, params=None):
         """
-        Handler for GET requests.
+        Handles fetching and return aggregator data, regardless of the method used
         """
         course_key = CourseKey.from_string(course_key)
         paginator = self.pagination_class()  # pylint: disable=not-callable
@@ -387,7 +387,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             # Use enrollments for the effective user
             enrollments = UserEnrollments(self.user).get_course_enrollments(course_key)
 
-        if 'user_ids' in params:
+        user_ids = params.get('user_ids')
+        if user_ids:
             enrollments = enrollments.filter(user_id__in=params['user_ids'])
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.
         paginated = paginator.paginate_queryset(enrollments.select_related('user'), self.request, view=self)
