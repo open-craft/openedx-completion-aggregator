@@ -692,6 +692,80 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         expected = self._get_expected_detail(version, expected_values, count=2)
         self.assertEqual(response.data, expected)
 
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_detail_view_staff_requested_multiple_users_with_post(self):
+        """
+        Test that requesting course completions for a set of users filters out the other enrolled users
+        using POST request values
+        """
+        version = 1
+        users = self.create_enrolled_users(3)
+        self.create_course_completion_data(users[0], 3.0, 12.0)
+        self.create_course_completion_data(users[1], 9.0, 12.0)
+        self.create_course_completion_data(users[2], 6.0, 12.0)
+        self.client.force_authenticate(self.staff_user)
+        body = {
+            'user_ids': [users[0].id, users[2].id]
+        }
+        response = self.client.post(
+            self.get_detail_url(
+                version,
+                self.course_key
+            ),
+            body
+        )
+        self.assertEqual(response.status_code, 200)
+        expected_values = [
+            {
+                'username': users[0].username,
+                'course_key': 'edX/toy/2012_Fall',
+                'completion': self._get_expected_completion(1, earned=3.0, possible=12.0, percent=0.25),
+            },
+            {
+                'username': users[2].username,
+                'course_key': 'edX/toy/2012_Fall',
+                'completion': self._get_expected_completion(1, earned=6.0, possible=12.0, percent=0.5),
+            },
+        ]
+        expected = self._get_expected_detail(version, expected_values, count=2)
+        self.assertEqual(response.data, expected)
+
+    @XBlock.register_temp_plugin(StubCourse, 'course')
+    @XBlock.register_temp_plugin(StubSequential, 'sequential')
+    @XBlock.register_temp_plugin(StubHTML, 'html')
+    def test_detail_view_staff_requested_username_with_post(self):
+        """
+        Test that requesting course completions for a defined username
+        using POST request values
+        """
+        version = 1
+        users = self.create_enrolled_users(2)
+        self.create_course_completion_data(users[0], 3.0, 12.0)
+        self.create_course_completion_data(users[1], 9.0, 12.0)
+        self.client.force_authenticate(self.staff_user)
+        body = {
+            'username': users[0].username
+        }
+        response = self.client.post(
+            self.get_detail_url(
+                version,
+                self.course_key,
+            ),
+            body
+        )
+        self.assertEqual(response.status_code, 200)
+        expected_values = [
+            {
+                'username': users[0].username,
+                'course_key': 'edX/toy/2012_Fall',
+                'completion': self._get_expected_completion(1, earned=3.0, possible=12.0, percent=0.25),
+            }
+        ]
+        expected = self._get_expected_detail(version, expected_values, count=2)
+        self.assertEqual(response.data, expected)
+
     def _create_cohort(self, owner, users):
         """
         Create and populate a user group, as well as a cohort.
