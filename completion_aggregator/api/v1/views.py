@@ -431,7 +431,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         Handler for GET requests.
         """
         params = {}
-        if request.query_params.get('user_ids', None):
+        if request.query_params.get('user_ids'):
             params['user_ids'] = (int(id) for id in re.split(r'[,.]', request.query_params['user_ids']))
 
         params['root_block'] = request.query_params.get('root_block')
