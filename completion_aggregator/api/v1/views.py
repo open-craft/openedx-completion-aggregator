@@ -389,7 +389,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
 
         user_ids = params.get('user_ids')
         if user_ids:
-            enrollments = enrollments.filter(user_id__in=params['user_ids'])
+            enrollments = enrollments.filter(user_id__in=user_ids)
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.
         paginated = paginator.paginate_queryset(enrollments.select_related('user'), self.request, view=self)
 
@@ -432,9 +432,9 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         """
         params = {}
         if request.query_params.get('user_ids', None):
-            params['user_ids'] = (int(id) for id in re.split(r',|\.', request.query_params['user_ids']))
+            params['user_ids'] = (int(id) for id in re.split(r'[,.]', request.query_params['user_ids']))
 
-        params['root_block'] = request.query_params.get('root_block', None)
+        params['root_block'] = request.query_params.get('root_block')
 
         return self._parse_aggregator(course_key, params)
 
@@ -442,9 +442,10 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         """
         Handler for POST requests.
         """
-        params = {}
-        params['user_ids'] = request.data.get('user_ids', None)
-        params['root_block'] = request.data.get('root_block', None)
+        params = {
+            'user_ids': request.data.get('user_ids'),
+            'root_block': request.data.get('root_block'),
+        }
 
         return self._parse_aggregator(course_key, params)
 
