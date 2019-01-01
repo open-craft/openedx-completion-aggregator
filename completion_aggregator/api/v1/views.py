@@ -4,6 +4,7 @@ API views to read completion information.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import re
 from collections import defaultdict
 
 import waffle
@@ -211,6 +212,15 @@ class CompletionDetailView(CompletionViewMixin, APIView):
     **Request Format**
 
         GET /api/completion/v1/course/<course_key>/
+        or
+        POST /api/completion/v1/course/<course_key>/
+        With filters on the body of the request:
+        {
+            "user_ids": [1,2,3,5],
+            "requested_fields": ["chapter", "vertical"],
+            "root_block": "root_block",
+            "username": "username"
+        }
 
     **Example Requests**
 
@@ -347,9 +357,9 @@ class CompletionDetailView(CompletionViewMixin, APIView):
     course_completion_serializer = serializers.CourseCompletionSerializer
     block_completion_serializer = serializers.BlockCompletionSerializer
 
-    def get(self, request, course_key):
+    def _parse_aggregator(self, course_key, params=None):
         """
-        Handler for GET requests.
+        Handles fetching and return aggregator data, regardless of the method used
         """
         course_key = CourseKey.from_string(course_key)
         paginator = self.pagination_class()  # pylint: disable=not-callable
@@ -377,17 +387,17 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             # Use enrollments for the effective user
             enrollments = UserEnrollments(self.user).get_course_enrollments(course_key)
 
-        if 'user_ids' in request.query_params:
-            user_ids = (int(id) for id in request.query_params['user_ids'].split(','))
+        user_ids = params.get('user_ids')
+        if user_ids:
             enrollments = enrollments.filter(user_id__in=user_ids)
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.
         paginated = paginator.paginate_queryset(enrollments.select_related('user'), self.request, view=self)
 
-        root_block = request.query_params.get('root_block')
+        root_block = params.get('root_block')
         if root_block:
             root_block = UsageKey.from_string(root_block).map_into_course(course_key)
 
-        if is_stale and waffle.flag_is_active(request, WAFFLE_AGGREGATE_STALE_FROM_SCRATCH):
+        if is_stale and waffle.flag_is_active(self.request, WAFFLE_AGGREGATE_STALE_FROM_SCRATCH):
             aggregator_queryset = []
         else:
             aggregator_queryset = self.get_queryset().filter(
@@ -415,6 +425,29 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             many=True
         )
         return paginator.get_paginated_response(serializer.data)
+
+    def get(self, request, course_key):
+        """
+        Handler for GET requests.
+        """
+        params = {}
+        if request.query_params.get('user_ids'):
+            params['user_ids'] = (int(id) for id in re.split(r'[,.]', request.query_params['user_ids']))
+
+        params['root_block'] = request.query_params.get('root_block')
+
+        return self._parse_aggregator(course_key, params)
+
+    def post(self, request, course_key):
+        """
+        Handler for POST requests.
+        """
+        params = {
+            'user_ids': request.data.get('user_ids'),
+            'root_block': request.data.get('root_block'),
+        }
+
+        return self._parse_aggregator(course_key, params)
 
 
 class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
