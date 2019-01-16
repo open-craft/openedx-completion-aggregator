@@ -210,6 +210,9 @@ class CalculateUpdatedAggregatorsTestCase(TestCase):
             self.course_key.make_usage_key('html', 'course-chapter1-block2'),
             self.course_key.make_usage_key('html', 'course-chapter2-block1'),
             self.course_key.make_usage_key('html', 'course-chapter2-block2'),
+            # image_explorer is an unregistered block type, and should be
+            # treated as EXCLUDED from aggregation.
+            self.course_key.make_usage_key('image_explorer', 'course-chapter2-badblock'),
             self.course_key.make_usage_key('chapter', 'course-zeropossible'),
         ]
         patch = mock.patch('completion_aggregator.core.compat', StubCompat(self.blocks))

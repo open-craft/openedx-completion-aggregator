@@ -30,8 +30,8 @@ class Command(BaseCommand):
         """
         parser.add_argument(
             '--batch-size',
-            help='Maximum number of CourseModuleCompletions to migrate, per celery task. (default: 10000)',
-            default=10000,
+            help='Maximum number of StaleCompletions to process, per celery task. (default: 1000)',
+            default=1000,
             type=int,
         )
         parser.add_argument(

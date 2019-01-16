@@ -13,6 +13,7 @@ import pytz
 import six
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
+from xblock.plugin import PluginMissingError
 
 from django.utils import timezone
 
@@ -171,7 +172,11 @@ class AggregationUpdater(object):
 
         Dispatches to an appropriate method given the block's completion_mode.
         """
-        mode = XBlockCompletionMode.get_mode(XBlock.load_class(block.block_type))
+        try:
+            mode = XBlockCompletionMode.get_mode(XBlock.load_class(block.block_type))
+        except PluginMissingError:
+            # Do not count blocks that aren't registered
+            mode = XBlockCompletionMode.EXCLUDED
         if mode == XBlockCompletionMode.EXCLUDED:
             return self.update_for_excluded()
         elif mode == XBlockCompletionMode.COMPLETABLE:
