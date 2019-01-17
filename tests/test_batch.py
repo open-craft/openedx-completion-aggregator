@@ -5,6 +5,8 @@ Test the aggregator functions directly.
 # Redefined outer names are explicitly used by pytest fixtures.
 # pylint: disable=redefined-outer-name
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import pytest
 import six
 from mock import patch

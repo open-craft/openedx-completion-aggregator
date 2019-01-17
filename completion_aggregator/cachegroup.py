@@ -53,6 +53,12 @@ class CacheGroup(object):
         cache_entry = _CacheGroupEntry(group, value, cached_at)
         return cache.set(key, cache_entry, timeout)
 
+    def touch(self, key, timeout):
+        """
+        Update the timeout for a given key in the cache.
+        """
+        return cache.touch(key, timeout=timeout)
+
     def delete(self, key):
         """
         Invalidate the entry in the cache.

@@ -5,6 +5,8 @@ This is the engine that takes BlockCompletion objects and
 converts them to Aggregators.
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import logging
 from collections import namedtuple
 from datetime import datetime
@@ -64,6 +66,12 @@ class UpdaterCache(object):
         group = six.text_type(self.course_key)
         CacheGroup().set(group, self.cache_key, value, timeout=UPDATER_CACHE_TIMEOUT)
 
+    def touch(self):
+        """
+        Update the timeout for a given cache key.
+        """
+        CacheGroup().touch(self.cache_key, timeout=UPDATER_CACHE_TIMEOUT)
+
     @property
     def cache_key(self):
         """
@@ -74,6 +82,9 @@ class UpdaterCache(object):
             course_key=self.course_key,
             root_block=self.root_block or 'COURSE',
         )
+
+
+CourseBlocksEntry = namedtuple('CourseBlocksEntry', ['children', 'aggregators'])
 
 
 class AggregationUpdater(object):
@@ -94,16 +105,20 @@ class AggregationUpdater(object):
 
         cache_entry = self.cache.get()
         if cache_entry:
+            self.using_cache = True
             self.course_blocks = cache_entry.course_blocks
             self.root_block = cache_entry.root_block
         else:
+            self.using_cache = False
             with modulestore.bulk_operations(self.course_key):
                 if self.raw_root_block:
                     self.root_block = self.raw_root_block
                 else:
                     self.root_block = compat.init_course_block_key(modulestore, self.course_key)
-                self.course_blocks = compat.init_course_blocks(self.user, self.root_block)
-
+                self.course_blocks = self.format_course_blocks(
+                    compat.init_course_blocks(self.user, self.root_block),
+                    self.root_block
+                )
         self.aggregators = {
             aggregator.block_key: aggregator for aggregator in Aggregator.objects.filter(
                 user=self.user,
@@ -116,6 +131,32 @@ class AggregationUpdater(object):
             completion.block_key.map_into_course(self.course_key): completion
             for completion in compat.get_block_completions(self.user, self.course_key)
         }
+
+    def format_course_blocks(self, course_blocks, root_block):
+        """
+        Simplify the BlockStructure to have the following format.
+
+            {
+                block_key: CourseBlocksEntry(
+                    children=block_key[],
+                    aggregators=block_key[]
+                )
+            }
+
+        """
+        structure = {}
+
+        def populate(structure, block):
+            if block not in structure:
+                structure[block] = CourseBlocksEntry(
+                    children=compat.get_children(course_blocks, block),
+                    aggregators=compat.get_block_aggregators(course_blocks, block),
+                )
+                for child in structure[block].children:
+                    populate(structure, child)
+
+        populate(structure, root_block)
+        return structure
 
     def set_cache(self):
         """
@@ -130,6 +171,8 @@ class AggregationUpdater(object):
         high, as could the number of course structures cached, especially if
         staff had been making course updates.
         """
+        if self.using_cache:
+            self.cache.touch()
         entry = CacheEntry(course_blocks=self.course_blocks, root_block=self.root_block)
         self.cache.set(entry)
 
@@ -138,7 +181,10 @@ class AggregationUpdater(object):
         Return the set of aggregator blocks that may need updating.
         """
         if changed_blocks:
-            return compat.get_affected_aggregators(self.course_blocks, changed_blocks)
+            affected_aggregators = set()
+            for block in changed_blocks:
+                affected_aggregators.update(self.course_blocks[block].aggregators)
+            return affected_aggregators
         else:
             return BagOfHolding()
 
@@ -195,13 +241,10 @@ class AggregationUpdater(object):
         last_modified = OLD_DATETIME
 
         if block not in affected_aggregators:
-            try:
-                obj = Aggregator.objects.get(user=self.user, course_key=self.course_key, block_key=block)
-            except Aggregator.DoesNotExist:
-                pass
-            else:
+            obj = self.aggregators.get(block)
+            if obj:
                 return CompletionStats(earned=obj.earned, possible=obj.possible, last_modified=obj.last_modified)
-        for child in compat.get_children(self.course_blocks, block):
+        for child in self.course_blocks[block].children:
             (earned, possible, modified) = self.update_for_block(child, affected_aggregators, force)
             total_earned += earned
             total_possible += possible

@@ -423,14 +423,13 @@ class PartialUpdateTest(TestCase):
                 - auth_user (fetch user details)
                 - completion_aggregator_aggregator (user specific for specific course)
                 - completion_blockcompletion (user specific)
-                - completion_aggregator_aggregator (user specific for specific course and block)
             * Insert or Update Query
                 - completion_aggregator_aggregator (insert aggregation data)
             * Update query
                 - completion_aggregator_stalecompletion (user specific)
         '''   # pylint: disable=pointless-string-statement
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             aggregation_tasks.update_aggregators(self.user.username, six.text_type(self.course_key), {
                 six.text_type(completion.block_key)})
 
@@ -449,7 +448,7 @@ class PartialUpdateTest(TestCase):
             ),
         ]
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             aggregation_tasks.update_aggregators(
                 username=self.user.username,
                 course_key=six.text_type(self.course_key),
