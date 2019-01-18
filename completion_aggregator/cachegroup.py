@@ -56,8 +56,14 @@ class CacheGroup(object):
     def touch(self, key, timeout):
         """
         Update the timeout for a given key in the cache.
+
+        Returns True if the cache key was updated.
+
+        This functionality is available in Django 2.1 and above.
         """
-        return cache.touch(key, timeout=timeout)
+        if hasattr(cache, 'touch'):
+            return cache.touch(key, timeout=timeout)
+        return False
 
     def delete(self, key):
         """
