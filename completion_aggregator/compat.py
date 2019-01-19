@@ -13,7 +13,8 @@ It can be stubbed out using:
 `StubCompat` is a class which implements all the below methods in a way that
 eliminates external dependencies
 """
-from __future__ import absolute_import, unicode_literals
+
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 from django.conf import settings
 
@@ -54,7 +55,7 @@ def get_item_not_found_error():
     return ItemNotFoundError
 
 
-def init_course_blocks(user, course_block_key):
+def init_course_blocks(user, root_block_key):
     """
     Return a BlockStructure representing the course.
 
@@ -71,7 +72,7 @@ def init_course_blocks(user, course_block_key):
         get_course_block_access_transformers() + [AggregatorAnnotationTransformer()]
     )
 
-    return get_course_blocks(user, course_block_key, transformers)
+    return get_course_blocks(user, root_block_key, transformers)
 
 
 def get_block_completions(user, course_key):
@@ -112,24 +113,20 @@ def course_enrollment_model():
 
 def get_users_enrolled_in(course_key):
     """
-    Return list of users enrolled in supplied course_key.
+    Return a list of users enrolled in supplied course_key.
     """
     return course_enrollment_model().objects.users_enrolled_in(course_key)
 
 
-def get_affected_aggregators(course_blocks, changed_blocks):
+def get_block_aggregators(course_blocks, block):
     """
-    Return the set of aggregator blocks that may need updating.
+    Return a list of aggregator blocks that contain the specified block.
     """
-    affected_aggregators = set()
-    for block in changed_blocks:
-        block_aggregators = course_blocks.get_transformer_block_field(
-            block,
-            AggregatorAnnotationTransformer,
-            AggregatorAnnotationTransformer.AGGREGATORS
-        )
-        affected_aggregators.update(block_aggregators or [])
-    return affected_aggregators
+    return course_blocks.get_transformer_block_field(
+        block,
+        AggregatorAnnotationTransformer,
+        AggregatorAnnotationTransformer.AGGREGATORS
+    ) or []
 
 
 def get_mobile_only_courses(enrollments):

@@ -30,27 +30,23 @@ class StubCompat(object):
         """
         return course_key.make_usage_key('course', 'course')
 
-    def init_course_blocks(self, user, course_block_key):  # pylint: disable=unused-argument
+    def init_course_blocks(self, user, root_block_key):  # pylint: disable=unused-argument
         """
         Not actually used in this implementation.
 
         Overridden here to prevent the default behavior, which relies on
         modulestore.
         """
-        root_segments = course_block_key.block_id.split('-')
+        root_segments = root_block_key.block_id.split('-')
         return CompatCourseBlocks(
             *(block for block in self.blocks if block.block_id.split('-')[:len(root_segments)] == root_segments)
         )
 
-    def get_affected_aggregators(self, course_blocks, changed_blocks):
+    def get_block_aggregators(self, course_blocks, block):
         """
-        Get all the aggregator blocks affected by a change to one of the given blocks.
+        Returns a list of aggregator blocks that contain the specified block.
         """
-        affected = set()
-        for block in course_blocks.blocks:
-            if any(changed.block_id.startswith('{}-'.format(block.block_id)) for changed in changed_blocks):
-                affected.add(block)
-        return affected
+        return [agg for agg in course_blocks.blocks if block.block_id.startswith('{}-'.format(agg))]
 
     def get_block_completions(self, user, course_key):
         """

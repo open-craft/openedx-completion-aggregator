@@ -53,6 +53,18 @@ class CacheGroup(object):
         cache_entry = _CacheGroupEntry(group, value, cached_at)
         return cache.set(key, cache_entry, timeout)
 
+    def touch(self, key, timeout):
+        """
+        Update the timeout for a given key in the cache.
+
+        Returns True if the cache key was updated.
+
+        This functionality is available in Django 2.1 and above.
+        """
+        if hasattr(cache, 'touch'):
+            return cache.touch(key, timeout=timeout)
+        return False
+
     def delete(self, key):
         """
         Invalidate the entry in the cache.
