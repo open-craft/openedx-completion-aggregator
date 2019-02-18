@@ -183,6 +183,9 @@ class AggregationUpdater(object):
         if changed_blocks:
             affected_aggregators = set()
             for block in changed_blocks:
+                if block not in self.course_blocks:
+                    # The course structure has changed.  Conservatively recalculate the whole tree.
+                    return BagOfHolding()
                 affected_aggregators.update(self.course_blocks[block].aggregators)
             return affected_aggregators
         else:

@@ -46,7 +46,8 @@ class StubCompat(object):
         """
         Returns a list of aggregator blocks that contain the specified block.
         """
-        return [agg for agg in course_blocks.blocks if block.block_id.startswith('{}-'.format(agg))]
+
+        return [agg for agg in course_blocks.blocks if block.block_id.startswith('{}-'.format(agg.block_id))]
 
     def get_block_completions(self, user, course_key):
         """
