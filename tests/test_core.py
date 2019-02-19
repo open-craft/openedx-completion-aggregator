@@ -322,6 +322,91 @@ class CalculateUpdatedAggregatorsTestCase(TestCase):
     @XBlock.register_temp_plugin(CourseBlock, 'course')
     @XBlock.register_temp_plugin(OtherAggBlock, 'chapter')
     @XBlock.register_temp_plugin(HTMLBlock, 'html')
+    def test_pass_changed_blocks_argument(self):
+        self._get_updater().update()
+        for block in self.blocks[4], self.blocks[6]:
+            BlockCompletion.objects.create(
+                user=self.user,
+                course_key=self.course_key,
+                block_key=block,
+                completion=1.0,
+                modified=now(),
+            )
+        self.assert_expected_results(
+            self._get_updater().calculate_updated_aggregators(changed_blocks={self.blocks[4]}),
+            [
+                self.expected_result(
+                    block_key=self.blocks[0],
+                    earned=1.0,
+                    updated_earned=3.0,
+                    possible=4.0,
+                ),
+                self.expected_result(
+                    block_key=self.blocks[1],
+                    earned=1.0,
+                    updated_earned=2.0,
+                    possible=2.0,
+                ),
+                self.expected_result(
+                    block_key=self.blocks[2],
+                    earned=0.0,
+                    updated_earned=1.0,  # This was not changed, because block[6] was not marked changed.
+                    possible=2.0,
+                ),
+            ]
+        )
+
+    @XBlock.register_temp_plugin(CourseBlock, 'course')
+    @XBlock.register_temp_plugin(OtherAggBlock, 'chapter')
+    @XBlock.register_temp_plugin(HTMLBlock, 'html')
+    def test_unknown_block(self):
+        self._get_updater().update()
+        for block in self.blocks[4], self.blocks[6]:
+            BlockCompletion.objects.create(
+                user=self.user,
+                course_key=self.course_key,
+                block_key=block,
+                completion=1.0,
+                modified=now(),
+            )
+
+        unknown_block = self.course_key.make_usage_key('html', 'old-version')
+        BlockCompletion.objects.create(
+            user=self.user,
+            course_key=self.course_key,
+            block_key=unknown_block,
+            completion=1.0,
+            modified=now(),
+        )
+        self.assert_expected_results(
+            self._get_updater().calculate_updated_aggregators(
+                changed_blocks={self.blocks[4], unknown_block}
+            ),
+            [
+                self.expected_result(
+                    block_key=self.blocks[0],
+                    earned=1.0,
+                    updated_earned=3.0,
+                    possible=4.0,
+                ),
+                self.expected_result(
+                    block_key=self.blocks[1],
+                    earned=1.0,
+                    updated_earned=2.0,
+                    possible=2.0,
+                ),
+                self.expected_result(
+                    block_key=self.blocks[2],
+                    earned=0.0,
+                    updated_earned=1.0,
+                    possible=2.0,
+                ),
+            ]
+        )
+
+    @XBlock.register_temp_plugin(CourseBlock, 'course')
+    @XBlock.register_temp_plugin(OtherAggBlock, 'chapter')
+    @XBlock.register_temp_plugin(HTMLBlock, 'html')
     def test_never_aggregated(self):
         self.assert_expected_results(
             self._get_updater().calculate_updated_aggregators(),
