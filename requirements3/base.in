@@ -1,13 +1,13 @@
 # Core requirements for using this application
 
 celery==3.1.18            # Asynchronous tasks
-edx-celeryutils<0.2      # Custom task extensions
-Django>=1.8              # Web application framework
-django-oauth-toolkit<1.0
+edx-celeryutils      # Custom task extensions
+Django>=2.0              # Web application framework
+django-oauth-toolkit
 djangorestframework>=3.0,<3.7     # API tools
 django-model-utils        # Provides TimeStampedModel abstract base class
-edx-opaque-keys>=0.4.2    # Provides CourseKey and UsageKey
-edx-completion<1.0
+#edx-opaque-keys>=0.4.2    # Provides CourseKey and UsageKey
+#edx-completion<1.0
 mysqlclient               # For connecting to MySQL
 six
 XBlock
