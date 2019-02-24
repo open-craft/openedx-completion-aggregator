@@ -49,7 +49,7 @@ setup(
     ],
     include_package_data=True,
     install_requires=[
-        "Django>=1.8,<1.12",
+        "Django>=1.8,<2.2",
         "django-model-utils>=2.0",
         "djangorestframework",
         "XBlock>=1.2.2",
@@ -67,6 +67,7 @@ setup(
         'Framework :: Django :: 1.8',
         'Framework :: Django :: 1.11',
         'Framework :: Django :: 2.0',
+        'Framework :: Django :: 2.1',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
         'Natural Language :: English',
@@ -75,6 +76,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     entry_points={
         'lms.djangoapp': [
