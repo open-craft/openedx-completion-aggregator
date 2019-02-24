@@ -15,7 +15,7 @@ class CourseEnrollment(models.Model):
     Provides an equivalent for the edx-platform CourseEnrollment model.
     """
     is_active = models.BooleanField(default=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     course_id = CourseKeyField(max_length=255)
 
     @classmethod
