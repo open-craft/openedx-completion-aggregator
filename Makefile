@@ -49,6 +49,17 @@ upgrade: ## update the requirements/*.txt files with the latest packages satisfy
 	sed '/^django==/d' requirements/test.txt > requirements/test.tmp
 	mv requirements/test.tmp requirements/test.txt
 
+upgrade3: ## update the requirements/*.txt files with the latest packages satisfying requirements/*.in
+	pip install -q pip-tools
+	pip-compile --upgrade --no-index -o requirements3/dev.txt requirements3/base.in requirements3/dev.in requirements3/quality.in
+	pip-compile --upgrade --no-index -o requirements3/doc.txt requirements3/base.in requirements3/doc.in
+	pip-compile --upgrade --no-index -o requirements3/quality.txt requirements3/quality.in
+	pip-compile --upgrade --no-index -o requirements3/test.txt requirements3/base.in requirements3/test.in
+	pip-compile --upgrade --no-index -o requirements3/travis.txt requirements3/travis.in
+	# Let tox control the Django version for tests
+	sed '/^django==/d' requirements3/test.txt > requirements3/test.tmp
+	mv requirements3/test.tmp requirements3/test.txt
+
 quality: ## check coding style with pycodestyle and pylint
 	tox -e quality
 
