@@ -19,7 +19,9 @@ from completion_aggregator.core import AggregationUpdater
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubSequential
 
-empty_compat = StubCompat([])
+stub_compat = StubCompat([
+    CourseKey.from_string('course-v1:abc+def+ghi').make_usage_key('course', 'course'),
+])
 
 
 class AggregatorAdapterTestCase(TestCase):
@@ -72,8 +74,8 @@ def _course_completion_serializer_factory(serializer_cls_args):
 
 
 @ddt.ddt
-@patch('completion_aggregator.serializers.compat', empty_compat)
-@patch('completion_aggregator.core.compat', empty_compat)
+@patch('completion_aggregator.serializers.compat', stub_compat)
+@patch('completion_aggregator.core.compat', stub_compat)
 class CourseCompletionSerializerTestCase(TestCase):
     """
     Test that the CourseCompletionSerializer returns appropriate results.

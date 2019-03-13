@@ -75,7 +75,7 @@ def perform_aggregation(batch_size=10000, delay=0.0, limit=None, routing_key=Non
                 username=stale.username,
                 course_key=stale.course_key,
             )
-            if stale.block_key is None:
+            if not stale.block_key:
                 stale_blocks[enrollment] = utils.BagOfHolding()
             blocks = stale_blocks[enrollment]
             if isinstance(blocks, utils.BagOfHolding) or len(blocks) <= MAX_KEYS_PER_TASK:
