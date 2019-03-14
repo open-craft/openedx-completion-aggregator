@@ -7,58 +7,58 @@
 amqp==1.4.9               # via kombu
 anyjson==0.3.3            # via kombu
 appdirs==1.4.3            # via fs
-atomicwrites==1.2.1       # via pytest
-attrs==18.2.0             # via pytest
+atomicwrites==1.3.0       # via pytest
+attrs==19.1.0             # via pytest
 billiard==3.3.0.23        # via celery
 celery==3.1.18
-certifi==2018.10.15       # via requests
+certifi==2019.3.9         # via requests
 chardet==3.0.4            # via requests
-coverage==4.5.2           # via pytest-cov
-ddt==1.2.0
+coverage==4.5.3           # via pytest-cov
+ddt==1.2.1
 django-braces==1.13.0     # via django-oauth-toolkit
 django-model-utils==3.1.2
 django-oauth-toolkit==0.12.0
-django-waffle==0.15.0     # via edx-django-utils, edx-drf-extensions
+django-waffle==0.15.1     # via edx-django-utils, edx-drf-extensions
 djangorestframework-jwt==1.11.0  # via edx-drf-extensions
 djangorestframework==3.6.4
 edx-celeryutils==0.1.5
-edx-completion==0.1.14
-edx-django-utils==1.0.1   # via edx-drf-extensions
-edx-drf-extensions==1.11.0  # via edx-completion
+edx-completion==1.0.3
+edx-django-utils==1.0.3   # via edx-drf-extensions
+edx-drf-extensions==2.0.1  # via edx-completion
 edx-opaque-keys[django]==0.4.4
-fs==2.1.2                 # via xblock
+fs==2.4.4                 # via xblock
 future==0.17.1            # via pyjwkest
-idna==2.7                 # via requests
+idna==2.8                 # via requests
 jsonfield==2.0.2          # via edx-celeryutils
 kombu==3.0.37             # via celery
-lxml==4.2.5               # via xblock
-markupsafe==1.1.0         # via xblock
+lxml==4.3.2               # via xblock
+markupsafe==1.1.1         # via xblock
 mock==2.0.0
-more-itertools==4.3.0     # via pytest
-mysqlclient==1.3.13
-newrelic==4.6.0.106       # via edx-django-utils
+more-itertools==5.0.0
+mysqlclient==1.4.2.post1
+newrelic==4.14.0.115      # via edx-django-utils
 oauthlib==2.0.1           # via django-oauth-toolkit
-pbr==5.1.1                # via mock, stevedore
-pluggy==0.8.0             # via pytest
+pbr==5.1.3                # via mock, stevedore
+pluggy==0.9.0             # via pytest
 psutil==1.2.1             # via edx-django-utils, edx-drf-extensions
-py==1.7.0                 # via pytest
-pycryptodomex==3.7.0      # via pyjwkest
+py==1.8.0                 # via pytest
+pycryptodomex==3.7.3      # via pyjwkest
 pyjwkest==1.3.2           # via edx-drf-extensions
-pyjwt==1.6.4              # via djangorestframework-jwt
+pyjwt==1.7.1              # via djangorestframework-jwt
 pymongo==3.7.2            # via edx-opaque-keys
-pytest-cov==2.6.0
-pytest-django==3.4.4
-pytest==4.0.0
-python-dateutil==2.7.5    # via edx-drf-extensions, xblock
-pytz==2018.7              # via celery, edx-completion, fs, xblock
-pyyaml==3.13              # via xblock
-redis==3.0.1
-requests==2.20.1          # via edx-drf-extensions, pyjwkest
+pytest-cov==2.6.1
+pytest-django==3.4.8
+pytest==4.3.1
+python-dateutil==2.8.0    # via edx-drf-extensions, xblock
+pytz==2018.9              # via celery, edx-completion, fs, xblock
+pyyaml==5.1               # via xblock
+redis==3.2.0
+requests==2.21.0          # via edx-drf-extensions, pyjwkest
 rest-condition==1.0.3     # via edx-drf-extensions
 semantic-version==2.6.0   # via edx-drf-extensions
-six==1.11.0
-stevedore==1.30.0         # via edx-opaque-keys
+six==1.12.0
+stevedore==1.30.1         # via edx-opaque-keys
 urllib3==1.24.1           # via requests
-web-fragments==0.2.2      # via xblock
-webob==1.8.4              # via xblock
+web-fragments==0.3.0      # via xblock
+webob==1.8.5              # via xblock
 xblock==1.2.2

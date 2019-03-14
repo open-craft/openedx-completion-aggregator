@@ -55,7 +55,7 @@ setup(
         "XBlock>=1.2.2",
         "celery>=3.1",
         "edx-celeryutils>=0.1.5",
-        "edx-completion>=0.1.5",
+        "edx-completion>=1.0.3,<2",
         "edx-opaque-keys",
     ],
     license="AGPL 3.0",
