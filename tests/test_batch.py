@@ -174,9 +174,12 @@ class StaleCompletionResolutionTestCase(TestCase):
     @XBlock.register_temp_plugin(HTMLBlock, 'html')
     @pytest.mark.django_db
     def test_stale_completion_resolution(self):
+        # Verify that all stale completions get resolved, even if the course
+        # is not present in the modulestore
         course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
         for user in self.users:
-            StaleCompletion.objects.create(username=user.username, course_key=course_key, block_key=None, force=True)
+            StaleCompletion.objects.create(username=user.username, course_key=course_key, block_key='', force=False)
+            StaleCompletion.objects.create(username=user.username, course_key='not/a/course', block_key='', force=False)
         assert not StaleCompletion.objects.filter(resolved=True).exists()
         assert StaleCompletion.objects.filter(resolved=False).exists()
         with compat_patch(course_key):

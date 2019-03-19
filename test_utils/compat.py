@@ -28,7 +28,10 @@ class StubCompat(object):
 
         For the purposes of testing, we're just going by convention.
         """
-        return course_key.make_usage_key('course', 'course')
+        if course_key in {block.course_key for block in self.blocks}:
+            return course_key.make_usage_key('course', 'course')
+        else:
+            raise self.get_item_not_found_error()
 
     def init_course_blocks(self, user, root_block_key):  # pylint: disable=unused-argument
         """

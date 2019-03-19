@@ -369,8 +369,10 @@ def update_aggregators(user, course_key, block_keys=frozenset(), force=False):
     try:
         updater = AggregationUpdater(user, course_key, compat.get_modulestore())
     except compat.get_item_not_found_error():
-        log.exception("Course not found in modulestore.  Skipping aggregation for %s/%s.", user, course_key)
+        log.exception("Course not found in modulestore.  Skipping aggregation for %s in %s.", user, course_key)
+        StaleCompletion.objects.filter(username=user.username, course_key=course_key).update(resolved=True)
     except TypeError:
-        log.exception("Could not parse modulestore data.  Skipping aggregation for %s/%s.", user, course_key)
+        log.exception("Could not parse modulestore data.  Skipping aggregation for %s in %s.", user, course_key)
+        StaleCompletion.objects.filter(username=user.username, course_key=course_key).update(resolved=True)
     else:
         updater.update(block_keys, force)
