@@ -52,7 +52,7 @@ Design
 
 The completion aggregator is designed to facilitate working with course-level,
 chapter-level, and other aggregated percentages of course completion as
-represented by the BlockCompletion model (from the edx-completion djangoapp).
+represented by the [BlockCompletion model](https://github.com/edx/completion/blob/master/completion/models.py#L173) (from the edx-completion djangoapp).
 By storing these values in the database, we are able to quickly return
 information for all users in a course.
 
@@ -61,7 +61,7 @@ Each type of XBlock (or XModule) is assigned a completion mode of
 
 A "completable" block is one that can directly be completed, either by viewing it
 on the screen, by submitting a response, or by some custom defined means.  When
-completed by, a BlockCompletion is created for that user with a value of 1.0
+completed, a BlockCompletion is created for that user with a value of 1.0
 (any value between 0.0 and 1.0 is allowed).  Completable blocks always have a
 maximum possible value of 1.0.
 
@@ -84,17 +84,17 @@ by each aggregator, and values are summed recursively from the course block on
 down.  Values for every node in the whole tree can be calculated in a single
 traversal.  These calculations can either be performed "read-only" (to get the
 latest data for each user), or "read-write" to store that data in the
-completion_aggregator.Aggregator model.
+[`completion_aggregator.Aggregator` model](https://github.com/open-craft/openedx-completion-aggregator/blob/master/completion_aggregator/models.py#L199).
 
 During regular course interaction, a learner will calculate aggregations on the
 fly to get the latest information.  However, on-the-fly calculations are too
 expensive when performed for all users in a course, so periodically (every hour
-or less), a task is run to to calculate all aggregators that have gone out of
+or less), a task is run to calculate all aggregators that have gone out of
 date in the previous hour, and store those values in the database.  These
 stored values are then used for reporting on course-wide completion (for course
 admin views).
 
-By tracking which blocks have been changed recently (in the StaleCompletion
+By tracking which blocks have been changed recently (in the [`StaleCompletion` table](https://github.com/open-craft/openedx-completion-aggregator/blob/master/completion_aggregator/models.py#L272)
 table) These stored values can also be used to shortcut calculations for
 portions of the course graph that are known to be up to date.  If a user has
 only completed blocks in chapter 3 of a three-chapter course since the last
