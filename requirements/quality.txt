@@ -29,5 +29,5 @@ pyparsing==2.3.1          # via packaging
 requests==2.21.0          # via caniusepython3
 six==1.12.0               # via astroid, edx-lint, packaging, pydocstyle, pylint
 snowballstemmer==1.2.1    # via pydocstyle
-urllib3==1.24.1           # via requests
+urllib3==1.24.2           # via requests
 wrapt==1.11.1             # via astroid
