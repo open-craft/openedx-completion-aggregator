@@ -1,14 +1,22 @@
 """
 Common classes for api views
 """
+from django.contrib.auth import get_user_model
+from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication  # pylint: disable=import-error
+from edx_rest_framework_extensions.auth.session.authentication import SessionAuthenticationAllowInactiveUser  # pylint: disable=import-error
+from edx_rest_framework_extensions.paginators import NamespacedPageNumberPagination
 from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
-
-from django.contrib.auth import get_user_model
 
 from .. import compat
 from ..models import Aggregator
 from ..serializers import course_completion_serializer_factory, is_aggregation_name
+
+try:
+    from openedx.core.lib.api.authentication import OAuth2AuthenticationAllowInactiveUser
+except ImportError:
+    OAuth2AuthenticationAllowInactiveUser = object
+
 
 User = get_user_model()  # pylint: disable=invalid-name
 
@@ -77,43 +85,19 @@ class CompletionViewMixin(object):
     """
     Common functionality for completion views.
     """
-
-    _allowed_requested_fields = {'mean', 'username'}
+    authentication_classes = (
+        JwtAuthentication,
+        OAuth2AuthenticationAllowInactiveUser,
+        SessionAuthenticationAllowInactiveUser,
+    )
+    pagination_class = NamespacedPageNumberPagination
     permission_classes = (IsAuthenticated,)
+    _allowed_requested_fields = {'mean', 'username'}
     _effective_user = None
     _requested_user = None
 
     course_completion_serializer = None
     block_completion_serializer = None
-
-    @property
-    def authentication_classes(self):  # pragma: no cover
-        """
-        Allow users authenticated via OAuth2 or normal session authentication.
-        """
-        from openedx.core.lib.api import authentication  # pylint: disable=import-error
-        try:
-            from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication  # pylint: disable=import-error
-        except ImportError:
-            from edx_rest_framework_extensions.authentication import JwtAuthentication  # pylint: disable=import-error
-
-        return [
-            JwtAuthentication,
-            authentication.OAuth2AuthenticationAllowInactiveUser,
-            authentication.SessionAuthenticationAllowInactiveUser,
-        ]
-
-    @property
-    def pagination_class(self):  # pragma: no cover
-        """
-        Return the class to use for pagination
-        """
-        try:
-            from edx_rest_framework_extensions import paginators
-        except ImportError:  # paginators are in edx-platform in ginkgo
-            from openedx.core.lib.api import paginators
-
-        return paginators.NamespacedPageNumberPagination
 
     @property
     def user(self):

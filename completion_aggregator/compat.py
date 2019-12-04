@@ -69,7 +69,7 @@ def init_course_blocks(user, root_block_key):
     from openedx.core.djangoapps.content.block_structure.transformers import BlockStructureTransformers  # pylint: disable=import-error
 
     transformers = BlockStructureTransformers(
-        get_course_block_access_transformers() + [AggregatorAnnotationTransformer()]
+        get_course_block_access_transformers(user) + [AggregatorAnnotationTransformer()]
     )
 
     return get_course_blocks(user, root_block_key, transformers)
