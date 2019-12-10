@@ -86,21 +86,25 @@ class CompletionViewMixin(object):
     course_completion_serializer = None
     block_completion_serializer = None
 
-    @property
-    def authentication_classes(self):  # pragma: no cover
+    def get_authenticators(self):  # pragma: no cover
         """
         Allow users authenticated via OAuth2 or normal session authentication.
         """
-        from openedx.core.lib.api import authentication  # pylint: disable=import-error
+        try:
+            from openedx.core.lib.api.authentication import OAuth2AuthenticationAllowInactiveUser  # pylint: disable=import-error
+            from openedx.core.lib.api.authentication import SessionAuthenticationAllowInactiveUser  # pylint: disable=import-error
+        except ImportError:
+            from edx_rest_framework_extensions.auth.session.authentication import SessionAuthenticationAllowInactiveUser  # pylint: disable=import-error
+
         try:
             from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication  # pylint: disable=import-error
         except ImportError:
             from edx_rest_framework_extensions.authentication import JwtAuthentication  # pylint: disable=import-error
 
         return [
-            JwtAuthentication,
-            authentication.OAuth2AuthenticationAllowInactiveUser,
-            authentication.SessionAuthenticationAllowInactiveUser,
+            JwtAuthentication(),
+            OAuth2AuthenticationAllowInactiveUser(),
+            SessionAuthenticationAllowInactiveUser(),
         ]
 
     @property
