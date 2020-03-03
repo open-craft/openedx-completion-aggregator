@@ -54,7 +54,7 @@ setup(
         "djangorestframework",
         "XBlock>=1.2.2",
         "celery>=3.1",
-        "edx-celeryutils>=0.1.5",
+        "edx-celeryutils>=0.1.5,<=0.3.1",
         "edx-completion>=1.0.3,<2",
         "edx-opaque-keys",
     ],
