@@ -13,7 +13,9 @@ from mock import patch
 from opaque_keys.edx.keys import CourseKey
 from xblock.core import XBlock
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 
 from completion.models import BlockCompletion
@@ -124,11 +126,32 @@ def test_with_full_course_stale_completion(mock_task, users):
 
 
 @patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async')
+def test_with_no_completions(mock_task, users):  # pylint: disable=unused-argument
+    perform_aggregation()
+    assert mock_task.call_count == 0
+
+
+@patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async')
 def test_with_no_blocks(mock_task, users):
     course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
     StaleCompletion.objects.create(username=users[0].username, course_key=course_key, block_key=None, force=True)
     perform_aggregation()
     assert mock_task.call_count == 1
+
+
+@patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async')
+def test_lock(mock_task, users):
+    """Ensure that only one batch aggregation is running at the moment."""
+    cache.add(
+        settings.COMPLETION_AGGREGATOR_AGGREGATION_LOCK,
+        True,
+        settings.COMPLETION_AGGREGATOR_AGGREGATION_LOCK_TIMEOUT_SECONDS
+    )
+    course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
+    StaleCompletion.objects.create(username=users[0].username, course_key=course_key, block_key=None, force=True)
+    perform_aggregation()
+    cache.delete(settings.COMPLETION_AGGREGATOR_AGGREGATION_LOCK)
+    assert mock_task.call_count == 0
 
 
 def test_plethora_of_stale_completions(users):

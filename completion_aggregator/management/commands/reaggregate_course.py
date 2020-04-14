@@ -58,7 +58,7 @@ class Command(BaseCommand):
             options['course_keys'] = BlockCompletion.objects.values_list('course_key').distinct()
         CourseEnrollment = compat.course_enrollment_model()  # pylint: disable=invalid-name
         for course in options['course_keys']:
-            all_enrollments = CourseEnrollment.objects.filter(course_key=course).select_related('user')
+            all_enrollments = CourseEnrollment.objects.filter(course=course).select_related('user')
             StaleCompletion.objects.bulk_create(
                 (
                     StaleCompletion(
