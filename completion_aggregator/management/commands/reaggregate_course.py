@@ -55,7 +55,7 @@ class Command(BaseCommand):
         self.set_logging(options['verbosity'])
 
         if options['all']:
-            options['course_keys'] = BlockCompletion.objects.values_list('course_key').distinct()
+            options['course_keys'] = BlockCompletion.objects.values_list('context_key').distinct()
         CourseEnrollment = compat.course_enrollment_model()  # pylint: disable=invalid-name
         for course in options['course_keys']:
             all_enrollments = CourseEnrollment.objects.filter(course_key=course).select_related('user')
