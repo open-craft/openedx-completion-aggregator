@@ -177,6 +177,22 @@ def test_plethora_of_stale_completions(users):
     assert mock_task.call_count == 1
 
 
+def test_cleanup_and_lock(users):
+    course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
+    StaleCompletion.objects.create(username=users[0].username, course_key=course_key, block_key=None, force=True)
+    cache.add(
+        settings.COMPLETION_AGGREGATOR_CLEANUP_LOCK,
+        True,
+        settings.COMPLETION_AGGREGATOR_AGGREGATION_LOCK_TIMEOUT_SECONDS
+    )
+    perform_cleanup()
+    assert StaleCompletion.objects.count() == 1
+
+    cache.delete(settings.COMPLETION_AGGREGATOR_CLEANUP_LOCK)
+    perform_cleanup()
+    assert StaleCompletion.objects.count() == 0
+
+
 class StaleCompletionResolutionTestCase(TestCase):
     """
     XBlock.register_temp_plugin decorator breaks pytest fixtures, so we
