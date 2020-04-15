@@ -179,7 +179,7 @@ def test_plethora_of_stale_completions(users):
 
 def test_cleanup_and_lock(users):
     course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
-    StaleCompletion.objects.create(username=users[0].username, course_key=course_key, block_key=None, force=True)
+    StaleCompletion.objects.create(username=users[0].username, course_key=course_key, block_key=None, resolved=True)
     cache.add(
         settings.COMPLETION_AGGREGATOR_CLEANUP_LOCK,
         True,
