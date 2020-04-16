@@ -14,7 +14,7 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
-[2.0.2] - 2020-04-17
+[2.1.0] - 2020-04-17
 ~~~~~~~~~~~~~~~~~~~~
 
 * Add locking mechanism to batch operations.
