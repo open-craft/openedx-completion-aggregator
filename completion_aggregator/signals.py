@@ -5,6 +5,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import logging
 
+import six
+
 from django.conf import settings
 from django.db.models.signals import post_save
 
@@ -64,8 +66,8 @@ def item_deleted_handler(usage_key, user_id, **kwargs):
     # Ordinarily we have to worry about losing course run information when
     # extracting a course_key from a usage_key, but the item_delete signal is
     # only fired from split-mongo, so it will always contain the course run.
-    course_key = usage_key.course_key
-    handler_tasks.mark_all_stale.delay(course_key=course_key)
+    course_str = six.text_type(usage_key.course_key)
+    handler_tasks.mark_all_stale.delay(course_key=course_str)
 
 
 def course_published_handler(course_key, **kwargs):
@@ -73,7 +75,8 @@ def course_published_handler(course_key, **kwargs):
     Update aggregators when a general course change happens.
     """
     log.debug("Updating aggregators due to course_published signal")
-    handler_tasks.mark_all_stale.delay(course_key=course_key)
+    course_str = six.text_type(course_key)
+    handler_tasks.mark_all_stale.delay(course_key=course_str)
 
 
 def cohort_updated_handler(user, course_key, **kwargs):
@@ -81,7 +84,8 @@ def cohort_updated_handler(user, course_key, **kwargs):
     Update aggregators for a user when the user changes cohort or enrollment track.
     """
     log.debug("Updating aggregators due to cohort or enrollment update signal")
-    handler_tasks.mark_all_stale.delay(course_key=course_key, users=[user])
+    course_str = six.text_type(course_key)
+    handler_tasks.mark_all_stale.delay(course_key=course_str, users=[user])
 
 
 def completion_updated_handler(signal, sender, instance, created, raw, using, update_fields, **kwargs):

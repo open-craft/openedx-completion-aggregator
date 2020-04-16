@@ -14,11 +14,16 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
-[2.1.0] - 2020-04-14
+[2.0.2] - 2020-04-17
 ~~~~~~~~~~~~~~~~~~~~
 
 * Add locking mechanism to batch operations.
 * Replace `course_key` with `course` in `reaggregate_course` management command.
+
+[2.0.1] - 2020-04-17
+~~~~~~~~~~~~~~~~~~~~
+
+* Convert `course_key` to string before sending it to Celery task.
 
 [1.0.0] - 2018-01-04
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
