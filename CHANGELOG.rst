@@ -14,6 +14,11 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
+[2.1.0] - 2020-04-17
+~~~~~~~~~~~~~~~~~~~~
+
+* Convert `course_key` to string before sending it to Celery task.
+
 [1.0.0] - 2018-01-04
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
