@@ -5,9 +5,9 @@ Tasks used in processing signal handlers.
 import six
 from celery import shared_task
 from celery_utils.logged_task import LoggedTask
+from opaque_keys.edx.keys import CourseKey
 
 from django.conf import settings
-from opaque_keys.edx.keys import CourseKey
 
 from ..batch import perform_aggregation
 from ..cachegroup import CacheGroup
