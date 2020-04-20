@@ -14,7 +14,7 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
-[2.1.0] - 2020-04-20
+[2.1.1] - 2020-04-20
 ~~~~~~~~~~~~~~~~~~~~
 
 * Pass `user.username` to Celery task instead of `user`.
