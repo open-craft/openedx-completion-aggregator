@@ -14,6 +14,12 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
+[2.1.0] - 2020-04-20
+~~~~~~~~~~~~~~~~~~~~
+
+* Pass `user.username` to Celery task instead of `user`.
+* Convert `course_key` string to `CourseKey` in `reaggregate_course`.
+
 [2.1.0] - 2020-04-17
 ~~~~~~~~~~~~~~~~~~~~
 
