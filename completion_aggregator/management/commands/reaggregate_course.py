@@ -15,9 +15,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 
 from django.core.management.base import BaseCommand
-from opaque_keys.edx.keys import CourseKey
 
 from completion.models import BlockCompletion
+from opaque_keys.edx.keys import CourseKey
 
 from ... import compat
 from ...models import StaleCompletion
