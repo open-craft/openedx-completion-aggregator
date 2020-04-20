@@ -85,7 +85,7 @@ def cohort_updated_handler(user, course_key, **kwargs):
     """
     log.debug("Updating aggregators due to cohort or enrollment update signal")
     course_str = six.text_type(course_key)
-    handler_tasks.mark_all_stale.delay(course_key=course_str, users=[user])
+    handler_tasks.mark_all_stale.delay(course_key=course_str, users=[user.username])
 
 
 def completion_updated_handler(signal, sender, instance, created, raw, using, update_fields, **kwargs):
