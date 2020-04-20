@@ -1,5 +1,4 @@
 """
-
 Aggregator service.
 
 This service periodically determines which stale_blocks need updating, and
@@ -13,6 +12,9 @@ import logging
 import time
 
 import six
+
+from django.conf import settings
+from django.core.cache import cache
 
 from . import models, utils
 from .tasks import aggregation_tasks
@@ -32,6 +34,9 @@ def perform_aggregation(batch_size=10000, delay=0.0, limit=None, routing_key=Non
     collects all stale blocks for each enrollment, and enqueues a single
     recalculation of all aggregators containing those stale blocks.
 
+    There is a locking mechanism that ensures that only one `perform_aggregation` is running at the moment.
+    The lock is released manually upon exiting this function.
+
     batch_size (int|None) [default: 10000]:
         Maximum number of stale completions to fetch in a single query to the
         database.
@@ -48,6 +53,14 @@ def perform_aggregation(batch_size=10000, delay=0.0, limit=None, routing_key=Non
         A routing key to pass to celery for the update_aggregators tasks.  None
         means use the default routing key.
     """
+    if not cache.add(
+        settings.COMPLETION_AGGREGATOR_AGGREGATION_LOCK,
+        True,
+        settings.COMPLETION_AGGREGATOR_AGGREGATION_LOCK_TIMEOUT_SECONDS
+    ):
+        log.warning("Aggregation is already running. Exiting.")
+        return
+
     stale_queryset = models.StaleCompletion.objects.filter(resolved=False)
     task_options = {}
     if limit is None:
@@ -58,6 +71,7 @@ def perform_aggregation(batch_size=10000, delay=0.0, limit=None, routing_key=Non
         max_id = stale_queryset.order_by('-id')[0].id
     except IndexError:
         log.warning("No StaleCompletions to process. Exiting.")
+        cache.delete(settings.COMPLETION_AGGREGATOR_AGGREGATION_LOCK)  # Release the lock.
         return
     if routing_key:
         task_options['routing_key'] = routing_key
@@ -108,9 +122,22 @@ def perform_aggregation(batch_size=10000, delay=0.0, limit=None, routing_key=Non
             if delay:
                 time.sleep(delay)
 
+    cache.delete(settings.COMPLETION_AGGREGATOR_AGGREGATION_LOCK)  # Release the lock.
+    log.info("Finished aggregation update for %s user enrollments", len(stale_blocks))
+
 
 def perform_cleanup():
     """
     Remove resolved StaleCompletion objects.
     """
-    return models.StaleCompletion.objects.filter(resolved=True).delete()
+    if not cache.add(
+        settings.COMPLETION_AGGREGATOR_CLEANUP_LOCK,
+        True,
+        settings.COMPLETION_AGGREGATOR_CLEANUP_LOCK_TIMEOUT_SECONDS
+    ):
+        log.warning("Cleanup is already running. Exiting.")
+        return
+
+    deleted = models.StaleCompletion.objects.filter(resolved=True).delete()
+    cache.delete(settings.COMPLETION_AGGREGATOR_CLEANUP_LOCK)  # Release the lock.
+    return deleted
