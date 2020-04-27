@@ -2,6 +2,7 @@
 *.orig
 __pycache__
 .mypy_cache
+.python-version
 
 # C extensions
 *.so

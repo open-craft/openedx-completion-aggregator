@@ -10,7 +10,6 @@ import unittest
 
 import ddt
 import mock
-from completion.models import BlockCompletion
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from freezegun import freeze_time
@@ -21,6 +20,7 @@ from test_utils.compat import StubCompat
 
 try:
     from progress.models import CourseModuleCompletion
+    from completion.models import BlockCompletion
 
     RUNNING_IN_PLATFORM = True
 except ImportError:

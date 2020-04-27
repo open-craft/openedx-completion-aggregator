@@ -1,0 +1,4 @@
+jsonfield<2.1
+django-braces<1.14
+edx-drf-extensions<2.1
+edx-django-utils<2
