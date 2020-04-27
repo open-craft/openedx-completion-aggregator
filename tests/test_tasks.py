@@ -10,17 +10,18 @@ import unittest
 
 import ddt
 import mock
-from django.contrib.auth.models import User
-from django.test import TestCase, override_settings
 from freezegun import freeze_time
 from opaque_keys.edx.keys import CourseKey
+
+from django.contrib.auth.models import User
+from django.test import TestCase, override_settings
 
 from completion_aggregator.tasks.aggregation_tasks import _migrate_batch
 from test_utils.compat import StubCompat
 
 try:
-    from progress.models import CourseModuleCompletion
     from completion.models import BlockCompletion
+    from progress.models import CourseModuleCompletion
 
     RUNNING_IN_PLATFORM = True
 except ImportError:
@@ -44,6 +45,7 @@ class MigrateProgressTestCase(TestCase):
     """
 
     def setUp(self):
+        super(MigrateProgressTestCase, self).setUp()
         self.user = user = User.objects.create_user("test", password="test")
         self.course_key = course_key = CourseKey.from_string('course-v1:edx+course+test')
         self.block_keys = block_keys = [

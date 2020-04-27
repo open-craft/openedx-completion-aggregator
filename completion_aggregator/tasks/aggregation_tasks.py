@@ -88,7 +88,11 @@ def update_aggregators(username, course_key, block_keys=(), force=False):
 
 @shared_task
 def migrate_batch(start, stop):  # Cannot pass a queryset to a task.
+    """
+    Wraps _migrate_batch to simplify testing.
+    """
     _migrate_batch(start, stop)
+
 
 def _migrate_batch(start, stop):
     """

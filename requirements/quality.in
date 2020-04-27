@@ -1,7 +1,10 @@
 # Requirements for code quality checks
 
+-r base.in
+-r test.in
+
 caniusepython3            # Additional Python 3 compatibility pylint checks
-edx-lint                  # edX pylint rules and plugins
+edx-lint<1.2              # edX pylint rules and plugins
 isort                     # to standardize order of imports
 pycodestyle               # PEP 8 compliance validation
 pydocstyle                # PEP 257 compliance validation

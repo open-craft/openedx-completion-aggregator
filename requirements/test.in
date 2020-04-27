@@ -1,5 +1,7 @@
 # Requirements for test runs.
 
+-r base.in
+
 ddt			  # Provides test parameterization
 django-model-utils        # Provides TimeStampedModel abstract base class
 mock
@@ -8,3 +10,4 @@ pytest-cov                # pytest extension for code coverage statistics
 pytest-django             # pytest extension for better Django support
 redis
 more-itertools < 6.0.0
+freezegun<0.4
