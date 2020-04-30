@@ -40,10 +40,10 @@ docs: ## generate Sphinx HTML documentation, including API docs
 
 upgrade: ## update the requirements/*.txt files with the latest packages satisfying requirements/*.in
 	pip install -q pip-tools
-	pip-compile --upgrade --no-index -o requirements/dev.txt requirements/base.in requirements/dev.in requirements/quality.in
-	pip-compile --upgrade --no-index -o requirements/doc.txt requirements/base.in requirements/doc.in
+	pip-compile --upgrade --no-index -o requirements/dev.txt requirements/dev.in
+	pip-compile --upgrade --no-index -o requirements/doc.txt requirements/doc.in
 	pip-compile --upgrade --no-index -o requirements/quality.txt requirements/quality.in
-	pip-compile --upgrade --no-index -o requirements/test.txt requirements/base.in requirements/test.in
+	pip-compile --upgrade --no-index -o requirements/test.txt requirements/test.in
 	pip-compile --upgrade --no-index -o requirements/travis.txt requirements/travis.in
 	# Let tox control the Django version for tests
 	sed '/^django==/d' requirements/test.txt > requirements/test.tmp

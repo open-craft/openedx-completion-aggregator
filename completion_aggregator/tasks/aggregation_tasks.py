@@ -33,19 +33,21 @@ except ImportError:
 
 INSERT_OR_UPDATE_MYSQL = """
     INSERT INTO completion_blockcompletion
-        (user_id, course_key, block_key, block_type, completion)
+        (user_id, course_key, block_key, block_type, completion, created, modified)
     VALUES
-        (%s, %s, %s, %s, 1.0)
+        (%s, %s, %s, %s, 1.0, %s, %s)
     ON DUPLICATE KEY UPDATE
-        completion=VALUES(completion);
+        completion=VALUES(completion),
+        created=VALUES(created),
+        modified=VALUES(modified);
 """
 
 INSERT_OR_UPDATE_SQLITE = """
     INSERT OR REPLACE
     INTO completion_blockcompletion
-        (user_id, course_key, block_key, block_type, completion)
+        (user_id, course_key, block_key, block_type, completion, created, modified)
     VALUES
-        (%s, %s, %s, %s, 1.0);
+        (%s, %s, %s, %s, 1.0, %s, %s);
 """
 
 
@@ -87,6 +89,13 @@ def update_aggregators(username, course_key, block_keys=(), force=False):
 @shared_task
 def migrate_batch(start, stop):  # Cannot pass a queryset to a task.
     """
+    Wraps _migrate_batch to simplify testing.
+    """
+    _migrate_batch(start, stop)
+
+
+def _migrate_batch(start, stop):
+    """
     Convert a batch of CourseModuleCompletions to BlockCompletions.
 
     Given a starting ID and a stopping ID, this task will:
@@ -118,8 +127,8 @@ def migrate_batch(start, stop):  # Cannot pass a queryset to a task.
             processed[course_key] = set()
         if cmc.user not in processed[course_key]:
             processed[course_key].add(cmc.user)
-        # Param order: (user_id, course_key, block_key, block_type)
-        insert_params.append((cmc.user_id, cmc.course_id, cmc.content_id, block_type))
+        # Param order: (user_id, course_key, block_key, block_type, created, modified)
+        insert_params.append((cmc.user_id, cmc.course_id, cmc.content_id, block_type, cmc.created, cmc.modified))
     if connection.vendor == 'mysql':
         sql = INSERT_OR_UPDATE_MYSQL
     else:
