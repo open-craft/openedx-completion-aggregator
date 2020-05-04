@@ -14,6 +14,11 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
+[2.1.3] - 2020-05-08
+~~~~~~~~~~~~~~~~~~~~
+
+* Fix `all` option in `reaggregate_course`.
+
 [2.1.1] - 2020-04-20
 ~~~~~~~~~~~~~~~~~~~~
 
