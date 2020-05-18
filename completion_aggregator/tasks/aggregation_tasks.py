@@ -17,7 +17,6 @@ from django.db import connection
 from .. import core
 from ..models import StaleCompletion
 
-
 # SQLite doesn't support the ON DUPLICATE KEY syntax.  INSERT OR REPLACE will
 # have a similar effect, but uses new primary keys.  The drawbacks of this are:
 # * It will consume the available keyspace more quickly.

@@ -8,7 +8,6 @@ from django.core.management.base import BaseCommand
 
 from ...tasks import aggregation_tasks
 
-
 log = logging.getLogger(__name__)
 
 
