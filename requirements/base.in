@@ -9,7 +9,7 @@ django-oauth-toolkit<1.0
 djangorestframework>=3.0,<3.7     # API tools
 django-model-utils<3.2    # Provides TimeStampedModel abstract base class
 edx-opaque-keys>=0.4.2,<2    # Provides CourseKey and UsageKey
-edx-completion>=1.0.3,<2
+edx-completion>=2,<3
 mysqlclient               # For connecting to MySQL
 six
-XBlock
+XBlock<1.3
