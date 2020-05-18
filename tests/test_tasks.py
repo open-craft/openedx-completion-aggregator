@@ -73,6 +73,7 @@ class MigrateProgressTestCase(TestCase):
                         "0000-00-00 00:00:00",
                     ]
                 )
+
     @mock.patch("time.sleep")
     def test_migration_updates_created_modified(self, mock_sleep):
         cmc_count = CourseModuleCompletion.objects.all().count()
