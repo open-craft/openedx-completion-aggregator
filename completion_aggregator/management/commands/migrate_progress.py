@@ -50,7 +50,6 @@ class Command(BaseCommand):
             **task_options
         )
 
-
     def get_task_options(self, options):
         """
         Return task options for generated celery tasks.
