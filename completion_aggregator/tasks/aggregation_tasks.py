@@ -17,31 +17,6 @@ from django.db import connection
 from .. import core
 from ..models import StaleCompletion
 
-# SQLite doesn't support the ON DUPLICATE KEY syntax.  INSERT OR REPLACE will
-# have a similar effect, but uses new primary keys.  The drawbacks of this are:
-# * It will consume the available keyspace more quickly.
-# * It will not preserve foreign keys pointing to our table.
-# SQLite is only used in testing environments, so neither of these drawbacks
-# poses an actual problem.
-
-INSERT_OR_UPDATE_MYSQL = """
-    INSERT INTO completion_blockcompletion
-        (user_id, course_key, block_key, block_type, completion, created, modified)
-    VALUES
-        (%s, %s, %s, %s, 1.0, %s, %s)
-    ON DUPLICATE KEY UPDATE
-        completion=VALUES(completion),
-        created=VALUES(created),
-        modified=VALUES(modified);
-"""
-
-INSERT_OR_UPDATE_SQLITE = """
-    INSERT OR REPLACE
-    INTO completion_blockcompletion
-        (user_id, course_key, block_key, block_type, completion, created, modified)
-    VALUES
-        (%s, %s, %s, %s, 1.0, %s, %s);
-"""
 UPDATE_SQL = """
 UPDATE completion_blockcompletion completion, progress_coursemodulecompletion progress
    SET completion.created = progress.created,
@@ -83,7 +58,9 @@ def update_aggregators(username, course_key, block_keys=(), force=False):
 
     course_key = CourseKey.from_string(course_key)
     block_keys = set(UsageKey.from_string(key).map_into_course(course_key) for key in block_keys)
-    log.info("Updating aggregators in %s for %s. Changed blocks: %s", course_key, user.username, block_keys)
+    log.info(
+        "Updating aggregators in %s for %s. Changed blocks: %s", course_key, user.username, block_keys,
+    )
     return core.update_aggregators(user, course_key, block_keys, force)
 
 
@@ -116,7 +93,7 @@ def _migrate_batch(batch_size, delay_between_tasks):
                     WHERE NOT completion_blockcompletion.modified
                     LIMIT %(batch_size)s;
                     """,
-                    {'batch_size': batch_size},
+                    {"batch_size": batch_size},
                 )
                 ids = [row[0] for row in cur.fetchall()]
                 if count == 0:
@@ -126,9 +103,6 @@ def _migrate_batch(batch_size, delay_between_tasks):
     with connection.cursor() as cur:
         count = 0
         for ids in get_next_id_batch():
-            count = cur.execute(
-                UPDATE_SQL,
-                {'ids': ids},
-            )
+            count = cur.execute(UPDATE_SQL, {"ids": ids},)
             time.sleep(delay_between_tasks)
-        log.info("Completed progress updatation batch of %s objects", count)
+        log.info("Completed progress updation batch of %s objects", count)
