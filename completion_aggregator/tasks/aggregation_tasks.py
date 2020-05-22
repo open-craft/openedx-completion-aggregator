@@ -5,10 +5,10 @@ Asynchronous tasks for performing aggregation of completions.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging
+import time
 
 from celery import shared_task
 from celery_utils.logged_task import LoggedTask
-from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey, UsageKey
 
 from django.contrib.auth.models import User
@@ -17,39 +17,15 @@ from django.db import connection
 from .. import core
 from ..models import StaleCompletion
 
-try:
-    from progress.models import CourseModuleCompletion
-    PROGRESS_IMPORTED = True
-except ImportError:
-    PROGRESS_IMPORTED = False
-
-
-# SQLite doesn't support the ON DUPLICATE KEY syntax.  INSERT OR REPLACE will
-# have a similar effect, but uses new primary keys.  The drawbacks of this are:
-# * It will consume the available keyspace more quickly.
-# * It will not preserve foreign keys pointing to our table.
-# SQLite is only used in testing environments, so neither of these drawbacks
-# poses an actual problem.
-
-INSERT_OR_UPDATE_MYSQL = """
-    INSERT INTO completion_blockcompletion
-        (user_id, course_key, block_key, block_type, completion, created, modified)
-    VALUES
-        (%s, %s, %s, %s, 1.0, %s, %s)
-    ON DUPLICATE KEY UPDATE
-        completion=VALUES(completion),
-        created=VALUES(created),
-        modified=VALUES(modified);
+UPDATE_SQL = """
+UPDATE completion_blockcompletion completion, progress_coursemodulecompletion progress
+   SET completion.created = progress.created,
+       completion.modified = progress.modified
+ WHERE completion.user_id = progress.user_id
+   AND completion.block_key = progress.content_id
+   AND completion.course_key = progress.course_id
+   AND completion.id IN %(ids)s;
 """
-
-INSERT_OR_UPDATE_SQLITE = """
-    INSERT OR REPLACE
-    INTO completion_blockcompletion
-        (user_id, course_key, block_key, block_type, completion, created, modified)
-    VALUES
-        (%s, %s, %s, %s, 1.0, %s, %s);
-"""
-
 
 log = logging.getLogger(__name__)
 
@@ -82,19 +58,21 @@ def update_aggregators(username, course_key, block_keys=(), force=False):
 
     course_key = CourseKey.from_string(course_key)
     block_keys = set(UsageKey.from_string(key).map_into_course(course_key) for key in block_keys)
-    log.info("Updating aggregators in %s for %s. Changed blocks: %s", course_key, user.username, block_keys)
+    log.info(
+        "Updating aggregators in %s for %s. Changed blocks: %s", course_key, user.username, block_keys,
+    )
     return core.update_aggregators(user, course_key, block_keys, force)
 
 
 @shared_task
-def migrate_batch(start, stop):  # Cannot pass a queryset to a task.
+def migrate_batch(batch_size, delay_between_tasks):
     """
     Wraps _migrate_batch to simplify testing.
     """
-    _migrate_batch(start, stop)
+    _migrate_batch(batch_size, delay_between_tasks)
 
 
-def _migrate_batch(start, stop):
+def _migrate_batch(batch_size, delay_between_tasks):
     """
     Convert a batch of CourseModuleCompletions to BlockCompletions.
 
@@ -104,50 +82,27 @@ def _migrate_batch(start, stop):
     * Update the BlockCompletion table with those CourseModuleCompletion
       records.
     """
-    if not PROGRESS_IMPORTED:
-        log.error("Cannot perform migration: CourseModuleCompletion not importable.")
 
-    queryset = CourseModuleCompletion.objects.all().select_related('user')
-    course_module_completions = queryset.filter(id__gte=start, id__lt=stop)
-
-    processed = {}  # Dict has format: {course: {user: [blocks]}
-    insert_params = []
-    for cmc in course_module_completions:
-        try:
-            course_key = CourseKey.from_string(cmc.course_id)
-            block_key = UsageKey.from_string(cmc.content_id).map_into_course(course_key)
-            block_type = block_key.block_type
-        except InvalidKeyError:
-            log.exception(
-                "Could not migrate CourseModuleCompletion with values: %s",
-                cmc.__dict__,
-            )
-            continue
-        if course_key not in processed:
-            processed[course_key] = set()
-        if cmc.user not in processed[course_key]:
-            processed[course_key].add(cmc.user)
-        # Param order: (user_id, course_key, block_key, block_type, created, modified)
-        insert_params.append((cmc.user_id, cmc.course_id, cmc.content_id, block_type, cmc.created, cmc.modified))
-    if connection.vendor == 'mysql':
-        sql = INSERT_OR_UPDATE_MYSQL
-    else:
-        sql = INSERT_OR_UPDATE_SQLITE
-    with connection.cursor() as cur:
-        cur.executemany(sql, insert_params)
-    # Create aggregators later.
-    stale_completions = []
-    for course_key in processed:
-        for user in processed[course_key]:
-            stale_completions.append(
-                StaleCompletion(
-                    username=user.username,
-                    course_key=course_key,
-                    block_key=None,
-                    force=True
+    def get_next_id_batch():
+        while True:
+            with connection.cursor() as cur:
+                count = cur.execute(
+                    """
+                    SELECT id
+                    FROM completion_blockcompletion
+                    WHERE NOT completion_blockcompletion.modified
+                    LIMIT %(batch_size)s;
+                    """,
+                    {"batch_size": batch_size},
                 )
-            )
-    StaleCompletion.objects.bulk_create(
-        stale_completions,
-    )
-    log.info("Completed progress migration batch from %s to %s", start, stop)
+                ids = [row[0] for row in cur.fetchall()]
+                if count == 0:
+                    break
+            yield ids
+
+    with connection.cursor() as cur:
+        count = 0
+        for ids in get_next_id_batch():
+            count = cur.execute(UPDATE_SQL, {"ids": ids},)
+            time.sleep(delay_between_tasks)
+        log.info("Completed progress updation batch of %s objects", count)

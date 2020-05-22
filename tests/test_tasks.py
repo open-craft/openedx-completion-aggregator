@@ -6,33 +6,22 @@ Tests for the `openedx-completion-aggregator` tasks.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import unittest
-
 import ddt
 import mock
 from freezegun import freeze_time
 from opaque_keys.edx.keys import CourseKey
 
 from django.contrib.auth.models import User
+from django.db import connection
 from django.test import TestCase, override_settings
 
+from completion.models import BlockCompletion
 from completion_aggregator.tasks.aggregation_tasks import _migrate_batch
 from test_utils.compat import StubCompat
-
-try:
-    from completion.models import BlockCompletion
-    from progress.models import CourseModuleCompletion
-
-    RUNNING_IN_PLATFORM = True
-except ImportError:
-    RUNNING_IN_PLATFORM = False
+from test_utils.test_app.models import CourseModuleCompletion
 
 
 @ddt.ddt
-@unittest.skipUnless(
-    RUNNING_IN_PLATFORM,
-    "CourseModuleCompletion not available. Please run with edx-platform context.",
-)
 @override_settings(
     COMPLETION_AGGREGATOR_AGGREGATION_LOCK='COMPLETION_AGGREGATOR_AGGREGATION_LOCK',
     COMPLETION_AGGREGATOR_CLEANUP_LOCK='COMPLETION_AGGREGATOR_CLEANUP_LOCK',
@@ -67,16 +56,26 @@ class MigrateProgressTestCase(TestCase):
                     course_id=course_key,
                     content_id=block_key,
                 )
-            with freeze_time("2019-02-02T02:02:{}".format(idx)):
-                BlockCompletion.objects.create(
-                    user=user,
-                    course_key=course_key,
-                    block_key=block_key,
-                    block_type=block_key.block_type,
-                    completion=1.0,
+            with connection.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO completion_blockcompletion
+                        (user_id, course_key, block_key, block_type, completion, created, modified)
+                    VALUES
+                        (%s, %s, %s, %s, 1.0, %s, %s);
+                    """,
+                    [
+                        user.id,
+                        course_key,
+                        block_key,
+                        block_key.block_type,
+                        "0000-00-00 00:00:00",
+                        "0000-00-00 00:00:00",
+                    ]
                 )
 
-    def test_migration_updates_created_modified(self):
+    @mock.patch("time.sleep")
+    def test_migration_updates_created_modified(self, mock_sleep):
         cmc_count = CourseModuleCompletion.objects.all().count()
         c_count = BlockCompletion.objects.all().count()
         self.assertEqual(cmc_count, 50)
@@ -96,11 +95,12 @@ class MigrateProgressTestCase(TestCase):
             )
             self.assertNotEqual(bc.created, cmc.created)
             self.assertNotEqual(bc.modified, cmc.modified)
-        _migrate_batch(1, 51)
+        _migrate_batch(11, 0.1)
         cmc_count = CourseModuleCompletion.objects.all().count()
         c_count = BlockCompletion.objects.all().count()
         self.assertEqual(cmc_count, 50)
         self.assertEqual(c_count, 50)
+        self.assertEqual(mock_sleep.call_count, 5)
         for block_key in self.block_keys:
             bc = BlockCompletion.objects.get(
                 user=self.user,

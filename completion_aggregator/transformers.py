@@ -31,10 +31,13 @@ class AggregatorAnnotationTransformer(BlockStructureTransformer):
         """
         Return the aggregators which contain this block.
 
-        Arguments:
+        Arguments
+        ---------
             block_structure: a BlockStructure instance
             block_key: the key of the block whose aggregators we want
-        Returns:
+
+        Returns
+        -------
             aggregators: list or None
 
         """
