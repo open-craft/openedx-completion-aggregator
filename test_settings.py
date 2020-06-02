@@ -32,6 +32,9 @@ DATABASES = {
         'PORT': int(environ.get('EDXAGG_MYSQL_PORT', 3306)),
         'USER': environ.get('EDXAGG_MYSQL_USER', 'root'),
         'PASSWORD': environ.get('EDXAGG_MYSQL_PASSWORD', ''),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='ALLOW_INVALID_DATES'",
+        }
     }
 }
 DEBUG = True
