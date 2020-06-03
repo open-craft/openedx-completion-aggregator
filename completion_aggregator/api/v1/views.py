@@ -8,8 +8,8 @@ import re
 from collections import defaultdict
 
 import waffle
-from opaque_keys.edx.keys import CourseKey, UsageKey
 from opaque_keys import InvalidKeyError
+from opaque_keys.edx.keys import CourseKey, UsageKey
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.views import APIView
 
