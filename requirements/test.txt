@@ -22,7 +22,7 @@ ddt==1.4.1                # via -r requirements/test.in
 django-braces==1.13.0     # via -r requirements/base.in, django-oauth-toolkit
 django-model-utils==3.1.2  # via -r requirements/base.in, -r requirements/test.in, edx-celeryutils, edx-completion
 django-oauth-toolkit==0.12.0  # via -r requirements/base.in
-django-waffle==0.20.0     # via edx-django-utils, edx-drf-extensions
+django-waffle==0.15.1     # via -r requirements/base.in, edx-django-utils, edx-drf-extensions
 djangorestframework-jwt==1.11.0  # via edx-drf-extensions
 djangorestframework==3.6.4  # via -r requirements/base.in, edx-completion, edx-drf-extensions, rest-condition
 edx-celeryutils==0.1.5    # via -r requirements/base.in
@@ -68,7 +68,7 @@ requests==2.23.0          # via edx-drf-extensions, pyjwkest
 rest-condition==1.0.3     # via edx-drf-extensions
 scandir==1.10.0           # via pathlib2
 semantic-version==2.8.5   # via edx-drf-extensions
-six==1.15.0               # via -r requirements/base.in, django-oauth-toolkit, django-waffle, edx-drf-extensions, edx-opaque-keys, freezegun, fs, mock, more-itertools, packaging, pathlib2, pyjwkest, pytest, python-dateutil, stevedore, xblock
+six==1.15.0               # via -r requirements/base.in, django-oauth-toolkit, edx-drf-extensions, edx-opaque-keys, freezegun, fs, mock, more-itertools, packaging, pathlib2, pyjwkest, pytest, python-dateutil, stevedore, xblock
 stevedore==1.32.0         # via edx-opaque-keys
 typing==3.7.4.1           # via fs
 urllib3==1.25.9           # via requests

@@ -1,15 +1,20 @@
 # Core requirements for using this application
 
-celery==3.1.18            # Asynchronous tasks
-edx-celeryutils<0.2      # Custom task extensions
-Django>=1.8              # Web application framework
+-c constraints.txt
+
+
+celery==3.1.18                      # Asynchronous tasks
+edx-celeryutils<0.2                 # Custom task extensions
+Django>=1.8                         # Web application framework
 django-oauth-toolkit<1.0
-djangorestframework>=3.0,<3.7     # API tools
-django-model-utils<3.2        # Provides TimeStampedModel abstract base class
-edx-opaque-keys<2,>=0.4.2    # Provides CourseKey and UsageKey
+djangorestframework>=3.0,<3.7       # API tools
+django-model-utils<3.2              # Provides TimeStampedModel abstract base class
+edx-opaque-keys<2,>=0.4.2           # Provides CourseKey and UsageKey
 edx-completion>=1.0.3,<2
-mysqlclient               # For connecting to MySQL
-six
+mysqlclient                         # For connecting to MySQL
+six                                 # Python 2/3 compatibility stubs
+# Limit for compatible django version:
 XBlock<1.3
 jsonfield<2.1
 django-braces<1.14
+django-waffle<0.16

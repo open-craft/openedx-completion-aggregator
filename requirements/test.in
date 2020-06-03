@@ -1,5 +1,7 @@
 # Requirements for test runs.
 
+-c constraints.txt
+
 ddt			  # Provides test parameterization
 django-model-utils        # Provides TimeStampedModel abstract base class
 mock

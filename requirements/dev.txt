@@ -21,12 +21,12 @@ click-log==0.3.2          # via edx-lint
 click==7.1.2              # via click-log, edx-lint, pip-tools
 configparser==4.0.2       # via importlib-metadata, pydocstyle, pylint
 contextlib2==0.6.0.post1  # via importlib-metadata, importlib-resources, virtualenv, zipp
-diff-cover==2.6.1         # via -r requirements/dev.in
+diff-cover==3.0.0         # via -r requirements/dev.in
 distlib==0.3.0            # via caniusepython3, virtualenv
 django-braces==1.13.0     # via -r requirements/base.in, django-oauth-toolkit
 django-model-utils==3.1.2  # via -r requirements/base.in, edx-celeryutils, edx-completion
 django-oauth-toolkit==0.12.0  # via -r requirements/base.in
-django-waffle==0.20.0     # via edx-django-utils, edx-drf-extensions
+django-waffle==0.15.1     # via -r requirements/base.in, edx-django-utils, edx-drf-extensions
 django==1.10.8            # via -r requirements/base.in, django-model-utils, django-oauth-toolkit, edx-celeryutils, edx-completion, edx-django-utils, edx-drf-extensions, edx-i18n-tools, edx-opaque-keys, jsonfield, rest-condition
 djangorestframework-jwt==1.11.0  # via edx-drf-extensions
 djangorestframework==3.6.4  # via -r requirements/base.in, edx-completion, edx-drf-extensions, rest-condition
@@ -91,7 +91,7 @@ rest-condition==1.0.3     # via edx-drf-extensions
 scandir==1.10.0           # via pathlib2
 semantic-version==2.8.5   # via edx-drf-extensions
 singledispatch==3.4.0.3   # via astroid, importlib-resources, pylint
-six==1.15.0               # via -r requirements/base.in, astroid, bleach, diff-cover, django-oauth-toolkit, django-waffle, edx-drf-extensions, edx-i18n-tools, edx-lint, edx-opaque-keys, fs, packaging, pathlib2, pip-tools, pydocstyle, pyjwkest, pylint, python-dateutil, readme-renderer, singledispatch, stevedore, tox, virtualenv, xblock
+six==1.15.0               # via -r requirements/base.in, astroid, bleach, diff-cover, django-oauth-toolkit, edx-drf-extensions, edx-i18n-tools, edx-lint, edx-opaque-keys, fs, packaging, pathlib2, pip-tools, pydocstyle, pyjwkest, pylint, python-dateutil, readme-renderer, singledispatch, stevedore, tox, virtualenv, xblock
 snowballstemmer==2.0.0    # via pydocstyle
 stevedore==1.32.0         # via edx-opaque-keys
 toml==0.10.1              # via tox
