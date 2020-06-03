@@ -362,7 +362,10 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         """
         Handles fetching and return aggregator data, regardless of the method used
         """
-        course_key = CourseKey.from_string(course_key)
+        try:
+            course_key = CourseKey.from_string(course_key)
+        except InvalidKeyError:
+            raise NotFound
         paginator = self.pagination_class()  # pylint: disable=not-callable
         requested_fields = self.get_requested_fields()
 
@@ -545,7 +548,10 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         """
         Handler for GET requests
         """
-        course_key = CourseKey.from_string(course_key)
+        try:
+            course_key = CourseKey.from_string(course_key)
+        except InvalidKeyError:
+            raise NotFound
         requested_fields = self.get_requested_fields()
         roles_to_exclude = self.request.query_params.get('exclude_roles', '').split(',')
         cohort_filter = self._parse_cohort_filter(
