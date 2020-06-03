@@ -93,9 +93,9 @@ class CompletionViewMixin(object):
         """
         from openedx.core.lib.api import authentication  # pylint: disable=import-error
         try:
-            from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication  # pylint: disable=import-error
+            from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication
         except ImportError:
-            from edx_rest_framework_extensions.authentication import JwtAuthentication  # pylint: disable=import-error
+            from edx_rest_framework_extensions.authentication import JwtAuthentication
 
         return [
             JwtAuthentication,
