@@ -9,6 +9,7 @@ from collections import defaultdict
 
 import waffle
 from opaque_keys.edx.keys import CourseKey, UsageKey
+from opaque_keys import InvalidKeyError
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.views import APIView
 
@@ -395,7 +396,10 @@ class CompletionDetailView(CompletionViewMixin, APIView):
 
         root_block = params.get('root_block')
         if root_block:
-            root_block = UsageKey.from_string(root_block).map_into_course(course_key)
+            try:
+                root_block = UsageKey.from_string(root_block).map_into_course(course_key)
+            except InvalidKeyError:
+                raise NotFound
 
         if is_stale and waffle.flag_is_active(self.request, WAFFLE_AGGREGATE_STALE_FROM_SCRATCH):
             aggregator_queryset = []
