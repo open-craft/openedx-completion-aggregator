@@ -365,7 +365,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         try:
             course_key = CourseKey.from_string(course_key)
         except InvalidKeyError:
-            raise NotFound
+            raise NotFound("Invalid block key: '{}'.".format(course_key))
         paginator = self.pagination_class()  # pylint: disable=not-callable
         requested_fields = self.get_requested_fields()
 
@@ -402,7 +402,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             try:
                 root_block = UsageKey.from_string(root_block).map_into_course(course_key)
             except InvalidKeyError:
-                raise NotFound
+                raise NotFound("Invalid block key: '{}'.".format(root_block))
 
         if is_stale and waffle.flag_is_active(self.request, WAFFLE_AGGREGATE_STALE_FROM_SCRATCH):
             aggregator_queryset = []
@@ -551,7 +551,7 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         try:
             course_key = CourseKey.from_string(course_key)
         except InvalidKeyError:
-            raise NotFound
+            raise NotFound("Invalid block key: '{}'.".format(course_key))
         requested_fields = self.get_requested_fields()
         roles_to_exclude = self.request.query_params.get('exclude_roles', '').split(',')
         cohort_filter = self._parse_cohort_filter(
