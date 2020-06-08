@@ -381,7 +381,10 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         else:
             if not UserEnrollments(self.user).is_enrolled(course_key):
                 # Return 404 if effective user does not have an active enrollment in the requested course
-                raise NotFound("User '{user}' does not have an active enrollment in course '{course_key}'.".format(user=self.user, course_key=course_key))
+                raise NotFound(
+                    "User '{user}' does not have an active enrollment in course '{course_key}'."
+                    .format(user=self.user, course_key=course_key)
+                )
             is_stale = StaleCompletion.objects.filter(
                 username=self.user.username,
                 course_key=course_key,
