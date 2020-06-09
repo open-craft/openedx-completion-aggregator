@@ -8,6 +8,7 @@ import re
 from collections import defaultdict
 
 import waffle
+from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey, UsageKey
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.views import APIView
@@ -361,7 +362,10 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         """
         Handles fetching and return aggregator data, regardless of the method used
         """
-        course_key = CourseKey.from_string(course_key)
+        try:
+            course_key = CourseKey.from_string(course_key)
+        except InvalidKeyError:
+            raise NotFound("Invalid course key: '{}'.".format(course_key))
         paginator = self.pagination_class()  # pylint: disable=not-callable
         requested_fields = self.get_requested_fields()
 
@@ -377,7 +381,10 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         else:
             if not UserEnrollments(self.user).is_enrolled(course_key):
                 # Return 404 if effective user does not have an active enrollment in the requested course
-                raise NotFound()
+                raise NotFound(
+                    "User '{user}' does not have an active enrollment in course '{course_key}'."
+                    .format(user=self.user, course_key=course_key)
+                )
             is_stale = StaleCompletion.objects.filter(
                 username=self.user.username,
                 course_key=course_key,
@@ -395,7 +402,10 @@ class CompletionDetailView(CompletionViewMixin, APIView):
 
         root_block = params.get('root_block')
         if root_block:
-            root_block = UsageKey.from_string(root_block).map_into_course(course_key)
+            try:
+                root_block = UsageKey.from_string(root_block).map_into_course(course_key)
+            except InvalidKeyError:
+                raise NotFound("Invalid block key: '{}'.".format(root_block))
 
         if is_stale and waffle.flag_is_active(self.request, WAFFLE_AGGREGATE_STALE_FROM_SCRATCH):
             aggregator_queryset = []
@@ -541,7 +551,10 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         """
         Handler for GET requests
         """
-        course_key = CourseKey.from_string(course_key)
+        try:
+            course_key = CourseKey.from_string(course_key)
+        except InvalidKeyError:
+            raise NotFound("Invalid course key: '{}'.".format(course_key))
         requested_fields = self.get_requested_fields()
         roles_to_exclude = self.request.query_params.get('exclude_roles', '').split(',')
         cohort_filter = self._parse_cohort_filter(
