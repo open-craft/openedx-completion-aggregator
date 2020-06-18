@@ -258,7 +258,9 @@ class CourseCompletionSerializer(serializers.Serializer):
         """
         Caclulate mean completion percent for all enrolled users.
         """
-        enrollments = compat.get_users_enrolled_in(obj.course_key)
+        enrollments = compat.get_users_enrolled_in(obj.course_key).exclude(
+            courseaccessrole__course_id=obj.course_key
+        )
         enrollment_count = enrollments.count()
         if enrollment_count == 0:
             return 0.
