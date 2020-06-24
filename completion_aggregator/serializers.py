@@ -268,6 +268,8 @@ class CourseCompletionSerializer(serializers.Serializer):
         total = Aggregator.objects.filter(
             course_key=obj.course_key,
             aggregation_name='course',
+        ).exclude(
+            user__courseaccessrole__course_id=obj.course_key
         ).aggregate(
             total=Sum(Coalesce('percent', Value(0.)))
         ).get('total') or 0.
