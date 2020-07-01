@@ -8,6 +8,8 @@ import collections
 
 from mock import MagicMock
 
+from django.contrib.auth.models import User
+
 from completion.models import BlockCompletion
 
 from .test_app.models import CohortMembership, CourseAccessRole, CourseEnrollment, CourseUserGroup
@@ -93,9 +95,11 @@ class StubCompat(object):
         """
         Return a mock queryset of users enrolled in course.
         """
-        mock = MagicMock()
+        mock = MagicMock(spec=User.objects)
         # Simulate 5 users enrolled in course
+        mock.exclude.return_value = mock
         mock.count.return_value = 5
+
         return mock
 
     def course_access_role_model(self):
