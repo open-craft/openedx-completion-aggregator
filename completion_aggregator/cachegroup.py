@@ -75,10 +75,10 @@ class CacheGroup(object):
         """
         Invalidate an entire entry from the cache.
         """
-        CacheGroupInvalidation.objects.create_or_update(group=group, invalidated_at=timezone.now())
+        CacheGroupInvalidation.objects.update_or_create(group=group, defaults={"invalidated_at": timezone.now()})
 
         # Group invalidations are expected to be relatively infrequent, so we
         # take this opportunity to clean old invalidation records out of the
         # database.
 
-        CacheGroupInvalidation.objects.filter(invalidate_at__lt=timezone.now() - DELETE_INVALIDATIONS_AFTER).delete()
+        CacheGroupInvalidation.objects.filter(invalidated_at__lt=timezone.now() - DELETE_INVALIDATIONS_AFTER).delete()
