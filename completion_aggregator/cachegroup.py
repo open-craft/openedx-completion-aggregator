@@ -81,4 +81,4 @@ class CacheGroup(object):
         # take this opportunity to clean old invalidation records out of the
         # database.
 
-        CacheGroupInvalidation.objects.filter(invalidate_at__lt=timezone.now() - DELETE_INVALIDATIONS_AFTER).delete()
+        CacheGroupInvalidation.objects.filter(invalidated_at__lt=timezone.now() - DELETE_INVALIDATIONS_AFTER).delete()
