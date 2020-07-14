@@ -22,6 +22,8 @@ def register():
     """
     post_save.connect(completion_updated_handler, sender=compat.get_aggregated_model())
 
+    if not getattr(settings, 'ENABLE_COURSE_ACTIVITY_SIGNALS', False):
+        return
     try:
         from xmodule.modulestore.django import SignalHandler
     except ImportError:
