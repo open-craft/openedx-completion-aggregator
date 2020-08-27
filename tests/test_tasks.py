@@ -83,7 +83,7 @@ class MigrateProgressTestCase(TestCase):
         for block_key in self.block_keys:
             bc = BlockCompletion.objects.get(
                 user=self.user,
-                course_key=self.course_key,
+                context_key=self.course_key,
                 block_key=block_key,
                 block_type=block_key.block_type,
                 completion=1.0,
@@ -104,7 +104,7 @@ class MigrateProgressTestCase(TestCase):
         for block_key in self.block_keys:
             bc = BlockCompletion.objects.get(
                 user=self.user,
-                course_key=self.course_key,
+                context_key=self.course_key,
                 block_key=block_key,
                 block_type=block_key.block_type,
                 completion=1.0,

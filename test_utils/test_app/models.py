@@ -17,7 +17,7 @@ class CourseEnrollment(models.Model):
     Provides an equivalent for the edx-platform CourseEnrollment model.
     """
     is_active = models.BooleanField(default=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
     course_id = CourseKeyField(max_length=255)
 
     @classmethod
@@ -92,7 +92,7 @@ class CourseModuleCompletion(TimeStampedModel):
     to monitor a user's progression throughout the duration of a course,
     we need to observe and record completions of the individual course modules.
     """
-    user = models.ForeignKey(User, db_index=True, related_name="course_completions")
+    user = models.ForeignKey(User, db_index=True, related_name="course_completions", on_delete=models.DO_NOTHING)
     course_id = models.CharField(max_length=255, db_index=True)
     content_id = models.CharField(max_length=255, db_index=True)
     stage = models.CharField(max_length=255, null=True, blank=True)

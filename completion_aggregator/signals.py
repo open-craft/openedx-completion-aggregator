@@ -104,12 +104,12 @@ def completion_updated_handler(signal, sender, instance, created, raw, using, up
     log.debug(
         "Updating aggregators for %s in %s.  Updated block: %s",
         instance.user.username,
-        instance.course_key,
+        instance.context_key,
         instance.block_key,
     )
     models.StaleCompletion.objects.create(
         username=instance.user.username,
-        course_key=instance.course_key,
+        course_key=instance.context_key,
         block_key=instance.block_key
     )
     if not getattr(settings, 'COMPLETION_AGGREGATOR_ASYNC_AGGREGATION', False):

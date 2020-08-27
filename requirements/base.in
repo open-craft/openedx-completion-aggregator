@@ -2,14 +2,14 @@
 
 -c constraints.txt
 
-celery==3.1.18            # Asynchronous tasks
-edx-celeryutils<0.2      # Custom task extensions
-Django>=1.8              # Web application framework
+celery            # Asynchronous tasks
+edx-celeryutils      # Custom task extensions
+Django>=2.2              # Web application framework
 django-oauth-toolkit<1.0
-djangorestframework>=3.0,<3.7     # API tools
+djangorestframework>=3.0     # API tools
 django-model-utils<3.2    # Provides TimeStampedModel abstract base class
-edx-opaque-keys>=0.4.2,<2    # Provides CourseKey and UsageKey
-edx-completion>=2,<3
+edx-opaque-keys    # Provides CourseKey and UsageKey
+edx-completion>=3
 mysqlclient               # For connecting to MySQL
 six
 XBlock<1.3
