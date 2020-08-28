@@ -203,7 +203,7 @@ class Aggregator(TimeStampedModel):
     They are considered 100% complete when all descendant blocks are complete.
     """
 
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     course_key = CourseKeyField(max_length=255)
     aggregation_name = models.CharField(max_length=255)
     block_key = UsageKeyField(max_length=255)
