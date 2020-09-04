@@ -4,7 +4,7 @@
 
 celery            # Asynchronous tasks
 edx-celeryutils      # Custom task extensions
-Django>=2.2              # Web application framework
+Django              # Web application framework
 django-oauth-toolkit<1.0
 djangorestframework>=3.0     # API tools
 django-model-utils<3.2    # Provides TimeStampedModel abstract base class
