@@ -3,3 +3,4 @@ django-braces<1.14
 django-waffle<0.16
 futures; python_version < "3"
 inflect==3.0.2
+edx-celeryutils==0.5.1 #0.5.2 breaks tests

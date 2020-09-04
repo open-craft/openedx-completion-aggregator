@@ -5,7 +5,7 @@
 celery            # Asynchronous tasks
 edx-celeryutils      # Custom task extensions
 Django              # Web application framework
-django-oauth-toolkit
+django-oauth-toolkit<1.0
 djangorestframework>=3.0     # API tools
 django-model-utils    # Provides TimeStampedModel abstract base class
 edx-opaque-keys    # Provides CourseKey and UsageKey
