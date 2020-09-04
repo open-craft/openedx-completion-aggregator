@@ -7,7 +7,7 @@ edx-celeryutils      # Custom task extensions
 Django              # Web application framework
 django-oauth-toolkit
 djangorestframework>=3.0     # API tools
-django-model-utils<3.2    # Provides TimeStampedModel abstract base class
+django-model-utils    # Provides TimeStampedModel abstract base class
 edx-opaque-keys    # Provides CourseKey and UsageKey
 edx-completion>=3
 mysqlclient               # For connecting to MySQL
