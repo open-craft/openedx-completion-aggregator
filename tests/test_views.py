@@ -89,7 +89,7 @@ class CompletionAPITestMixin(object):
         """
         BlockCompletion.objects.create(
             user=self.test_user,
-            course_key=self.course_key,
+            context_key=self.course_key,
             block_key=self.blocks[3],
             block_type='html',
             completion=1.0,

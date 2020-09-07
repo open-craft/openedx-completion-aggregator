@@ -41,7 +41,7 @@ class SignalsTestCase(TestCase):
         block_key = UsageKey.from_string('i4x://edX/test/video/friday')
         completable = BlockCompletion(
             user=self.user,
-            course_key=course_key,
+            context_key=course_key,
             block_key=block_key,
             completion=1.0,
             modified=now()

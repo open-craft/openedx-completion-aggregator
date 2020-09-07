@@ -58,7 +58,7 @@ class StubCompat(object):
         """
         Return all completions for the current course.
         """
-        return BlockCompletion.objects.filter(user=user, course_key=course_key)
+        return BlockCompletion.objects.filter(user=user, context_key=course_key)
 
     def get_children(self, course_blocks, block_key):
         """

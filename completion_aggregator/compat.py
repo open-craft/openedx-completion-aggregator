@@ -88,7 +88,7 @@ def get_block_completions(user, course_key):
     from completion.models import BlockCompletion
     return BlockCompletion.objects.filter(
         user=user,
-        course_key=course_key,
+        context_key=course_key,
     )
 
 

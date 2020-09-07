@@ -43,14 +43,14 @@ def test_synchronous_aggregation(mock_task, users):
     for user in users:
         BlockCompletion.objects.create(
             user=user,
-            course_key=course_key,
+            context_key=course_key,
             block_key=course_key.make_usage_key('video', 'how-to-open-craft'),
             completion=0.75,
         )
 
         BlockCompletion.objects.create(
             user=user,
-            course_key=course_key,
+            context_key=course_key,
             block_key=course_key.make_usage_key('video', 'how-not-to-open-craft'),
             completion=1.0,
         )
@@ -71,7 +71,7 @@ def test_with_multiple_batches(mock_task, users):
         for block_key in block_keys:
             BlockCompletion.objects.create(
                 user=user,
-                course_key=course_key,
+                context_key=course_key,
                 block_key=block_key,
                 completion=1.0,
             )
@@ -93,13 +93,13 @@ def test_with_stale_completions(mock_task, users):
     for user in users:
         BlockCompletion.objects.create(
             user=user,
-            course_key=course_key,
+            context_key=course_key,
             block_key=course_key.make_usage_key('video', 'how-to-open-craft'),
             completion=0.75,
         )
         BlockCompletion.objects.create(
             user=user,
-            course_key=course_key,
+            context_key=course_key,
             block_key=course_key.make_usage_key('video', 'how-not-to-open-craft'),
             completion=1.0,
         )

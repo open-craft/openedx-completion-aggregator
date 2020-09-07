@@ -180,7 +180,6 @@ class Command(BaseCommand):
             for block in blocks:
                 BlockCompletion.objects.submit_completion(
                     user=user,
-                    course_key=self.course.id,
                     block_key=block.location,
                     completion=1.0
                 )

@@ -428,7 +428,6 @@ class CompletionBlockUpdateView(CompletionViewMixin, APIView):
 
         _, created = BlockCompletion.objects.submit_completion(
             user=request.user,
-            course_key=course_key,
             block_key=block_key,
             completion=completion,
         )
