@@ -3,56 +3,71 @@ openedx-completion-aggregator
 
 |pypi-badge| |travis-badge| |codecov-badge| |pyversions-badge| |license-badge|
 
-openedx-completion-aggregator is a Django app that aggregates block level
-completion data for different block types for Open edX.
+openedx-completion-aggregator is a Django app that aggregates block level completion data for different block types for Open edX.
 
-Overview
---------
+What does that mean?
 
-openedx-completion-aggregator uses the pluggable django app pattern to
-ease installation.  To use in edx-platform, do the following:
+A standard Open edX installation can track the completion of individual XBlocks in a course, which is done using the `completion library <https://github.com/edx/completion#completion>`_. This completion tracking is what powers the green checkmarks shown in the course outline and course navigation as the learner completes each unit in the course:
 
-1.  Install the app into your virtualenv.
+.. image:: docs/completion.png
+   :width: 100%
 
-    ..code_block::
+When completion tracking is enabled (and green checkmarks are showing, as seen above), it is only tracked at the XBlock level. You can use the Course Blocks API to check the completion status of any individual XBlock in the course, for a single user. For example, to get the completion of the XBlock with usage ID ``block-v1:OpenCraft+completion+demo+type@html+block@demo_block`` on the LMS instance ``courses.opencraft.com`` by the user ``MyUsername``, you could call this REST API::
+
+    GET https://courses.opencraft.com/api/courses/v1/blocks/block-v1:OpenCraft+completion+demo+type@html+block@demo_block?username=MyUsername&requested_fields=completion
+
+The response will include a ``completion`` value between ``0`` and ``1``.
+
+However, what if you want to know the overall % completion of an entire course? ("Alex, you have completed 45% of Introduction to Statistics") Or what if you as an instructor want to get a report of how much of Section 1 every student in a course has completed? Those queries are either not possible or too slow using the APIs built in to the LMS and ``completion``.
+
+This Open edX plugin, ``openedx-completion-aggregator`` watches course activity and asynchronously updates database tables with "aggregate" completion data. "Aggregate" data means completion data summed up over all XBlocks into a course and aggregated at higher levels, like the subsection, section, and course level. The completion aggregator provides a REST API that can provide near-instant answers to queries such as:
+
+* What % complete are each of the courses that I'm enrolled in?
+* What % of each section in Course X have my students completed?
+* What is the average completion % among all enrolled students in a course?
+
+API Details
+-----------
+
+For details about how the completion aggregator's REST APIs can be used, please refer to `the docstrings in views.py <https://github.com/open-craft/openedx-completion-aggregator/blob/master/completion_aggregator/api/v1/views.py#L24>`_.
+
+Installation and Configuration
+------------------------------
+
+openedx-completion-aggregator uses the pluggable django app pattern to ease installation. To use in edx-platform, do the following:
+
+1.  Install the app into your virtualenv::
 
         $ pip install openedx-completion-aggregator
 
-2.  [Optional] You may override the set of registered aggregator block types in
-    your lms.env.json file::
+2.  [Optional] You may override the set of registered aggregator block types in your ``lms.yml`` file::
 
         ...
-        "COMPLETION_AGGREGATOR_BLOCK_TYPES": {
-            "course",
-            "chapter",
-            "subsection",
-            "vertical"
-        },
+        COMPLETION_AGGREGATOR_BLOCK_TYPES:
+            - course
+            - chapter
+            - subsection
+            - vertical
         ...
 
 
-3.  By default, completion is aggregated with each created or updated
-    BlockCompletion.  In most production instances, you will want to calculate
-    aggregations asynchronously.  To enable asynchronous calculation for your
-    installation, set the following in your lms.env.json file::
+3.  By default, completion is aggregated synchronously (with each created or updated BlockCompletion). While that is ideal for development, in most production instances, you will want to calculate aggregations asynchronously for better performance.  To enable asynchronous calculation for your installation, set the following in your ``lms.yml`` file::
 
         ...
-        "COMPLETION_AGGREGATOR_ASYNC_AGGREGATION": true,
+        COMPLETION_AGGREGATOR_ASYNC_AGGREGATION: true
         ...
 
-    Then configure up a pair of cron jobs to run `./manage.py
-    run_aggregator_service` and `./manage.py run_aggregator_cleanup` as often
+    Then configure up a pair of cron jobs to run ``./manage.py
+    run_aggregator_service`` and ``./manage.py run_aggregator_cleanup`` as often
     as desired.
 
-Note that if operating on a Hawthorne-or-later release of edx-platform, you may
-override the settings in `EDXAPP_ENV_EXTRA` instead.
 
-Design
-------
+Design: Technical Details
+-------------------------
 
 The completion aggregator is designed to facilitate working with course-level,
 chapter-level, and other aggregated percentages of course completion as
-represented by the [BlockCompletion model](https://github.com/edx/completion/blob/master/completion/models.py#L173) (from the edx-completion djangoapp).
+represented by the `BlockCompletion model <https://github.com/edx/completion/blob/e1db6a137423f6/completion/models.py#L175>`_ (from the edx-completion djangoapp).
 By storing these values in the database, we are able to quickly return
 information for all users in a course.
 
@@ -84,7 +99,7 @@ by each aggregator, and values are summed recursively from the course block on
 down.  Values for every node in the whole tree can be calculated in a single
 traversal.  These calculations can either be performed "read-only" (to get the
 latest data for each user), or "read-write" to store that data in the
-[`completion_aggregator.Aggregator` model](https://github.com/open-craft/openedx-completion-aggregator/blob/master/completion_aggregator/models.py#L199).
+`completion_aggregator.Aggregator model <https://github.com/open-craft/openedx-completion-aggregator/blob/a71ab4f077/completion_aggregator/models.py#L199>`_.
 
 During regular course interaction, a learner will calculate aggregations on the
 fly to get the latest information.  However, on-the-fly calculations are too
@@ -94,8 +109,8 @@ date in the previous hour, and store those values in the database.  These
 stored values are then used for reporting on course-wide completion (for course
 admin views).
 
-By tracking which blocks have been changed recently (in the [`StaleCompletion` table](https://github.com/open-craft/openedx-completion-aggregator/blob/master/completion_aggregator/models.py#L272)
-table) These stored values can also be used to shortcut calculations for
+By tracking which blocks have been changed recently (in the `StaleCompletion table <https://github.com/open-craft/openedx-completion-aggregator/blob/a71ab4f077a/completion_aggregator/models.py#L272>`_
+), these stored values can also be used to shortcut calculations for
 portions of the course graph that are known to be up to date.  If a user has
 only completed blocks in chapter 3 of a three-chapter course since the last
 time aggregations were stored, there is no need to redo the calculation for
@@ -105,11 +120,7 @@ value for chapter 3.
 
 Currently, the major bottleneck in these calculations is creating the course
 graph for each user.  We are caching the graph locally to speed things up, but
-this stresses the memory capabilities of the servers.  My understanding is that
-more recent versions of edx-platform do a better job caching course graphs
-site-wide, which should improve performance, and allow us to bypass the local
-calculation, though this will need to be evaluated when our client (which is
-currently on ginkgo) upgrades.
+this stresses the memory capabilities of the servers.
 
 License
 -------
@@ -125,15 +136,6 @@ How To Contribute
 Contributions are very welcome.
 
 Please read `How To Contribute <https://github.com/edx/edx-platform/blob/master/CONTRIBUTING.rst>`_ for details.
-
-Even though they were written with ``edx-platform`` in mind, the guidelines
-should be followed for Open edX code in general.
-
-PR description template should be automatically applied if you are sending PR from github interface; otherwise you
-can find it it at `PULL_REQUEST_TEMPLATE.md <https://github.com/open-craft/openedx-completion-aggregator/blob/master/.github/PULL_REQUEST_TEMPLATE.md>`_
-
-Issue report template should be automatically applied if you are sending it from github UI as well; otherwise you
-can find it at `ISSUE_TEMPLATE.md <https://github.com/open-craft/openedx-completion-aggregator/blob/master/.github/ISSUE_TEMPLATE.md>`_
 
 Reporting Security Issues
 -------------------------
