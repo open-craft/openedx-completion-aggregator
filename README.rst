@@ -26,6 +26,22 @@ This Open edX plugin, ``openedx-completion-aggregator`` watches course activity 
 * What % of each section in Course X have my students completed?
 * What is the average completion % among all enrolled students in a course?
 
+Notes:
+
+* This service only provides data, via a REST API. There is no user interface.
+* On production instances, the answers to these "aggregate" questions may be slightly out of date, because they are computed asynchronously (see below). How often they are updated is configurable.
+
+Synchronous vs. Asynchronous calculations
+-----------------------------------------
+
+openedx-completion-aggregator operates in one of two modes: synchronous or asynchronous.
+
+With synchronous aggregation, each time a student completes a block, the aggregator code will re-calculate the aggregate completion values immediately. You will always have the freshest results from this API, but at a huge performance cost. Synchronous aggregation is only for development purposes and is not suitable for production. Synchronous aggregation can cause deadlocks when users complete XBlocks, leading to a partial outage of the LMS.
+
+With asynchronous aggregation, the aggregator code will re-calculate the aggregate completion values asynchronously, at periodic intervals (e.g. every hour). How often the update can and should be run depends on many factors - you will have to experiment and find what works best and what is possible for your specific Open edX installation.
+
+It's important to note that in both modes the single-user, single-course API endpoints will always return up-to-date data. However, data that covers multiple users or multiple courses can be slightly out of date, until the aggregates are updated asynchronously.
+
 API Details
 -----------
 
@@ -40,26 +56,17 @@ openedx-completion-aggregator uses the pluggable django app pattern to ease inst
 
         $ pip install openedx-completion-aggregator
 
-2.  [Optional] You may override the set of registered aggregator block types in your ``lms.yml`` file::
-
-        ...
-        COMPLETION_AGGREGATOR_BLOCK_TYPES:
-            - course
-            - chapter
-            - subsection
-            - vertical
-        ...
-
-
-3.  By default, completion is aggregated synchronously (with each created or updated BlockCompletion). While that is ideal for development, in most production instances, you will want to calculate aggregations asynchronously for better performance.  To enable asynchronous calculation for your installation, set the following in your ``lms.yml`` file::
+2.  By default, aggregate data is re-computed synchronously (with each created or updated BlockCompletion). While that is often useful for development, in most production instances, you will want to calculate aggregations asynchronously as explained above. To enable asynchronous calculation for your installation, set the following in your ``lms.yml`` file::
 
         ...
         COMPLETION_AGGREGATOR_ASYNC_AGGREGATION: true
         ...
 
-    Then configure up a pair of cron jobs to run ``./manage.py
-    run_aggregator_service`` and ``./manage.py run_aggregator_cleanup`` as often
-    as desired.
+    Then configure a pair of cron jobs to run ``./manage.py run_aggregator_service`` and ``./manage.py run_aggregator_cleanup`` as often as desired. (Start with hourly and daily, respectively, if you are unsure.) The ``run_aggregator_service`` task is what updates any aggregate completion data values that need to be updated since it was last run. The cleanup task deletes old database entries used to coordinate the aggregation updates, and which can build up over time but are no longer needed.
+
+3. A lock is used to prevent overlapping runs of ``run_aggregator_service``. If you have a lot of data on your instance such that a single run of ``run_aggregator_service`` takes longer than 30 minutes, you must configure ``COMPLETION_AGGREGATOR_AGGREGATION_LOCK_TIMEOUT_SECONDS`` to a larger value to prevent releasing the lock too early as a result of a timeout.
+
+4. If the aggregator is installed on an existing instance, then it's sometimes desirable to fill "Aggregate" data for the existing courses. There is the ``reaggregate_course`` management command, which prepares data that will be aggregated during the next ``run_aggregator_service`` run. However, the process of aggregating data for existing courses can place extremely high loads on both your celery workers and your MySQL database, so on large instances this process must be planned with great care. For starters, we recommend you disable any associated cronjobs, scale up your celery worker pool significantly, and scale up your database cluster and storage. To give you some idea, on one Open edX instance this process took 125 hours.
 
 
 Design: Technical Details
@@ -103,11 +110,11 @@ latest data for each user), or "read-write" to store that data in the
 
 During regular course interaction, a learner will calculate aggregations on the
 fly to get the latest information.  However, on-the-fly calculations are too
-expensive when performed for all users in a course, so periodically (every hour
-or less), a task is run to calculate all aggregators that have gone out of
-date in the previous hour, and store those values in the database.  These
-stored values are then used for reporting on course-wide completion (for course
-admin views).
+expensive when performed for all users in a course, so periodically (e.g. every
+hour, but this is configurable), a task is run to calculate all aggregators that
+have gone out of date since the last run, and store those values in the database.
+These stored values are then used for reporting on course-wide completion (for
+course admin views).
 
 By tracking which blocks have been changed recently (in the `StaleCompletion table <https://github.com/open-craft/openedx-completion-aggregator/blob/a71ab4f077a/completion_aggregator/models.py#L272>`_
 ), these stored values can also be used to shortcut calculations for
