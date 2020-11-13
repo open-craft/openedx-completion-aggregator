@@ -36,9 +36,9 @@ Synchronous vs. Asynchronous calculations
 
 openedx-completion-aggregator operates in one of two modes: synchronous or asynchronous.
 
-With synchronous aggregation, each time a student completes a block, the aggregator code will re-calculate the aggregate completion values immediately. You will always have the freshest results from this API, but at a huge performance cost. Synchronous aggregation is only for development purposes and is not suitable for production. Synchronous aggregation can cause deadlocks when users complete XBlocks, leading to a partial outage of the LMS.
+With synchronous aggregation, each time a student completes a block, the aggregator code will re-calculate the aggregate completion values immediately. You will always have the freshest results from this API, but at a huge performance cost. Synchronous aggregation is only for development purposes and is not suitable for production. **Synchronous aggregation can cause deadlocks when users complete XBlocks, leading to a partial outage of the LMS. Do not use it on a production site.**
 
-With asynchronous aggregation, the aggregator code will re-calculate the aggregate completion values asynchronously, at periodic intervals (e.g. every hour). How often the update can and should be run depends on many factors - you will have to experiment and find what works best and what is possible for your specific Open edX installation.
+With asynchronous aggregation, the aggregator code will re-calculate the aggregate completion values asynchronously, at periodic intervals (e.g. every hour). How often the update can and should be run depends on many factors - you will have to experiment and find what works best and what is possible for your specific Open edX installation. (Running this too often can clog the celery tasks queue, which might require manual intervention.)
 
 It's important to note that in both modes the single-user, single-course API endpoints will always return up-to-date data. However, data that covers multiple users or multiple courses can be slightly out of date, until the aggregates are updated asynchronously.
 
@@ -62,11 +62,11 @@ openedx-completion-aggregator uses the pluggable django app pattern to ease inst
         COMPLETION_AGGREGATOR_ASYNC_AGGREGATION: true
         ...
 
-    Then configure a pair of cron jobs to run ``./manage.py run_aggregator_service`` and ``./manage.py run_aggregator_cleanup`` as often as desired. (Start with hourly and daily, respectively, if you are unsure.) The ``run_aggregator_service`` task is what updates any aggregate completion data values that need to be updated since it was last run. The cleanup task deletes old database entries used to coordinate the aggregation updates, and which can build up over time but are no longer needed.
+    Then configure a pair of cron jobs to run ``./manage.py run_aggregator_service`` and ``./manage.py run_aggregator_cleanup`` as often as desired. (Start with hourly and daily, respectively, if you are unsure.) The ``run_aggregator_service`` task is what updates any aggregate completion data values that need to be updated since it was last run (it will in turn enqueue celery tasks to do the actual updating). The cleanup task deletes old database entries used to coordinate the aggregation updates, and which can build up over time but are no longer needed.
 
 3. A lock is used to prevent overlapping runs of ``run_aggregator_service``. If you have a lot of data on your instance such that a single run of ``run_aggregator_service`` takes longer than 30 minutes, you must configure ``COMPLETION_AGGREGATOR_AGGREGATION_LOCK_TIMEOUT_SECONDS`` to a larger value to prevent releasing the lock too early as a result of a timeout.
 
-4. If the aggregator is installed on an existing instance, then it's sometimes desirable to fill "Aggregate" data for the existing courses. There is the ``reaggregate_course`` management command, which prepares data that will be aggregated during the next ``run_aggregator_service`` run. However, the process of aggregating data for existing courses can place extremely high loads on both your celery workers and your MySQL database, so on large instances this process must be planned with great care. For starters, we recommend you disable any associated cronjobs, scale up your celery worker pool significantly, and scale up your database cluster and storage. To give you some idea, on one Open edX instance this process took 125 hours.
+4. If the aggregator is installed on an existing instance, then it's sometimes desirable to fill "Aggregate" data for the existing courses. There is the ``reaggregate_course`` management command, which prepares data that will be aggregated during the next ``run_aggregator_service`` run. However, the process of aggregating data for existing courses can place extremely high loads on both your celery workers and your MySQL database, so on large instances this process must be planned with great care. For starters, we recommend you disable any associated cron jobs, scale up your celery worker pool significantly, and scale up your database cluster and storage.
 
 
 Design: Technical Details
