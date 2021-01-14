@@ -426,6 +426,10 @@ class CompletionBlockUpdateView(CompletionViewMixin, APIView):
         except (InvalidKeyError, compat.get_item_not_found_error()):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+        if block_key.course_key.run is None:
+            # Old mongo keys must be annotated with course run info before calling submit_completion
+            block_key = block_key.replace(course_key=course_key)
+
         _, created = BlockCompletion.objects.submit_completion(
             user=request.user,
             block_key=block_key,
