@@ -6,7 +6,7 @@ Tests for the `openedx-completion-aggregator` utils module.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import patch
 
 import ddt
@@ -51,5 +51,5 @@ class MakeTimeZoneUnawareTestCase(TestCase):
     )
     def test_make_datetime_timezone_unaware(self, version):
         with patch('django.VERSION', version):
-            date = make_datetime_timezone_unaware(datetime.now())
+            date = make_datetime_timezone_unaware(datetime.now(timezone.utc))
             assert date.tzinfo is None
