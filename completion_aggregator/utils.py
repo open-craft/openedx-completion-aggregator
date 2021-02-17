@@ -6,9 +6,6 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 
-DJANGO_MAJOR_VERSION = django.VERSION[0]
-DJANGO_MINOR_VERSION = django.VERSION[1]
-
 WAFFLE_AGGREGATE_STALE_FROM_SCRATCH = 'completion_aggregator.aggregate_stale_from_scratch'
 
 
@@ -44,7 +41,7 @@ def make_datetime_timezone_unaware(date):
     # pylint: disable=line-too-long
     # Ref: https://github.com/django/django/commit/e707e4c709c2e3f2dad69643eb838f87491891f8#diff-af003fcfed7cfbdeb396f8647ed0f92fR258
     # pylint: enable=line-too-long
-    if DJANGO_MAJOR_VERSION >= 1 and DJANGO_MINOR_VERSION >= 10:
+    if django.VERSION >= (1, 10):
         date = date.astimezone(timezone.utc).replace(tzinfo=None)
     return date
 
