@@ -44,10 +44,10 @@ class MakeTimeZoneUnawareTestCase(TestCase):
     """
 
     @ddt.data(
-        (1, 9, 13),
         (1, 10, 'a1'),
         (1, 10),
         (2, 0, 'a1'),
+        (2, 2),
     )
     def test_make_datetime_timezone_unaware(self, version):
         with patch('django.VERSION', version):
