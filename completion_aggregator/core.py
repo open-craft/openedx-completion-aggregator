@@ -269,6 +269,7 @@ class AggregationUpdater(object):
                     possible=total_possible,
                     percent=percent,
                     last_modified=last_modified,
+                    modified=timezone.now(),
                 )
                 self.aggregators[block] = aggregator
             else:
