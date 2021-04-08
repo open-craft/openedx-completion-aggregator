@@ -4,96 +4,95 @@
 #
 #    pip-compile --no-index --output-file=requirements/quality.txt requirements/quality.in
 #
-amqp==1.4.9               # via kombu
-anyjson==0.3.3            # via kombu
+amqp==2.6.1               # via kombu
 appdirs==1.4.4            # via fs
-argparse==1.4.0           # via caniusepython3
-astroid==1.5.3            # via pylint, pylint-celery
-atomicwrites==1.4.0       # via pytest
-attrs==20.1.0             # via pytest
-backports.functools-lru-cache==1.6.1  # via caniusepython3
-billiard==3.3.0.23        # via celery
-caniusepython3==7.2.0     # via -r requirements/quality.in
-celery==3.1.26.post2      # via -r requirements/base.in, edx-celeryutils
-certifi==2020.6.20        # via requests
-cffi==1.14.2              # via cryptography
-chardet==3.0.4            # via requests
+astroid==2.3.3            # via pylint, pylint-celery
+attrs==20.3.0             # via pytest
+backports.functools-lru-cache==1.6.4  # via caniusepython3
+billiard==3.6.4.0         # via celery
+caniusepython3==7.3.0     # via -r requirements/quality.in
+celery==4.4.7             # via -c requirements/constraints.txt, -r requirements/base.in, edx-celeryutils
+certifi==2020.12.5        # via requests
+cffi==1.14.5              # via cryptography
+chardet==4.0.0            # via requests
 click-log==0.3.2          # via edx-lint
-click==7.1.2              # via click-log, edx-lint
-coverage==5.2.1           # via pytest-cov
-cryptography==3.1         # via pyjwt
-ddt==1.4.1                # via -r requirements/test.in
+click==7.1.2              # via click-log, code-annotations, edx-lint
+code-annotations==1.1.1   # via edx-toggles
+coverage==5.5             # via pytest-cov
+cryptography==3.4.7       # via pyjwt
+ddt==1.4.2                # via -r requirements/test.in
 distlib==0.3.1            # via caniusepython3
-django-braces==1.13.0     # via -c requirements/constraints.txt, django-oauth-toolkit
-django-model-utils==3.1.2  # via -r requirements/base.in, -r requirements/test.in, edx-celeryutils, edx-completion
-django-oauth-toolkit==0.12.0  # via -r requirements/base.in
-django-waffle==0.15.1     # via -c requirements/constraints.txt, edx-django-utils, edx-drf-extensions
-django==2.2.15            # via -r requirements/base.in, django-model-utils, django-oauth-toolkit, djangorestframework, drf-jwt, edx-celeryutils, edx-completion, edx-django-utils, edx-drf-extensions, edx-opaque-keys, jsonfield2, rest-condition
-djangorestframework==3.11.1  # via -r requirements/base.in, drf-jwt, edx-completion, edx-drf-extensions, rest-condition
-drf-jwt==1.17.1           # via edx-drf-extensions
-edx-celeryutils==0.5.1    # via -r requirements/base.in
-edx-completion==3.2.4     # via -r requirements/base.in
-edx-django-utils==3.7.3   # via edx-drf-extensions
-edx-drf-extensions==6.1.1  # via edx-completion
-edx-lint==1.1.2           # via -r requirements/quality.in
-edx-opaque-keys[django]==2.1.1  # via -r requirements/base.in, edx-completion, edx-drf-extensions
+django-crum==0.7.9        # via edx-django-utils, edx-toggles
+django-model-utils==4.1.1  # via -r requirements/base.in, -r requirements/test.in, edx-celeryutils, edx-completion
+django-oauth-toolkit==1.3.2  # via -r requirements/base.in
+django-waffle==2.0.0      # via -c requirements/constraints.txt, edx-django-utils, edx-drf-extensions, edx-toggles
+django==2.2.20            # via -r requirements/base.in, code-annotations, django-crum, django-model-utils, django-oauth-toolkit, djangorestframework, drf-jwt, edx-celeryutils, edx-completion, edx-django-utils, edx-drf-extensions, edx-opaque-keys, edx-toggles, jsonfield2, rest-condition
+djangorestframework==3.12.4  # via -r requirements/base.in, drf-jwt, edx-completion, edx-drf-extensions, rest-condition
+drf-jwt==1.19.0           # via edx-drf-extensions
+edx-celeryutils==0.5.2    # via -c requirements/constraints.txt, -r requirements/base.in
+edx-completion==3.2.5     # via -r requirements/base.in
+edx-django-utils==3.16.0  # via edx-drf-extensions, edx-toggles
+edx-drf-extensions==6.5.0  # via edx-completion
+edx-lint==1.5.2           # via -r requirements/quality.in
+edx-opaque-keys[django]==2.2.0  # via -r requirements/base.in, edx-completion, edx-drf-extensions
+edx-toggles==1.2.2        # via -r requirements/base.in, edx-completion
 freezegun==0.3.15         # via -r requirements/test.in
-fs==2.4.11                # via xblock
+fs==2.4.13                # via xblock
 future==0.18.2            # via edx-celeryutils, pyjwkest
 idna==2.10                # via requests
-importlib-metadata==1.7.0  # via pluggy, pytest
 isort==4.3.21             # via -r requirements/quality.in, pylint
-jsonfield2==4.0.0.post0   # via edx-celeryutils
-kombu==3.0.37             # via celery
-lazy-object-proxy==1.5.1  # via astroid
-lxml==4.5.2               # via xblock
-markupsafe==1.1.1         # via xblock
+jinja2==2.11.3            # via code-annotations
+jsonfield2==3.0.3         # via -c requirements/constraints.txt, edx-celeryutils
+kombu==4.6.11             # via celery
+lazy-object-proxy==1.4.3  # via astroid
+lxml==4.6.3               # via xblock
+markupsafe==1.1.1         # via jinja2, xblock
 mccabe==0.6.1             # via pylint
 mock==3.0.5               # via -r requirements/test.in
 more-itertools==5.0.0     # via -r requirements/test.in, pytest
-mysqlclient==2.0.1        # via -r requirements/base.in
-newrelic==5.16.2.147      # via edx-django-utils
-oauthlib==2.0.1           # via django-oauth-toolkit
-packaging==20.4           # via caniusepython3, pytest
-pathlib2==2.3.5           # via pytest
-pbr==5.4.5                # via stevedore
+mysqlclient==2.0.3        # via -r requirements/base.in
+newrelic==6.2.0.156       # via edx-django-utils
+oauthlib==3.0.1           # via -c requirements/constraints.txt, django-oauth-toolkit
+packaging==20.9           # via caniusepython3, pytest
+pbr==5.6.0                # via stevedore
 pluggy==0.13.1            # via pytest
-psutil==5.7.2             # via edx-django-utils
-py==1.9.0                 # via pytest
-pycodestyle==2.6.0        # via -r requirements/quality.in
+psutil==5.8.0             # via edx-django-utils
+py==1.10.0                # via pytest
+pycodestyle==2.7.0        # via -r requirements/quality.in
 pycparser==2.20           # via cffi
-pycryptodomex==3.9.8      # via pyjwkest
-pydocstyle==5.1.0         # via -r requirements/quality.in
+pycryptodomex==3.10.1     # via pyjwkest
+pydocstyle==6.0.0         # via -r requirements/quality.in
 pyjwkest==1.4.2           # via edx-drf-extensions
-pyjwt[crypto]==1.7.1      # via drf-jwt
+pyjwt[crypto]==2.0.1      # via drf-jwt
 pylint-celery==0.3        # via edx-lint
-pylint-django==0.7.2      # via edx-lint
+pylint-django==2.0.11     # via edx-lint
 pylint-plugin-utils==0.6  # via pylint-celery, pylint-django
-pylint==1.7.6             # via edx-lint, pylint-celery, pylint-django, pylint-plugin-utils
-pymongo==3.11.0           # via edx-opaque-keys
+pylint==2.4.4             # via edx-lint, pylint-celery, pylint-django, pylint-plugin-utils
+pymongo==3.11.3           # via edx-opaque-keys
 pyparsing==2.4.7          # via packaging
-pytest-cov==2.10.1        # via -r requirements/test.in
-pytest-django==3.9.0      # via -r requirements/test.in
-pytest==4.6.11            # via -r requirements/test.in, pytest-cov, pytest-django
+pytest-cov==2.11.1        # via -r requirements/test.in
+pytest-django==4.2.0      # via -r requirements/test.in
+pytest==5.4.3             # via -r requirements/test.in, pytest-cov, pytest-django
 python-dateutil==2.8.1    # via edx-drf-extensions, freezegun, xblock
-pytz==2020.1              # via celery, django, edx-completion, fs, xblock
-pyyaml==5.3.1             # via xblock
+python-slugify==4.0.1     # via code-annotations
+pytz==2021.1              # via celery, django, edx-completion, fs, xblock
+pyyaml==5.4.1             # via code-annotations, xblock
 redis==3.5.3              # via -r requirements/test.in
-requests==2.24.0          # via caniusepython3, edx-drf-extensions, pyjwkest
+requests==2.25.1          # via caniusepython3, django-oauth-toolkit, edx-drf-extensions, pyjwkest
 rest-condition==1.0.3     # via edx-drf-extensions
 semantic-version==2.8.5   # via edx-drf-extensions
-six==1.15.0               # via -r requirements/base.in, astroid, cryptography, django-oauth-toolkit, edx-drf-extensions, edx-lint, edx-opaque-keys, freezegun, fs, mock, more-itertools, packaging, pathlib2, pyjwkest, pylint, pytest, python-dateutil, stevedore, xblock
-snowballstemmer==2.0.0    # via pydocstyle
-sqlparse==0.3.1           # via django
-stevedore==1.32.0         # via edx-django-utils, edx-opaque-keys
-typing==3.7.4.3           # via fs
-urllib3==1.25.10          # via requests
+six==1.15.0               # via -r requirements/base.in, astroid, edx-drf-extensions, edx-lint, freezegun, fs, mock, more-itertools, pyjwkest, python-dateutil, xblock
+snowballstemmer==2.1.0    # via pydocstyle
+sqlparse==0.4.1           # via django
+stevedore==3.3.0          # via code-annotations, edx-django-utils, edx-opaque-keys
+text-unidecode==1.3       # via python-slugify
+urllib3==1.26.4           # via requests
+vine==1.3.0               # via amqp, celery
 wcwidth==0.2.5            # via pytest
-web-fragments==0.3.2      # via xblock
-webob==1.8.6              # via xblock
-wrapt==1.12.1             # via astroid
+web-fragments==1.0.0      # via xblock
+webob==1.8.7              # via xblock
+wrapt==1.11.2             # via astroid
 xblock==1.2.9             # via -r requirements/base.in, edx-completion
-zipp==1.2.0               # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

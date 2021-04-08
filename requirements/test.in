@@ -5,7 +5,7 @@
 ddt			  # Provides test parameterization
 django-model-utils        # Provides TimeStampedModel abstract base class
 mock<4
-pytest<5
+pytest<6
 pytest-cov                # pytest extension for code coverage statistics
 pytest-django             # pytest extension for better Django support
 redis
