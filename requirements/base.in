@@ -5,11 +5,12 @@
 celery            # Asynchronous tasks
 edx-celeryutils      # Custom task extensions
 Django              # Web application framework
-django-oauth-toolkit<1.0
-djangorestframework>=3.0     # API tools
+django-oauth-toolkit<=1.3.2
+djangorestframework>=3.0,<4.0     # API tools
 django-model-utils    # Provides TimeStampedModel abstract base class
 edx-opaque-keys    # Provides CourseKey and UsageKey
-edx-completion>=3
+edx-completion>=3,<4
+edx-toggles<2.0
 mysqlclient               # For connecting to MySQL
 six
 XBlock<1.3

@@ -1,17 +1,17 @@
 language: python
 python:
-- 3.5
+- 3.8
 services:
   - mysql
 env:
 - TOXENV=django22
 matrix:
   include:
-  - python: 3.5
+  - python: 3.8
     env: TOXENV=quality
-  - python: 3.5
+  - python: 3.8
     env: TOXENV=docs
-  - python: 3.5
+  - python: 3.8
     env: TOXENV=django22
 cache:
 - pip
