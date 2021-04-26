@@ -10,7 +10,7 @@ import ddt
 import six
 from mock import PropertyMock, patch
 from oauth2_provider import models as dot_models
-from oauth2_provider.ext.rest_framework import OAuth2Authentication
+from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from opaque_keys.edx.keys import CourseKey
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.pagination import PageNumberPagination
