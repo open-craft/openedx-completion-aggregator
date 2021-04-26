@@ -15,7 +15,7 @@ from ..models import StaleCompletion
 from ..utils import get_active_users
 
 
-@shared_task(task=LoggedTask)
+@shared_task(base=LoggedTask)
 def mark_all_stale(course_key, users=None):
     """
     Mark the specified enrollments as stale for all blocks.
