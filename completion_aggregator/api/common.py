@@ -13,7 +13,7 @@ from ..serializers import course_completion_serializer_factory, is_aggregation_n
 User = get_user_model()  # pylint: disable=invalid-name
 
 
-class UserEnrollments(object):
+class UserEnrollments:
     """
     Class for querying user enrollments
     """
@@ -73,7 +73,7 @@ class UserEnrollments(object):
         return self.queryset.filter(course_id=course_key).exists()
 
 
-class CompletionViewMixin(object):
+class CompletionViewMixin:
     """
     Common functionality for completion views.
     """
@@ -183,7 +183,7 @@ class CompletionViewMixin(object):
                 field for field in self.request.GET.get('requested_fields', '').split(',') if field
             }
         else:
-            fields = {field for field in self.request.data.get('requested_fields', [])}
+            fields = set(self.request.data.get('requested_fields', []))
         invalid = set()
         for field in fields:
             if not (is_aggregation_name(field) or field in self._allowed_requested_fields):

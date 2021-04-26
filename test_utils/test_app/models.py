@@ -41,7 +41,7 @@ class CourseAccessRole(models.Model):
     course_id = CourseKeyField(max_length=255, db_index=True, blank=True)
     role = models.CharField(max_length=64, db_index=True)
 
-    class Meta(object):
+    class Meta:
         unique_together = ('user', 'org', 'course_id', 'role')
 
 
@@ -51,7 +51,7 @@ class CourseUserGroup(models.Model):
     which may be treated specially.  For example, a user can be in at most one cohort per
     course, and cohorts are used to split up the forums by group.
     """
-    class Meta(object):
+    class Meta:
         unique_together = (('name', 'course_id'), )
 
     name = models.CharField(max_length=255,
@@ -82,7 +82,7 @@ class CohortMembership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     course_id = CourseKeyField(max_length=255)
 
-    class Meta(object):
+    class Meta:
         unique_together = (('user', 'course_id'), )
 
 # Copied over from https://github.com/edx-solutions/progress-edx-platform-extensions/blob/master/progress/models.py
@@ -97,5 +97,5 @@ class CourseModuleCompletion(TimeStampedModel):
     content_id = models.CharField(max_length=255, db_index=True)
     stage = models.CharField(max_length=255, null=True, blank=True)
 
-    class Meta(object):
+    class Meta:
         db_table = 'progress_coursemodulecompletion'

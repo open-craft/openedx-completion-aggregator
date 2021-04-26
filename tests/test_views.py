@@ -64,7 +64,7 @@ def _create_oauth2_token(user):
     return dot_access_token.token
 
 
-class CompletionAPITestMixin(object):
+class CompletionAPITestMixin:
     """
     Common utility functions for completion tests
     """

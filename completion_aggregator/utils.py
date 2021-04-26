@@ -9,7 +9,7 @@ from django.utils.translation import ugettext as _
 WAFFLE_AGGREGATE_STALE_FROM_SCRATCH = 'completion_aggregator.aggregate_stale_from_scratch'
 
 
-class BagOfHolding(object):
+class BagOfHolding:
     """
     A container that contains everything.
     """

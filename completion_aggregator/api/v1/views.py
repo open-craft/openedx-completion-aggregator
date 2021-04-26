@@ -166,7 +166,7 @@ class CompletionListView(CompletionViewMixin, APIView):
         """
         Handler for GET requests.
         """
-        paginator = self.pagination_class()  # pylint: disable=not-callable
+        paginator = self.pagination_class()
         mobile_only = self.request.query_params.get('mobile_only', 'false').lower() == 'true'
 
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.
@@ -366,7 +366,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             course_key = CourseKey.from_string(course_key)
         except InvalidKeyError:
             raise NotFound("Invalid course key: '{}'.".format(course_key))
-        paginator = self.pagination_class()  # pylint: disable=not-callable
+        paginator = self.pagination_class()
         requested_fields = self.get_requested_fields()
 
         # Recalculate stale completions only if a single user's data was requested.

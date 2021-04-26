@@ -78,8 +78,6 @@ class Command(BaseCommand):
                 batch_size=10000,
             )
 
-        return
-
     def set_logging(self, verbosity):
         """
         Set the logging level depending on the desired vebosity

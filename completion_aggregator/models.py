@@ -214,7 +214,7 @@ class Aggregator(TimeStampedModel):
 
     objects = AggregatorManager()
 
-    class Meta(object):
+    class Meta:
         """
         Metadata describing the Aggregator model.
         """
@@ -303,6 +303,8 @@ class StaleCompletion(TimeStampedModel):
 
 @python_2_unicode_compatible
 class CacheGroupInvalidation(models.Model):
+    """TODO: Add docstring."""
+
     group = models.CharField(max_length=150, unique=True)
     invalidated_at = models.DateTimeField(db_index=True)
 
