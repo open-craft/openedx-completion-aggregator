@@ -30,7 +30,7 @@ UPDATE completion_blockcompletion completion, progress_coursemodulecompletion pr
 log = logging.getLogger(__name__)
 
 
-@shared_task(task=LoggedTask)
+@shared_task(base=LoggedTask)
 def update_aggregators(username, course_key, block_keys=(), force=False):
     """
     Update aggregators for the specified enrollment (user + course).
