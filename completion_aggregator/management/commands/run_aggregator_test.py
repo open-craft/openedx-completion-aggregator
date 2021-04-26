@@ -185,6 +185,7 @@ class Command(BaseCommand):
                 )
 
     def _complete_random_blocks_for_users(self, blocks, users):
+        """TODO: Add docstring."""
         completions_left = self.completions_count
         max_completions_per_user = 2 * (self.completions_count // len(users))
         for user in users:
@@ -197,6 +198,7 @@ class Command(BaseCommand):
             self._complete_blocks_for_users(blocks_to_complete, [user])
 
     def _assert_vertical_completion_for_all_users(self, vertical, expected_completion):
+        """TODO: Add docstring."""
         for user in self.users:
             vertical_completion = Aggregator.objects.get(
                 user=user, course_key=self.course.id, block_key=vertical.location

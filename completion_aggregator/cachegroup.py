@@ -18,7 +18,7 @@ DELETE_INVALIDATIONS_AFTER = timedelta(days=90)
 _CacheGroupEntry = namedtuple('_CacheGroupEntry', ['group', 'value', 'cached_at'])
 
 
-class CacheGroup(object):
+class CacheGroup:
     """
     Cache class that assigns cache entries to groups.
 

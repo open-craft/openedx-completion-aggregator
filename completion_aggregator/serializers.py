@@ -54,7 +54,7 @@ def is_aggregation_name(category):
     return get_completion_mode(cls) == XBlockCompletionMode.AGGREGATOR
 
 
-class AggregatorAdapter(object):
+class AggregatorAdapter:
     """
     Adapter for presenting Aggregators to the serializer.
 
@@ -238,7 +238,7 @@ class CourseCompletionSerializer(serializers.Serializer):
 
     optional_fields = {'mean', 'username'}
 
-    def __init__(self, instance, requested_fields=frozenset(), *args, **kwargs):
+    def __init__(self, instance, *args, requested_fields=frozenset(), **kwargs):
         """
         Initialize a course completion serializer.
 
@@ -299,7 +299,7 @@ class CourseCompletionStatsSerializer(serializers.Serializer):
 
     optional_fields = {'mean'}
 
-    def __init__(self, instance, requested_fields=frozenset(), *args, **kwargs):
+    def __init__(self, instance, *args, requested_fields=frozenset(), **kwargs):
         """
         Initialize a course completion stats serializer.
 

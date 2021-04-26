@@ -15,7 +15,7 @@ from completion.models import BlockCompletion
 from .test_app.models import CohortMembership, CourseAccessRole, CourseEnrollment, CourseUserGroup
 
 
-class StubCompat(object):
+class StubCompat:
     """
     An AggregationUpdater with connections to edx-platform and modulestore
     replaced with local elements.
@@ -124,7 +124,7 @@ class StubCompat(object):
 CourseTreeNode = collections.namedtuple('CourseTreeNode', ['block', 'children'])
 
 
-class CompatCourseBlocks(object):
+class CompatCourseBlocks:
     """
     Given a list of blocks, creates a course tree for testing.
 

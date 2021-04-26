@@ -502,6 +502,7 @@ class PartialUpdateTest(TestCase):
             block_key=self.blocks[4],
             completion=0.75,
         )
+        # pylint: disable=pointless-string-statement
         '''
             Queries are for the following table
             * Select
@@ -512,7 +513,7 @@ class PartialUpdateTest(TestCase):
                 - completion_aggregator_aggregator (insert aggregation data)
             * Update query
                 - completion_aggregator_stalecompletion (user specific)
-        '''   # pylint: disable=pointless-string-statement
+        '''
 
         with self.assertNumQueries(5):
             aggregation_tasks.update_aggregators(self.user.username, six.text_type(self.course_key), {

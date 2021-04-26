@@ -61,7 +61,7 @@ class AggregatorAnnotationTransformer(BlockStructureTransformer):
             completion_mode = getattr(parent_block, 'completion_mode', XBlockCompletionMode.COMPLETABLE)
             if completion_mode == XBlockCompletionMode.EXCLUDED:
                 continue
-            elif completion_mode == XBlockCompletionMode.AGGREGATOR:
+            if completion_mode == XBlockCompletionMode.AGGREGATOR:
                 aggregators.add(parent)
             aggregators.update(self.get_block_aggregators(block_structure, parent))
         return aggregators

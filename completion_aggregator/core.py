@@ -33,7 +33,7 @@ CompletionStats = namedtuple('CompletionStats', ['earned', 'possible', 'last_mod
 log = logging.getLogger(__name__)
 
 
-class UpdaterCache(object):
+class UpdaterCache:
     """
     Cache course blocks for Aggregation Updater.
 
@@ -87,7 +87,7 @@ class UpdaterCache(object):
 CourseBlocksEntry = namedtuple('CourseBlocksEntry', ['children', 'aggregators'])
 
 
-class AggregationUpdater(object):
+class AggregationUpdater:
     """
     Class to update aggregators for a given course and user.
     """

@@ -167,7 +167,7 @@ class CompletionListView(CompletionViewMixin, APIView):
         if 'username' not in request.query_params and not request.user.is_staff:
             self._effective_user = request.user
 
-        paginator = self.pagination_class()  # pylint: disable=not-callable
+        paginator = self.pagination_class()
         mobile_only = (self.request.query_params.get('mobile_only', 'false')).lower() == 'true'
 
         # Paginate the list of active enrollments, annotated (manually) with a student progress object.

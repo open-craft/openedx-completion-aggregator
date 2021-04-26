@@ -136,7 +136,7 @@ def perform_cleanup():
         settings.COMPLETION_AGGREGATOR_CLEANUP_LOCK_TIMEOUT_SECONDS
     ):
         log.warning("Cleanup is already running. Exiting.")
-        return
+        return None
 
     deleted = models.StaleCompletion.objects.filter(resolved=True).delete()
     cache.delete(settings.COMPLETION_AGGREGATOR_CLEANUP_LOCK)  # Release the lock.
