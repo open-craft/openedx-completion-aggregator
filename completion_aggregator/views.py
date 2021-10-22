@@ -19,12 +19,32 @@ class CompletionProgressBarView(LoginRequiredMixin, TemplateView):
     """
     View to display the progress bar of a student in a course
     """
+    def __get_user_completion(self, username, chapter_id, results):
+        """
+        Return the user completion percentage, using the completion response.
+
+        In case the user completion cannot be returned as a result of missing user completion, we return None,
+        indicating its absence.
+        """
+        user_completion = next(filter(lambda r: r.get('username') == username, results), None)
+
+        # No completion returned, hence we cannot get the percentage either
+        # Indicate no user completion by returning None
+        if not user_completion:
+            return None
+
+        if chapter_id:
+            chapters = user_completion['chapter']
+            chapter = next(filter(lambda c: c['block_key'].split('@')[-1] == chapter_id, chapters), None)
+
+        completion_kind = chapter if chapter_id else user_completion
+        return float(completion_kind['completion']['percent']) * 100
+
     @xframe_options_exempt
     def get(self, request, course_key, chapter_id=None):
         """
         Fetch progress and render the template.
         """
-        username = request.user.username
         completion_percentage = 0
         if chapter_id is not None:
             new_req = request.GET.copy()
@@ -33,22 +53,13 @@ class CompletionProgressBarView(LoginRequiredMixin, TemplateView):
         completion_resp = CompletionDetailView.as_view()(request, course_key).data
         if completion_resp:
             results = completion_resp.get('results')
-            for user_completion_dict in results:
-                if user_completion_dict.get('username') == username:
-                    if chapter_id is not None:
-                        chapters = user_completion_dict['chapter']
-                        for chapter in chapters:
-                            block_id = chapter['block_key'].split('@')[-1]
-                            if block_id == chapter_id:
-                                completion_percentage = float(chapter['completion']['percent']) * 100
-                    else:
-                        completion_percentage = float(user_completion_dict['completion']['percent']) * 100
+            user_completion_percentage = self.__get_user_completion(request.user.username, chapter_id, results)
 
-        if chapter_id is not None:
-            return render(request, 'chapter_completion_progress_bar.html', {
-                'chapter_completion_percentage': completion_percentage,
-            })
-        else:
-            return render(request, 'completion_progress_bar.html', {
-                'completion_percentage': completion_percentage,
-            })
+            if user_completion_percentage:
+                completion_percentage = user_completion_percentage
+
+        template = 'chapter_completion_progress_bar.html' if chapter_id is not None else 'completion_progress_bar.html'
+        return render(request, template, {
+            'completion_percentage': completion_percentage,
+        })
+  
