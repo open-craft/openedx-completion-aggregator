@@ -60,4 +60,4 @@ class CompletionProgressBarView(LoginRequiredMixin, TemplateView):
             chapter = next(filter(lambda c: c['block_key'].split('@')[-1] == chapter_id, chapters), None)
 
         completion_kind = chapter if chapter_id else user_completion
-        return float(completion_kind['completion']['percent']) * 100
+        return round(float(completion_kind['completion']['percent']) * 100, 2)
