@@ -25,14 +25,15 @@ class CompletionProgressBarView(LoginRequiredMixin, TemplateView):
         Fetch progress and render the template.
         """
         completion_percentage = 0
+        new_req = request.GET.copy()
+        new_req['username'] = request.user.username
         if chapter_id is not None:
-            new_req = request.GET.copy()
             new_req['requested_fields'] = "chapter"
-            request.GET = new_req
+        request.GET = new_req
         completion_resp = CompletionDetailView.as_view()(request, course_key).data
         if completion_resp:
             results = completion_resp.get('results')
-            user_completion_percentage = self._get_user_completion(request.user.username, chapter_id, results)
+            user_completion_percentage = self._get_user_completion(chapter_id, results)
 
             if user_completion_percentage:
                 completion_percentage = user_completion_percentage
@@ -42,13 +43,16 @@ class CompletionProgressBarView(LoginRequiredMixin, TemplateView):
             'completion_percentage': completion_percentage,
         })
 
-    def _get_user_completion(self, username, chapter_id, results):
+    def _get_user_completion(self, chapter_id, results):
         """
         Return the user completion percentage, using the completion response.
         In case the user completion cannot be returned as a result of missing user completion, we return None,
         indicating its absence.
         """
-        user_completion = next(filter(lambda r: r.get('username') == username, results), None)
+        if not results:
+            return None
+
+        user_completion = next(filter(lambda r: r, results), None)
 
         # No completion returned, hence we cannot get the percentage either
         # Indicate no user completion by returning None
@@ -60,4 +64,8 @@ class CompletionProgressBarView(LoginRequiredMixin, TemplateView):
             chapter = next(filter(lambda c: c['block_key'].split('@')[-1] == chapter_id, chapters), None)
 
         completion_kind = chapter if chapter_id else user_completion
-        return round(float(completion_kind['completion']['percent']) * 100, 2)
+
+        if not completion_kind:
+            return None
+
+        return round(float(completion_kind['completion']['percent']) * 100)
