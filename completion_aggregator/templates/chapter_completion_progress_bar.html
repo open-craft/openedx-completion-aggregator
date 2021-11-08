@@ -1,0 +1,13 @@
+{% load i18n %}
+<div id="chapter-progress-wrapper" style="display: flex;">
+    <label for="chapter-progress-bar" style="padding-right: 10px; white-space: nowrap;">
+        {% trans 'Chapter progress:' as tmsg %}{{tmsg|force_escape}}
+    </label>
+    <span style="padding-right: 5px;">0%</span>
+    <div class="progress" style="overflow: hidden; background-color: #f5f5f5; border-radius: 10px; color: white; text-align: end; height: 18px; width: 100%">
+        <div id="progress-bar" role="progressbar" aria-valuenow="{{completion_percentage}}" aria-valuemin="0" aria-valuemax="100" style="background-color: green; width: {{completion_percentage}}%">
+		{{completion_percentage}}%
+	</div>
+    </div>
+    <span style="padding-left: 5px;">100%</span>
+</div>
