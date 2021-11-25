@@ -107,7 +107,7 @@ def course_enrollment_model():
     Return the student.models.CourseEnrollment model.
     """
     # pragma: no-cover
-    from student.models import CourseEnrollment  # pylint: disable=import-error
+    from common.djangoapps.student.models import CourseEnrollment  # pylint: disable=import-error
     return CourseEnrollment
 
 
@@ -165,7 +165,7 @@ def course_access_role_model():
     Return the student.models.CourseAccessRole model.
     """
     # pragma: no-cover
-    from student.models import CourseAccessRole  # pylint: disable=import-error
+    from common.djangoapps.student.models import CourseAccessRole  # pylint: disable=import-error
     return CourseAccessRole
 
 
