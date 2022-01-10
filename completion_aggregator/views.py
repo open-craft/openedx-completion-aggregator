@@ -5,9 +5,11 @@ from __future__ import absolute_import, unicode_literals
 
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 from django.shortcuts import render
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import TemplateView
+from rest_framework import status
 from xblockutils.resources import ResourceLoader
 
 from .api.v1.views import CompletionDetailView
@@ -30,9 +32,11 @@ class CompletionProgressBarView(LoginRequiredMixin, TemplateView):
         if chapter_id is not None:
             new_req['requested_fields'] = "chapter"
         request.GET = new_req
-        completion_resp = CompletionDetailView.as_view()(request, course_key).data
-        if completion_resp:
-            results = completion_resp.get('results')
+        with transaction.atomic():
+            completion_resp = CompletionDetailView.as_view()(request, course_key)
+
+        if completion_resp.response_code == status.HTTP_200_OK:
+            results = completion_resp.data.get('results')
             user_completion_percentage = self._get_user_completion(chapter_id, results)
 
             if user_completion_percentage:
