@@ -32,10 +32,10 @@ class CompletionProgressBarView(LoginRequiredMixin, TemplateView):
             new_req['requested_fields'] = "chapter"
         request.GET = new_req
         with transaction.atomic():
-            completion_resp = CompletionDetailView.as_view()(request, course_key)
+            completion_resp = CompletionDetailView.as_view()(request, course_key).data
 
-        if completion_resp.data:
-            results = completion_resp.data.get('results')
+        if completion_resp:
+            results = completion_resp.get('results')
             user_completion_percentage = self._get_user_completion(chapter_id, results)
 
             if user_completion_percentage:
