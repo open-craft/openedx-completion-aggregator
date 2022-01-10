@@ -9,7 +9,6 @@ from django.db import transaction
 from django.shortcuts import render
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import TemplateView
-from rest_framework import status
 from xblockutils.resources import ResourceLoader
 
 from .api.v1.views import CompletionDetailView
@@ -35,7 +34,7 @@ class CompletionProgressBarView(LoginRequiredMixin, TemplateView):
         with transaction.atomic():
             completion_resp = CompletionDetailView.as_view()(request, course_key)
 
-        if completion_resp.response_code == status.HTTP_200_OK:
+        if completion_resp.data:
             results = completion_resp.data.get('results')
             user_completion_percentage = self._get_user_completion(chapter_id, results)
 
