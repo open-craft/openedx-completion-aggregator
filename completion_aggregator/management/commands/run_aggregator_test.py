@@ -22,7 +22,7 @@ from ...signals import course_published_handler, item_deleted_handler
 
 try:
     import numpy
-    from student.tests.factories import UserFactory, CourseEnrollmentFactory
+    from common.djangoapps.student.tests.factories import UserFactory, CourseEnrollmentFactory
     from xmodule.modulestore import ModuleStoreEnum
     from xmodule.modulestore.django import SignalHandler, modulestore
 except ImportError:

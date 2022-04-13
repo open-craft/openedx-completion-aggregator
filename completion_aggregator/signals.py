@@ -44,7 +44,7 @@ def register():
         COHORT_MEMBERSHIP_UPDATED.connect(cohort_updated_handler)
 
     try:
-        from student.signals.signals import ENROLLMENT_TRACK_UPDATED
+        from common.djangoapps.student.signals.signals import ENROLLMENT_TRACK_UPDATED
     except ImportError:
         log.info(ginkgo_error_template, "ENROLLMENT_TRACK_UPDATED")
     else:
