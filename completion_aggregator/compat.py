@@ -55,6 +55,14 @@ def get_item_not_found_error():
     return ItemNotFoundError
 
 
+def get_transformers(user):
+    from lms.djangoapps.course_blocks.api import get_course_block_access_transformers, get_course_blocks  # pylint: disable=import-error
+
+    transformers = get_course_block_access_transformers(user)
+    transformers.pop(2)
+    return transformers
+
+
 def init_course_blocks(user, root_block_key):
     """
     Return a BlockStructure representing the course.
@@ -69,7 +77,7 @@ def init_course_blocks(user, root_block_key):
     from openedx.core.djangoapps.content.block_structure.transformers import BlockStructureTransformers  # pylint: disable=import-error
 
     transformers = BlockStructureTransformers(
-        get_course_block_access_transformers(user) + [AggregatorAnnotationTransformer()]
+        get_transformers(user) + [AggregatorAnnotationTransformer()]
     )
 
     return get_course_blocks(user, root_block_key, transformers)

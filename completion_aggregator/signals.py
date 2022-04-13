@@ -33,6 +33,7 @@ def register():
     else:
         SignalHandler.course_published.connect(course_published_handler)
         SignalHandler.item_deleted.connect(item_deleted_handler)
+        SignalHandler.library_updated.connect(library_updated_handler)
 
     ginkgo_error_template = "%s signal not found. If this is a solutions/ginkgo server, this is expected."
 
@@ -77,6 +78,7 @@ def course_published_handler(course_key, **kwargs):
     Update aggregators when a general course change happens.
     """
     log.debug("Updating aggregators due to course_published signal")
+    import ipdb; ipdb.set_trace()
     course_str = six.text_type(course_key)
     handler_tasks.mark_all_stale.delay(course_key=course_str)
 
@@ -89,6 +91,9 @@ def cohort_updated_handler(user, course_key, **kwargs):
     course_str = six.text_type(course_key)
     handler_tasks.mark_all_stale.delay(course_key=course_str, users=[user.username])
 
+
+def library_updated_handler(*args, **kwargs):
+    import ipdb; ipdb.set_trace()
 
 def completion_updated_handler(signal, sender, instance, created, raw, using, update_fields, **kwargs):
     """
