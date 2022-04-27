@@ -14,3 +14,4 @@ edx-toggles<2.0
 mysqlclient               # For connecting to MySQL
 six
 XBlock<1.3
+xblock-utils==2.2.0
