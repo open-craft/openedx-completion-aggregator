@@ -13,8 +13,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import connection, models
 from django.db.models.signals import pre_save
-from django.utils.encoding import python_2_unicode_compatible
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from model_utils.models import TimeStampedModel
 
@@ -195,7 +194,6 @@ class AggregatorManager(models.Manager):
                     cur.executemany(INSERT_OR_UPDATE_AGGREGATOR_QUERY, aggregation_data)
 
 
-@python_2_unicode_compatible
 class Aggregator(TimeStampedModel):
     """
     Aggregators are blocks that contain other blocks, are not themselves completable.
@@ -268,7 +266,6 @@ pre_save.connect(
 )
 
 
-@python_2_unicode_compatible
 class StaleCompletion(TimeStampedModel):
     """
     Tracking model for aggregation work that needs to be done.
@@ -301,7 +298,6 @@ class StaleCompletion(TimeStampedModel):
         return ''.join(parts)
 
 
-@python_2_unicode_compatible
 class CacheGroupInvalidation(models.Model):
     """TODO: Add docstring."""
 

@@ -4,7 +4,7 @@ python:
 services:
   - mysql
 env:
-- TOXENV=django22
+- TOXENV=django32
 matrix:
   include:
   - python: 3.8
@@ -12,7 +12,7 @@ matrix:
   - python: 3.8
     env: TOXENV=docs
   - python: 3.8
-    env: TOXENV=django22
+    env: TOXENV=django32
 cache:
 - pip
 before_install:

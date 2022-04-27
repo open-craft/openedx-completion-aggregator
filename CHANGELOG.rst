@@ -13,6 +13,9 @@ Change Log
 
 Unreleased
 ~~~~~~~~~~
+* Add Maple support.
+* Drop support for Python 2.
+* Drop support for Django 2.X
 
 [3.2.0] - 2021-11-26
 ~~~~~~~~~~~~~~~~~~~~
