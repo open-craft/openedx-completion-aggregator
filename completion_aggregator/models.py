@@ -4,6 +4,7 @@ Database models for completion aggregator.
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
+from six import python_2_unicode_compatible
 
 from opaque_keys.edx.django.models import CourseKeyField, UsageKeyField
 from opaque_keys.edx.keys import CourseKey, UsageKey
@@ -13,7 +14,6 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import connection, models
 from django.db.models.signals import pre_save
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext as _
 
 from model_utils.models import TimeStampedModel
