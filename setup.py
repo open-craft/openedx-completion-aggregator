@@ -49,7 +49,7 @@ setup(
     ],
     include_package_data=True,
     install_requires=[
-        "Django>=2.2,<2.3",
+        "Django>=3.2,<3.3",
         "django-model-utils>=3.1.2",
         "djangorestframework",
         "XBlock>=1.2.2",
@@ -64,7 +64,7 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Framework :: Django',
-        'Framework :: Django :: 2.2',
+        'Framework :: Django :: 3.2',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
         'Natural Language :: English',

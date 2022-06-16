@@ -12,4 +12,4 @@ class TestAppConfig(AppConfig):
     Configuration for the test_app.
     """
 
-    name = 'test_app'
+    name = 'test_utils.test_app'

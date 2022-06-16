@@ -16,6 +16,9 @@ class CourseEnrollment(models.Model):
     """
     Provides an equivalent for the edx-platform CourseEnrollment model.
     """
+    class Meta:
+        app_label = "test_app"
+
     is_active = models.BooleanField(default=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
     course_id = CourseKeyField(max_length=255)
@@ -43,6 +46,7 @@ class CourseAccessRole(models.Model):
 
     class Meta:
         unique_together = ('user', 'org', 'course_id', 'role')
+        app_label = "test_app"
 
 
 class CourseUserGroup(models.Model):
@@ -53,6 +57,7 @@ class CourseUserGroup(models.Model):
     """
     class Meta:
         unique_together = (('name', 'course_id'), )
+        app_label = "test_app"
 
     name = models.CharField(max_length=255,
                             help_text=("What is the name of this group?  "
@@ -84,8 +89,11 @@ class CohortMembership(models.Model):
 
     class Meta:
         unique_together = (('user', 'course_id'), )
+        app_label = "test_app"
 
 # Copied over from https://github.com/edx-solutions/progress-edx-platform-extensions/blob/master/progress/models.py
+
+
 class CourseModuleCompletion(TimeStampedModel):
     """
     The CourseModuleCompletion model contains user, course, module information
@@ -99,3 +107,4 @@ class CourseModuleCompletion(TimeStampedModel):
 
     class Meta:
         db_table = 'progress_coursemodulecompletion'
+        app_label = "test_app"
