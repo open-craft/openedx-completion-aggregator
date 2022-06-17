@@ -24,12 +24,12 @@ class AggregatorTestCase(TestCase):
     """
     Tests of the Aggregator model
     """
-    BLOCK_KEY = u'block-v1:edx+test+run+type@video+block@doggos'
+    BLOCK_KEY = 'block-v1:edx+test+run+type@video+block@doggos'
     BLOCK_KEY_OBJ = UsageKey.from_string(BLOCK_KEY)
     COURSE_KEY_OBJ = UsageKey.from_string(BLOCK_KEY).course_key
 
     def setUp(self):
-        super(AggregatorTestCase, self).setUp()
+        super().setUp()
         self.user = get_user_model().objects.create(username='testuser')
 
     def test_submit_completion_with_invalid_user(self):
@@ -125,12 +125,8 @@ class AggregatorTestCase(TestCase):
             last_modified=now(),
         )
         expected_string = (
-            'Aggregator: {username}, {course_key}, {block_key}: {expected_percent}'.format(
-                username=self.user.username,
-                course_key=six.text_type(block_key_obj.course_key),
-                block_key=six.text_type(block_key_obj),
-                expected_percent=expected_percent,
-            )
+            f'Aggregator: {self.user.username}, {six.text_type(block_key_obj.course_key)}, '
+            f'{six.text_type(block_key_obj)}: {expected_percent}'
         )
         self.assertEqual(six.text_type(obj), expected_string)
 
@@ -153,7 +149,7 @@ class AggregatorTestCase(TestCase):
         # Changes the block_key. This creates a new object.
         (
             BLOCK_KEY_OBJ, 'course', 0.5, 1, 0.5,
-            UsageKey.from_string(u'block-v1:edX+DemoX+Demo_Course+type@sequential+block@workflow'),
+            UsageKey.from_string('block-v1:edX+DemoX+Demo_Course+type@sequential+block@workflow'),
             'course', 0.5, 1, 0.5, True
         ),
     )

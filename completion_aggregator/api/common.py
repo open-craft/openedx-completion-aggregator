@@ -10,7 +10,7 @@ from .. import compat
 from ..models import Aggregator
 from ..serializers import course_completion_serializer_factory, is_aggregation_name
 
-User = get_user_model()  # pylint: disable=invalid-name
+User = get_user_model()
 
 
 class UserEnrollments:
@@ -91,8 +91,8 @@ class CompletionViewMixin:
         Allow users authenticated via OAuth2 or normal session authentication.
         """
         try:
-            from openedx.core.lib.api.authentication import OAuth2AuthenticationAllowInactiveUser
-            from openedx.core.lib.api.authentication import SessionAuthenticationAllowInactiveUser
+            from openedx.core.lib.api.authentication import (OAuth2AuthenticationAllowInactiveUser,
+                                                             SessionAuthenticationAllowInactiveUser)
         except ImportError:
             from edx_rest_framework_extensions.auth.session.authentication import SessionAuthenticationAllowInactiveUser
 
@@ -144,8 +144,8 @@ class CompletionViewMixin:
             if self.request.user.is_staff:
                 try:
                     user = User.objects.get(username=requested_username)
-                except User.DoesNotExist:
-                    raise NotFound()
+                except User.DoesNotExist as exc:
+                    raise NotFound() from exc
             else:
                 if self.request.user.username.lower() == requested_username.lower():
                     user = self.request.user

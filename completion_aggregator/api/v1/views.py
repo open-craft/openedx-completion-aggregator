@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import re
 from collections import defaultdict
 
-import waffle
+import waffle  # pylint: disable=invalid-django-waffle-import
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey, UsageKey
 from rest_framework.exceptions import NotFound, ParseError
@@ -203,7 +203,7 @@ class CompletionListView(CompletionViewMixin, APIView):
             requested_fields=self.get_requested_fields(),
             many=True
         )
-        return paginator.get_paginated_response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)  # pylint: disable=no-member
 
 
 class CompletionDetailView(CompletionViewMixin, APIView):
@@ -364,8 +364,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         """
         try:
             course_key = CourseKey.from_string(course_key)
-        except InvalidKeyError:
-            raise NotFound("Invalid course key: '{}'.".format(course_key))
+        except InvalidKeyError as exc:
+            raise NotFound(f"Invalid course key: '{course_key}'.") from exc
         paginator = self.pagination_class()
         requested_fields = self.get_requested_fields()
 
@@ -381,10 +381,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         else:
             if not UserEnrollments(self.user).is_enrolled(course_key):
                 # Return 404 if effective user does not have an active enrollment in the requested course
-                raise NotFound(
-                    "User '{user}' does not have an active enrollment in course '{course_key}'."
-                    .format(user=self.user, course_key=course_key)
-                )
+                raise NotFound(f"User '{self.user}' does not have an active enrollment in course '{course_key}'.")
             is_stale = StaleCompletion.objects.filter(
                 username=self.user.username,
                 course_key=course_key,
@@ -404,8 +401,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         if root_block:
             try:
                 root_block = UsageKey.from_string(root_block).map_into_course(course_key)
-            except InvalidKeyError:
-                raise NotFound("Invalid block key: '{}'.".format(root_block))
+            except InvalidKeyError as exc:
+                raise NotFound(f"Invalid block key: '{root_block}'.") from exc
 
         if is_stale and waffle.flag_is_active(self.request, WAFFLE_AGGREGATE_STALE_FROM_SCRATCH):
             aggregator_queryset = []
@@ -434,7 +431,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             requested_fields=requested_fields,
             many=True
         )
-        return paginator.get_paginated_response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)  # pylint: disable=no-member
 
     def get(self, request, course_key):
         """
@@ -539,12 +536,8 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         if cohort_filter is not None:
             try:
                 cohort_filter = int(cohort_filter)
-            except TypeError:
-                raise ParseError(
-                    'could not parse cohort_filter={!r} as an integer'.format(
-                        cohort_filter,
-                    )
-                )
+            except TypeError as exc:
+                raise ParseError(f'could not parse cohort_filter={cohort_filter!r} as an integer') from exc
         return cohort_filter
 
     def get(self, request, course_key):
@@ -553,8 +546,8 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         """
         try:
             course_key = CourseKey.from_string(course_key)
-        except InvalidKeyError:
-            raise NotFound("Invalid course key: '{}'.".format(course_key))
+        except InvalidKeyError as exc:
+            raise NotFound(f"Invalid course key: '{course_key}'.") from exc
         requested_fields = self.get_requested_fields()
         roles_to_exclude = self.request.query_params.get('exclude_roles', '').split(',')
         cohort_filter = self._parse_cohort_filter(
@@ -581,4 +574,4 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
             requested_fields=requested_fields,
         )
 
-        return JsonResponse({'results': [serializer.data]}, status=200)
+        return JsonResponse({'results': [serializer.data]}, status=200)  # pylint: disable=no-member

@@ -8,11 +8,13 @@ import collections
 
 from mock import MagicMock
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 from completion.models import BlockCompletion
 
 from .test_app.models import CohortMembership, CourseAccessRole, CourseEnrollment, CourseUserGroup
+
+User = get_user_model()
 
 
 class StubCompat:
@@ -52,7 +54,7 @@ class StubCompat:
         Returns a list of aggregator blocks that contain the specified block.
         """
 
-        return [agg for agg in course_blocks.blocks if block.block_id.startswith('{}-'.format(agg.block_id))]
+        return [agg for agg in course_blocks.blocks if block.block_id.startswith(f'{agg.block_id}-')]
 
     def get_block_completions(self, user, course_key):
         """

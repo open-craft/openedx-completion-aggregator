@@ -1,0 +1,8 @@
+# Requirements for running tests in Travis
+
+codecov                   # Code coverage reporting
+tox                       # Virtualenv management for tests
+tox-battery==0.6.1        # Makes tox aware of requirements file changes; restricted by https://github.com/signalpillar/tox-battery/issues/6
+twine                     # Allows easier PyPI package management
+build                     # Build Python packages properly with wheel support
+wheel                     # Build wheels

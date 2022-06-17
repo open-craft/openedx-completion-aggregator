@@ -11,7 +11,7 @@ import mock
 from freezegun import freeze_time
 from opaque_keys.edx.keys import CourseKey
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import connection
 from django.test import TestCase, override_settings
 
@@ -19,6 +19,8 @@ from completion.models import BlockCompletion
 from completion_aggregator.tasks.aggregation_tasks import _migrate_batch
 from test_utils.compat import StubCompat
 from test_utils.test_app.models import CourseModuleCompletion
+
+User = get_user_model()
 
 
 @ddt.ddt
@@ -34,11 +36,11 @@ class MigrateProgressTestCase(TestCase):
     """
 
     def setUp(self):
-        super(MigrateProgressTestCase, self).setUp()
+        super().setUp()
         self.user = user = User.objects.create_user("test", password="test")
         self.course_key = course_key = CourseKey.from_string('course-v1:edx+course+test')
         self.block_keys = block_keys = [
-            course_key.make_usage_key('html', 'course-html{}'.format(idx))
+            course_key.make_usage_key('html', f'course-html{idx}')
             for idx in range(1, 51)
         ]
         stubcompat = StubCompat([course_key.make_usage_key('course', 'course')] + block_keys)
@@ -48,8 +50,8 @@ class MigrateProgressTestCase(TestCase):
             self.addCleanup(patch.stop)
 
         for idx in range(1, 51):
-            block_key = course_key.make_usage_key('html', 'course-html{}'.format(idx))
-            with freeze_time("2020-02-02T02:02:{}".format(idx)):
+            block_key = course_key.make_usage_key('html', f'course-html{idx}')
+            with freeze_time(f"2020-02-02T02:02:{idx}"):
                 CourseModuleCompletion.objects.create(
                     id=idx,
                     user=user,

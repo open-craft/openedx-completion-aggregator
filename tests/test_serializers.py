@@ -10,7 +10,7 @@ from mock import patch
 from opaque_keys.edx.keys import CourseKey
 from xblock.core import XBlock
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
@@ -18,6 +18,8 @@ from completion_aggregator import models, serializers
 from completion_aggregator.core import AggregationUpdater
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubSequential
+
+User = get_user_model()
 
 stub_compat = StubCompat([
     CourseKey.from_string('course-v1:abc+def+ghi').make_usage_key('course', 'course'),
@@ -29,7 +31,7 @@ class AggregatorAdapterTestCase(TestCase):
     Test the behavior of the AggregatorAdapter
     """
     def setUp(self):
-        super(AggregatorAdapterTestCase, self).setUp()
+        super().setUp()
         self.test_user = User.objects.create()
         self.course_key = CourseKey.from_string("course-v1:z+b+c")
 
@@ -73,6 +75,7 @@ def _course_completion_serializer_factory(serializer_cls_args):
     )
 
 
+# pylint: disable=no-member
 @ddt.ddt
 @patch('completion_aggregator.serializers.compat', stub_compat)
 @patch('completion_aggregator.core.compat', stub_compat)
@@ -82,7 +85,7 @@ class CourseCompletionSerializerTestCase(TestCase):
     """
 
     def setUp(self):
-        super(CourseCompletionSerializerTestCase, self).setUp()
+        super().setUp()
         self.test_user = User.objects.create()
         self.course_key = CourseKey.from_string('course-v1:abc+def+ghi')
 
@@ -257,7 +260,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             aggregators=[completion]
         ))
         self.assertEqual(
-            serial.data['completion'],
+            serial.data['completion'],  # pylint: disable=no-member
             {
                 'earned': 0.0,
                 'possible': 0.0,
@@ -274,7 +277,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             course_key=course_key,
             aggregators=[],
         ), requested_fields={'mean'})
-        self.assertAlmostEqual(serial.data['mean'], 0)
+        self.assertAlmostEqual(serial.data['mean'], 0)  # pylint: disable=no-member
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_mean(self):
@@ -291,7 +294,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             models.Aggregator.objects.submit_completion(
                 user=self.test_user,
                 course_key=course_key,
-                block_key=course_key.make_usage_key(block_type='course', block_id='course{}'.format(idx)),
+                block_key=course_key.make_usage_key(block_type='course', block_id=f'course{idx}'),
                 aggregation_name='course',
                 earned=data[idx][0],
                 possible=data[idx][1],
@@ -304,7 +307,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             course_key=course_key,
             aggregators=completions
         ), requested_fields={'mean'})
-        self.assertAlmostEqual(serial.data['mean'], expected_mean)
+        self.assertAlmostEqual(serial.data['mean'], expected_mean)  # pylint: disable=no-member
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_invalid_aggregator(self):
@@ -335,7 +338,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             aggregators=[]
         ))
         self.assertEqual(
-            serial.data['completion'],
+            serial.data['completion'],  # pylint: disable=no-member
             {
                 'earned': 0.0,
                 'possible': None,

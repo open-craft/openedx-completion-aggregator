@@ -22,7 +22,7 @@ from ...signals import course_published_handler, item_deleted_handler
 
 try:
     import numpy
-    from student.tests.factories import UserFactory, CourseEnrollmentFactory
+    from student.tests.factories import CourseEnrollmentFactory, UserFactory
     from xmodule.modulestore import ModuleStoreEnum
     from xmodule.modulestore.django import SignalHandler, modulestore
 except ImportError:
@@ -70,7 +70,7 @@ class Command(BaseCommand):
         test = options.get('test')
 
         if not hasattr(self, test):
-            raise CommandError('%s not found.' % test)
+            raise CommandError(f'{test} not found.')
 
         self.setUp(**options)
         getattr(self, test)()
@@ -126,18 +126,21 @@ class Command(BaseCommand):
         """ Print header. """
         self.stdout.write("\n")
         self.stdout.write("----- Completion Aggregator Performance Test Results -----")
-        self.stdout.write("Test: {}".format(test_name))
-        self.stdout.write("Course: {}".format(self.course.id))
+        self.stdout.write(f"Test: {test_name}")
+        self.stdout.write(f"Course: {self.course.id}")
 
         chapter_count = self.course_breadth[0]
         sequential_count = chapter_count * self.course_breadth[1]
         vertical_count = sequential_count * self.course_breadth[2]
 
-        self.stdout.write("Course Breadth: {} | Chapters: {} | Sequentials: {} | Verticals: {}".format(
-            self.course_breadth, chapter_count, sequential_count, vertical_count
-        ))
-        self.stdout.write("Learners: {}".format(self.learners_count))
-        self.stdout.write("Completions: {}".format(self.completions_count))
+        self.stdout.write(
+            f"Course Breadth: {self.course_breadth} | "
+            f"Chapters: {chapter_count} | "
+            f"Sequentials: {sequential_count} | "
+            f"Verticals: {vertical_count}"
+        )
+        self.stdout.write(f"Learners: {self.learners_count}")
+        self.stdout.write(f"Completions: {self.completions_count}")
 
         query_data = {}
         query_total_time = 0
@@ -148,16 +151,17 @@ class Command(BaseCommand):
             query_data[query_type]['times'].append(float(query['time']))
             query_total_time += float(query['time'])
 
-        self.stdout.write(
-            "SQL Queries | All Count: {} | Time: {}".format(len(self.executed_queries), query_total_time)
-        )
+        self.stdout.write(f"SQL Queries | All Count: {len(self.executed_queries)} | Time: {query_total_time}")
         for query_type, data in query_data.items():
-            self.stdout.write("SQL Queries | {} Count: {} Time: {} Percentiles: {}".format(
-                query_type, data['count'], sum(data['times']), self._get_percentiles(data['times'])
-            ))
+            self.stdout.write(
+                f"SQL Queries | {query_type} "
+                f"Count: {data['count']} "
+                f"Time: {sum(data['times'])} "
+                f"Percentiles: {self._get_percentiles(data['times'])}"
+            )
 
         if time_taken:
-            self.stdout.write("Total Time: {:.3f}s".format(time_taken))
+            self.stdout.write(f"Total Time: {time_taken:.3f}s")
 
     def _print_results_footer(self):
         """ Print footer. """
@@ -165,7 +169,7 @@ class Command(BaseCommand):
 
     def _get_percentiles(self, items):
         return " | ".join(
-            ["{}%: {:.3f}s".format(p, numpy.percentile(items, p)) for p in [
+            [f"{p}%: {numpy.percentile(items, p):.3f}s" for p in [
                 50, 66, 75, 80, 90, 95, 98, 99, 100]
              ]
         )
@@ -338,6 +342,6 @@ class Command(BaseCommand):
         time_average = (time_sum / self.completions_count)
 
         self._print_results_header("test_individual_block_completions", time_taken=time_sum)
-        self.stdout.write("Average Time: {:.3f}s".format(time_average))
-        self.stdout.write("Time Percentiles: {}".format(self._get_percentiles(times_taken)))
+        self.stdout.write(f"Average Time: {time_average:.3f}s")
+        self.stdout.write(f"Time Percentiles: {self._get_percentiles(times_taken)}")
         self._print_results_footer()

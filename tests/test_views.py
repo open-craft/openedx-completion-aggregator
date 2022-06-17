@@ -18,8 +18,9 @@ from rest_framework.test import APIClient
 from waffle.testutils import override_flag
 from xblock.core import XBlock
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from completion.models import BlockCompletion, BlockCompletionManager
@@ -30,11 +31,7 @@ from completion_aggregator.utils import WAFFLE_AGGREGATE_STALE_FROM_SCRATCH
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubHTML, StubSequential
 
-try:
-    from django.urls import reverse
-except ImportError:  # Django 1.8 compatibility
-    from django.core.urlresolvers import reverse
-
+User = get_user_model()
 
 empty_compat = StubCompat([])
 
@@ -130,7 +127,7 @@ class CompletionAPITestMixin:
         """
         users = []
         for user_id in range(count):
-            username = 'user{}'.format(user_id)
+            username = f'user{user_id}'
             user = User.objects.create(username=username)
             users.append(user)
             self.create_enrollment(
@@ -168,7 +165,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
     course_enrollment_model = StubCompat([]).course_enrollment_model()
 
     def setUp(self):
-        super(CompletionViewTestCase, self).setUp()
+        super().setUp()
         self.test_user = User.objects.create(username='test_user')
         self.staff_user = User.objects.create(username='staff', is_staff=True)
         self.test_enrollment = self.create_enrollment(
@@ -355,8 +352,8 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
                     'completion': self._get_expected_completion(version),
                     'sequential': [
                         {
-                            'course_key': u'edX/toy/2012_Fall',
-                            'block_key': u'i4x://edX/toy/sequential/course-sequence1',
+                            'course_key': 'edX/toy/2012_Fall',
+                            'block_key': 'i4x://edX/toy/sequential/course-sequence1',
                             'completion': self._get_expected_completion(
                                 version,
                                 earned=1.0,
@@ -493,7 +490,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         token = _create_oauth2_token(self.test_user)
         response = self.client.get(
             self.get_detail_url(version, self.course_key, username=self.test_user.username),
-            HTTP_AUTHORIZATION="Bearer {0}".format(token)
+            HTTP_AUTHORIZATION=f"Bearer {token}"
         )
         self.assertEqual(response.status_code, 200)
         if version == 0:
@@ -570,8 +567,8 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             'completion': self._get_expected_completion(version),
             'sequential': [
                 {
-                    'course_key': u'edX/toy/2012_Fall',
-                    'block_key': u'i4x://edX/toy/sequential/course-sequence1',
+                    'course_key': 'edX/toy/2012_Fall',
+                    'block_key': 'i4x://edX/toy/sequential/course-sequence1',
                     'completion': self._get_expected_completion(version, earned=1.0, possible=5.0, percent=0.2),
                 },
             ]
@@ -673,7 +670,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         self.create_course_completion_data(users[1], 9.0, 12.0)
         self.create_course_completion_data(users[2], 6.0, 12.0)
         self.client.force_authenticate(self.staff_user)
-        user_ids = "{},{}".format(users[0].id, users[2].id)
+        user_ids = f"{users[0].id},{users[2].id}"
         response = self.client.get(self.get_detail_url(version, self.course_key, user_ids=user_ids))
         self.assertEqual(response.status_code, 200)
         expected_values = [
@@ -873,7 +870,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
     def test_stat_view_multiple_users_correct_calculations(self):
         users_in_cohort = []
         for x in range(1, 5):
-            user = User.objects.create(username='test_user_{}'.format(x))
+            user = User.objects.create(username=f'test_user_{x}')
             users_in_cohort.append(user)
             self.create_enrollment(user=user, course_id=self.course_key)
 
@@ -1053,7 +1050,7 @@ class CompletionBlockUpdateViewTestCase(CompletionAPITestMixin, TestCase):
     usage_key = course_key.make_usage_key('html', 'course-sequence1-html1')
 
     def setUp(self):
-        super(CompletionBlockUpdateViewTestCase, self).setUp()
+        super().setUp()
         self.test_user = User.objects.create(username='test_user')
         self.staff_user = User.objects.create(username='staff', is_staff=True)
         self.test_enrollment = self.create_enrollment(
@@ -1127,7 +1124,7 @@ class CompletionBlockUpdateViewTestCase(CompletionAPITestMixin, TestCase):
 
         # Now, try with a valid token header:
         token = _create_oauth2_token(self.test_user)
-        response = self.client.post(self.update_url, {'completion': 1.0}, HTTP_AUTHORIZATION="Bearer {0}".format(token))
+        response = self.client.post(self.update_url, {'completion': 1.0}, HTTP_AUTHORIZATION=f"Bearer {token}")
         self.assertEqual(response.status_code, 201)
         stub_submit.assert_called_once()
 

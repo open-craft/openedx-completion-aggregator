@@ -13,9 +13,17 @@ Change Log
 
 Unreleased
 ~~~~~~~~~~
+
+[4.0.0] - 2022-06-17
+~~~~~~~~~~~~~~~~~~~~
+
 * Add Maple support.
 * Drop support for Python 2.
-* Drop support for Django 2.X
+* Drop support for Django 2.X.
+* Replace Travis CI with GitHub Actions.
+* Fix docs quality checks.
+* Fix pylint quality checks.
+* Fix the build & release pipeline.
 
 [3.2.0] - 2021-11-26
 ~~~~~~~~~~~~~~~~~~~~

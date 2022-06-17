@@ -50,7 +50,7 @@ class AggregationUpdaterTestCase(TestCase):
         only `course` is registered to store aggregations), `html` is
         COMPLETABLE, and `hidden` is EXCLUDED.
         """
-        super(AggregationUpdaterTestCase, self).setUp()
+        super().setUp()
         self.agg_modified = now() - timedelta(days=1)
         course_key = CourseKey.from_string('course-v1:edx+course+test')
         stubcompat = StubCompat([
@@ -199,7 +199,7 @@ class CalculateUpdatedAggregatorsTestCase(TestCase):
     expected_result = namedtuple('expected_result', ['block_key', 'earned', 'updated_earned', 'possible'])
 
     def setUp(self):
-        super(CalculateUpdatedAggregatorsTestCase, self).setUp()
+        super().setUp()
         self.user = get_user_model().objects.create(username='testuser', email='testuser@example.com')
         self.course_key = CourseKey.from_string('OpenCraft/Onboarding/2018')
         self.blocks = [
@@ -451,7 +451,7 @@ class PartialUpdateTest(TestCase):
     blocks, that only part of the course tree gets aggregated.
     """
     def setUp(self):
-        super(PartialUpdateTest, self).setUp()
+        super().setUp()
         self.user = get_user_model().objects.create()
         self.course_key = CourseKey.from_string('OpenCraft/Onboarding/2018')
         self.blocks = [
@@ -561,7 +561,7 @@ class TaskArgumentHandlingTestCase(TestCase):
     """
 
     def setUp(self):
-        super(TaskArgumentHandlingTestCase, self).setUp()
+        super().setUp()
         self.user = get_user_model().objects.create(username='sandystudent')
         self.course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
         self.block_keys = {

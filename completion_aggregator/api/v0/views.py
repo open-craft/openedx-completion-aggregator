@@ -205,7 +205,7 @@ class CompletionListView(CompletionViewMixin, APIView):
             requested_fields=self.get_requested_fields(),
             many=True
         )
-        return paginator.get_paginated_response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)  # pylint: disable=no-member
 
 
 class CompletionDetailView(CompletionViewMixin, APIView):
@@ -358,7 +358,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             instance=completions,
             requested_fields=requested_fields,
         )
-        return Response(serializer.data)
+        return Response(serializer.data)  # pylint: disable=no-member
 
 
 class CompletionBlockUpdateView(CompletionViewMixin, APIView):

@@ -162,7 +162,7 @@ def test_plethora_of_stale_completions(users):
             StaleCompletion.objects.create(
                 username=users[0].username,
                 course_key=course_key,
-                block_key=course_key.make_usage_key('chapter', 'chapter-{}'.format(i)),
+                block_key=course_key.make_usage_key('chapter', f'chapter-{i}'),
             )
         with patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async') as mock_task:
             perform_aggregation()
@@ -202,7 +202,7 @@ class StaleCompletionResolutionTestCase(TestCase):
     pytest.
     """
     def setUp(self):
-        super(StaleCompletionResolutionTestCase, self).setUp()
+        super().setUp()
         self.users = [
             get_user_model().objects.create(username='Spy'),
             get_user_model().objects.create(username='VsSpy'),

@@ -11,11 +11,13 @@ from celery import shared_task
 from celery_utils.logged_task import LoggedTask
 from opaque_keys.edx.keys import CourseKey, UsageKey
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import connection
 
 from .. import core
 from ..models import StaleCompletion
+
+User = get_user_model()
 
 UPDATE_SQL = """
 UPDATE completion_blockcompletion completion, progress_coursemodulecompletion progress

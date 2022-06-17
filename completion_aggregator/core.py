@@ -233,7 +233,7 @@ class AggregationUpdater:
         elif mode == XBlockCompletionMode.AGGREGATOR:
             return self.update_for_aggregator(block, affected_aggregators, force)
         else:
-            raise ValueError("Invalid completion mode {}".format(mode))
+            raise ValueError(f"Invalid completion mode {mode}")
 
     def update_for_aggregator(self, block, affected_aggregators, force):
         """
