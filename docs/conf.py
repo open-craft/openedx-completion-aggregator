@@ -23,8 +23,6 @@ from subprocess import check_call
 import edx_theme
 
 import django
-from django.conf import settings
-from django.utils import six
 
 
 def get_version(*file_paths):
@@ -503,5 +501,5 @@ def on_init(app):  # pylint: disable=unused-argument
 
 def setup(app):
     """Sphinx extension: run sphinx-apidoc."""
-    event = 'builder-inited' if six.PY3 else b'builder-inited'
+    event = 'builder-inited'
     app.connect(event, on_init)
