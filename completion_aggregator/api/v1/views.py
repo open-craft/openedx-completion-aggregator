@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import re
 from collections import defaultdict
 
-import waffle
+import waffle  # pylint: disable=invalid-django-waffle-import
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey, UsageKey
 from rest_framework.exceptions import NotFound, ParseError

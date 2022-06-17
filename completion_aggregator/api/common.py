@@ -10,7 +10,7 @@ from .. import compat
 from ..models import Aggregator
 from ..serializers import course_completion_serializer_factory, is_aggregation_name
 
-User = get_user_model()  # pylint: disable=invalid-name
+User = get_user_model()
 
 
 class UserEnrollments:

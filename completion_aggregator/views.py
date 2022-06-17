@@ -3,7 +3,6 @@ completion_aggregator App progress bar view
 """
 from __future__ import absolute_import, unicode_literals
 
-from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.shortcuts import render
@@ -20,6 +19,8 @@ class CompletionProgressBarView(LoginRequiredMixin, TemplateView):
     """
     View to display the progress bar of a student in a course
     """
+
+    # pylint: disable=arguments-differ
     @xframe_options_exempt
     def get(self, request, course_key, chapter_id=None):
         """
