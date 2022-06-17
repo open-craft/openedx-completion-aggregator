@@ -352,8 +352,8 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
                     'completion': self._get_expected_completion(version),
                     'sequential': [
                         {
-                            'course_key': u'edX/toy/2012_Fall',
-                            'block_key': u'i4x://edX/toy/sequential/course-sequence1',
+                            'course_key': 'edX/toy/2012_Fall',
+                            'block_key': 'i4x://edX/toy/sequential/course-sequence1',
                             'completion': self._get_expected_completion(
                                 version,
                                 earned=1.0,
@@ -567,8 +567,8 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             'completion': self._get_expected_completion(version),
             'sequential': [
                 {
-                    'course_key': u'edX/toy/2012_Fall',
-                    'block_key': u'i4x://edX/toy/sequential/course-sequence1',
+                    'course_key': 'edX/toy/2012_Fall',
+                    'block_key': 'i4x://edX/toy/sequential/course-sequence1',
                     'completion': self._get_expected_completion(version, earned=1.0, possible=5.0, percent=0.2),
                 },
             ]

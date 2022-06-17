@@ -144,8 +144,8 @@ class CompletionViewMixin:
             if self.request.user.is_staff:
                 try:
                     user = User.objects.get(username=requested_username)
-                except User.DoesNotExist:
-                    raise NotFound()
+                except User.DoesNotExist as exc:
+                    raise NotFound() from exc
             else:
                 if self.request.user.username.lower() == requested_username.lower():
                     user = self.request.user

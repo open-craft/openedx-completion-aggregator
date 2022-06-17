@@ -24,7 +24,7 @@ class AggregatorTestCase(TestCase):
     """
     Tests of the Aggregator model
     """
-    BLOCK_KEY = u'block-v1:edx+test+run+type@video+block@doggos'
+    BLOCK_KEY = 'block-v1:edx+test+run+type@video+block@doggos'
     BLOCK_KEY_OBJ = UsageKey.from_string(BLOCK_KEY)
     COURSE_KEY_OBJ = UsageKey.from_string(BLOCK_KEY).course_key
 
@@ -149,7 +149,7 @@ class AggregatorTestCase(TestCase):
         # Changes the block_key. This creates a new object.
         (
             BLOCK_KEY_OBJ, 'course', 0.5, 1, 0.5,
-            UsageKey.from_string(u'block-v1:edX+DemoX+Demo_Course+type@sequential+block@workflow'),
+            UsageKey.from_string('block-v1:edX+DemoX+Demo_Course+type@sequential+block@workflow'),
             'course', 0.5, 1, 0.5, True
         ),
     )

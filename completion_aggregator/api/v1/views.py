@@ -364,8 +364,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         """
         try:
             course_key = CourseKey.from_string(course_key)
-        except InvalidKeyError:
-            raise NotFound(f"Invalid course key: '{course_key}'.")
+        except InvalidKeyError as exc:
+            raise NotFound(f"Invalid course key: '{course_key}'.") from exc
         paginator = self.pagination_class()
         requested_fields = self.get_requested_fields()
 
@@ -401,8 +401,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         if root_block:
             try:
                 root_block = UsageKey.from_string(root_block).map_into_course(course_key)
-            except InvalidKeyError:
-                raise NotFound(f"Invalid block key: '{root_block}'.")
+            except InvalidKeyError as exc:
+                raise NotFound(f"Invalid block key: '{root_block}'.") from exc
 
         if is_stale and waffle.flag_is_active(self.request, WAFFLE_AGGREGATE_STALE_FROM_SCRATCH):
             aggregator_queryset = []
@@ -536,8 +536,8 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         if cohort_filter is not None:
             try:
                 cohort_filter = int(cohort_filter)
-            except TypeError:
-                raise ParseError(f'could not parse cohort_filter={cohort_filter!r} as an integer')
+            except TypeError as exc:
+                raise ParseError(f'could not parse cohort_filter={cohort_filter!r} as an integer') from exc
         return cohort_filter
 
     def get(self, request, course_key):
@@ -546,8 +546,8 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         """
         try:
             course_key = CourseKey.from_string(course_key)
-        except InvalidKeyError:
-            raise NotFound(f"Invalid course key: '{course_key}'.")
+        except InvalidKeyError as exc:
+            raise NotFound(f"Invalid course key: '{course_key}'.") from exc
         requested_fields = self.get_requested_fields()
         roles_to_exclude = self.request.query_params.get('exclude_roles', '').split(',')
         cohort_filter = self._parse_cohort_filter(
