@@ -1,5 +1,5 @@
 """
-completion_aggregator App progress bar view
+Completion_aggregator App progress bar view.
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -17,7 +17,7 @@ loader = ResourceLoader(__name__)
 
 class CompletionProgressBarView(LoginRequiredMixin, TemplateView):
     """
-    View to display the progress bar of a student in a course
+    View to display the progress bar of a student in a course.
     """
 
     # pylint: disable=arguments-differ
@@ -50,6 +50,7 @@ class CompletionProgressBarView(LoginRequiredMixin, TemplateView):
     def _get_user_completion(self, chapter_id, results):
         """
         Return the user completion percentage, using the completion response.
+
         In case the user completion cannot be returned as a result of missing user completion, we return None,
         indicating its absence.
         """
