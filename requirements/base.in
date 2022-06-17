@@ -10,7 +10,7 @@ djangorestframework>=3.0,<4.0     # API tools
 django-model-utils    # Provides TimeStampedModel abstract base class
 edx-opaque-keys    # Provides CourseKey and UsageKey
 edx-completion>=4,<5
-edx-toggles<5.0
+edx-toggles<6.0
 mysqlclient               # For connecting to MySQL
 six
 XBlock
