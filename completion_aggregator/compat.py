@@ -43,7 +43,7 @@ def get_modulestore():
     """
     Return an instance of the modulestore.
     """
-    from xmodule.modulestore.django import modulestore   # pylint: disable=import-error
+    from xmodule.modulestore.django import modulestore  # pylint: disable=import-error
     return modulestore()
 
 
@@ -65,8 +65,10 @@ def init_course_blocks(user, root_block_key):
         .block_type
     """
     # pragma: no-cover
-    from lms.djangoapps.course_blocks.api import get_course_block_access_transformers, get_course_blocks  # pylint: disable=import-error
-    from openedx.core.djangoapps.content.block_structure.transformers import BlockStructureTransformers  # pylint: disable=import-error
+    # pylint: disable=import-error
+    from lms.djangoapps.course_blocks.api import get_course_block_access_transformers, get_course_blocks
+    # pylint: disable=import-error
+    from openedx.core.djangoapps.content.block_structure.transformers import BlockStructureTransformers
 
     transformers = BlockStructureTransformers(
         get_course_block_access_transformers(user) + [AggregatorAnnotationTransformer()]

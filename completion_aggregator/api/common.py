@@ -91,8 +91,8 @@ class CompletionViewMixin:
         Allow users authenticated via OAuth2 or normal session authentication.
         """
         try:
-            from openedx.core.lib.api.authentication import OAuth2AuthenticationAllowInactiveUser
-            from openedx.core.lib.api.authentication import SessionAuthenticationAllowInactiveUser
+            from openedx.core.lib.api.authentication import (OAuth2AuthenticationAllowInactiveUser,
+                                                             SessionAuthenticationAllowInactiveUser)
         except ImportError:
             from edx_rest_framework_extensions.auth.session.authentication import SessionAuthenticationAllowInactiveUser
 

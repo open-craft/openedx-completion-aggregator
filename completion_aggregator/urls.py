@@ -5,6 +5,7 @@ URLs for completion_aggregator.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from django.urls import include, re_path
+
 from . import views
 
 urlpatterns = [
