@@ -165,7 +165,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
     course_enrollment_model = StubCompat([]).course_enrollment_model()
 
     def setUp(self):
-        super(CompletionViewTestCase, self).setUp()
+        super().setUp()
         self.test_user = User.objects.create(username='test_user')
         self.staff_user = User.objects.create(username='staff', is_staff=True)
         self.test_enrollment = self.create_enrollment(
@@ -1050,7 +1050,7 @@ class CompletionBlockUpdateViewTestCase(CompletionAPITestMixin, TestCase):
     usage_key = course_key.make_usage_key('html', 'course-sequence1-html1')
 
     def setUp(self):
-        super(CompletionBlockUpdateViewTestCase, self).setUp()
+        super().setUp()
         self.test_user = User.objects.create(username='test_user')
         self.staff_user = User.objects.create(username='staff', is_staff=True)
         self.test_enrollment = self.create_enrollment(

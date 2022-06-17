@@ -202,7 +202,7 @@ class StaleCompletionResolutionTestCase(TestCase):
     pytest.
     """
     def setUp(self):
-        super(StaleCompletionResolutionTestCase, self).setUp()
+        super().setUp()
         self.users = [
             get_user_model().objects.create(username='Spy'),
             get_user_model().objects.create(username='VsSpy'),

@@ -29,7 +29,7 @@ class AggregatorTestCase(TestCase):
     COURSE_KEY_OBJ = UsageKey.from_string(BLOCK_KEY).course_key
 
     def setUp(self):
-        super(AggregatorTestCase, self).setUp()
+        super().setUp()
         self.user = get_user_model().objects.create(username='testuser')
 
     def test_submit_completion_with_invalid_user(self):

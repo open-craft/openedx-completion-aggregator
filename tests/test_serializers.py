@@ -31,7 +31,7 @@ class AggregatorAdapterTestCase(TestCase):
     Test the behavior of the AggregatorAdapter
     """
     def setUp(self):
-        super(AggregatorAdapterTestCase, self).setUp()
+        super().setUp()
         self.test_user = User.objects.create()
         self.course_key = CourseKey.from_string("course-v1:z+b+c")
 
@@ -85,7 +85,7 @@ class CourseCompletionSerializerTestCase(TestCase):
     """
 
     def setUp(self):
-        super(CourseCompletionSerializerTestCase, self).setUp()
+        super().setUp()
         self.test_user = User.objects.create()
         self.course_key = CourseKey.from_string('course-v1:abc+def+ghi')
 

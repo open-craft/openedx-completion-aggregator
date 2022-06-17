@@ -244,7 +244,7 @@ class CourseCompletionSerializer(serializers.Serializer):
 
         Add any requested optional fields.
         """
-        super(CourseCompletionSerializer, self).__init__(instance, *args, **kwargs)
+        super().__init__(instance, *args, **kwargs)
         for field in self.optional_fields - requested_fields:
             del self.fields[field]
 
@@ -305,8 +305,8 @@ class CourseCompletionStatsSerializer(serializers.Serializer):
 
         Add any requested optional fields.
         """
-        super(CourseCompletionStatsSerializer, self).__init__(
-            instance, *args, **kwargs)
+
+        super().__init__(instance, *args, **kwargs)
         for field in self.optional_fields - requested_fields:
             del self.fields[field]
 

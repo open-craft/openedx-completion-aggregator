@@ -36,7 +36,7 @@ class MigrateProgressTestCase(TestCase):
     """
 
     def setUp(self):
-        super(MigrateProgressTestCase, self).setUp()
+        super().setUp()
         self.user = user = User.objects.create_user("test", password="test")
         self.course_key = course_key = CourseKey.from_string('course-v1:edx+course+test')
         self.block_keys = block_keys = [
