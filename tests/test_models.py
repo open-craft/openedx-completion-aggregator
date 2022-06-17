@@ -125,12 +125,8 @@ class AggregatorTestCase(TestCase):
             last_modified=now(),
         )
         expected_string = (
-            'Aggregator: {username}, {course_key}, {block_key}: {expected_percent}'.format(
-                username=self.user.username,
-                course_key=six.text_type(block_key_obj.course_key),
-                block_key=six.text_type(block_key_obj),
-                expected_percent=expected_percent,
-            )
+            f'Aggregator: {self.user.username}, {six.text_type(block_key_obj.course_key)}, '
+            f'{six.text_type(block_key_obj)}: {expected_percent}'
         )
         self.assertEqual(six.text_type(obj), expected_string)
 

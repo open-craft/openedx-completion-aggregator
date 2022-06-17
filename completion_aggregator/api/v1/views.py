@@ -365,7 +365,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         try:
             course_key = CourseKey.from_string(course_key)
         except InvalidKeyError:
-            raise NotFound("Invalid course key: '{}'.".format(course_key))
+            raise NotFound(f"Invalid course key: '{course_key}'.")
         paginator = self.pagination_class()
         requested_fields = self.get_requested_fields()
 
@@ -381,10 +381,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         else:
             if not UserEnrollments(self.user).is_enrolled(course_key):
                 # Return 404 if effective user does not have an active enrollment in the requested course
-                raise NotFound(
-                    "User '{user}' does not have an active enrollment in course '{course_key}'."
-                    .format(user=self.user, course_key=course_key)
-                )
+                raise NotFound(f"User '{self.user}' does not have an active enrollment in course '{course_key}'.")
             is_stale = StaleCompletion.objects.filter(
                 username=self.user.username,
                 course_key=course_key,
@@ -405,7 +402,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             try:
                 root_block = UsageKey.from_string(root_block).map_into_course(course_key)
             except InvalidKeyError:
-                raise NotFound("Invalid block key: '{}'.".format(root_block))
+                raise NotFound(f"Invalid block key: '{root_block}'.")
 
         if is_stale and waffle.flag_is_active(self.request, WAFFLE_AGGREGATE_STALE_FROM_SCRATCH):
             aggregator_queryset = []
@@ -540,11 +537,7 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
             try:
                 cohort_filter = int(cohort_filter)
             except TypeError:
-                raise ParseError(
-                    'could not parse cohort_filter={!r} as an integer'.format(
-                        cohort_filter,
-                    )
-                )
+                raise ParseError(f'could not parse cohort_filter={cohort_filter!r} as an integer')
         return cohort_filter
 
     def get(self, request, course_key):
@@ -554,7 +547,7 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
         try:
             course_key = CourseKey.from_string(course_key)
         except InvalidKeyError:
-            raise NotFound("Invalid course key: '{}'.".format(course_key))
+            raise NotFound(f"Invalid course key: '{course_key}'.")
         requested_fields = self.get_requested_fields()
         roles_to_exclude = self.request.query_params.get('exclude_roles', '').split(',')
         cohort_filter = self._parse_cohort_filter(

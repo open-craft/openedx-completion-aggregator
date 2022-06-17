@@ -293,7 +293,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             models.Aggregator.objects.submit_completion(
                 user=self.test_user,
                 course_key=course_key,
-                block_key=course_key.make_usage_key(block_type='course', block_id='course{}'.format(idx)),
+                block_key=course_key.make_usage_key(block_type='course', block_id=f'course{idx}'),
                 aggregation_name='course',
                 earned=data[idx][0],
                 possible=data[idx][1],

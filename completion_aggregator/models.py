@@ -232,12 +232,7 @@ class Aggregator(TimeStampedModel):
         """
         Get a string representation of this model instance.
         """
-        return 'Aggregator: {username}, {course_key}, {block_key}: {percent}'.format(
-            username=self.user.username,
-            course_key=self.course_key,
-            block_key=self.block_key,
-            percent=self.percent,
-        )
+        return f'Aggregator: {self.user.username}, {self.course_key}, {self.block_key}: {self.percent}'
 
     def get_values(self):
         """
@@ -292,9 +287,9 @@ class StaleCompletion(TimeStampedModel):
         """
         Render the StaleCompletion.
         """
-        parts = ['{}/{}'.format(self.username, self.course_key)]
+        parts = [f'{self.username}/{self.course_key}']
         if self.block_key:
-            parts.append('/{}'.format(self.block_key))
+            parts.append(f'/{self.block_key}')
         if self.resolved:
             parts.append('*')
         return ''.join(parts)
@@ -310,4 +305,4 @@ class CacheGroupInvalidation(models.Model):
         """
         Get a string representation of this model instance.
         """
-        return "{} invalidated at {}".format(self.group, self.invalidated_at)
+        return f"{self.group} invalidated at {self.invalidated_at}"

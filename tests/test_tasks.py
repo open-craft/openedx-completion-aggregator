@@ -40,7 +40,7 @@ class MigrateProgressTestCase(TestCase):
         self.user = user = User.objects.create_user("test", password="test")
         self.course_key = course_key = CourseKey.from_string('course-v1:edx+course+test')
         self.block_keys = block_keys = [
-            course_key.make_usage_key('html', 'course-html{}'.format(idx))
+            course_key.make_usage_key('html', f'course-html{idx}')
             for idx in range(1, 51)
         ]
         stubcompat = StubCompat([course_key.make_usage_key('course', 'course')] + block_keys)
@@ -50,8 +50,8 @@ class MigrateProgressTestCase(TestCase):
             self.addCleanup(patch.stop)
 
         for idx in range(1, 51):
-            block_key = course_key.make_usage_key('html', 'course-html{}'.format(idx))
-            with freeze_time("2020-02-02T02:02:{}".format(idx)):
+            block_key = course_key.make_usage_key('html', f'course-html{idx}')
+            with freeze_time(f"2020-02-02T02:02:{idx}"):
                 CourseModuleCompletion.objects.create(
                     id=idx,
                     user=user,
