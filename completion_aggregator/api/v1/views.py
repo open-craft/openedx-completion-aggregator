@@ -203,7 +203,7 @@ class CompletionListView(CompletionViewMixin, APIView):
             requested_fields=self.get_requested_fields(),
             many=True
         )
-        return paginator.get_paginated_response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)  # pylint: disable=no-member
 
 
 class CompletionDetailView(CompletionViewMixin, APIView):
@@ -431,7 +431,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             requested_fields=requested_fields,
             many=True
         )
-        return paginator.get_paginated_response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)  # pylint: disable=no-member
 
     def get(self, request, course_key):
         """
@@ -574,4 +574,4 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
             requested_fields=requested_fields,
         )
 
-        return JsonResponse({'results': [serializer.data]}, status=200)
+        return JsonResponse({'results': [serializer.data]}, status=200)  # pylint: disable=no-member

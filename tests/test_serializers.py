@@ -75,6 +75,7 @@ def _course_completion_serializer_factory(serializer_cls_args):
     )
 
 
+# pylint: disable=no-member
 @ddt.ddt
 @patch('completion_aggregator.serializers.compat', stub_compat)
 @patch('completion_aggregator.core.compat', stub_compat)
@@ -259,7 +260,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             aggregators=[completion]
         ))
         self.assertEqual(
-            serial.data['completion'],
+            serial.data['completion'],  # pylint: disable=no-member
             {
                 'earned': 0.0,
                 'possible': 0.0,
@@ -276,7 +277,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             course_key=course_key,
             aggregators=[],
         ), requested_fields={'mean'})
-        self.assertAlmostEqual(serial.data['mean'], 0)
+        self.assertAlmostEqual(serial.data['mean'], 0)  # pylint: disable=no-member
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_mean(self):
@@ -306,7 +307,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             course_key=course_key,
             aggregators=completions
         ), requested_fields={'mean'})
-        self.assertAlmostEqual(serial.data['mean'], expected_mean)
+        self.assertAlmostEqual(serial.data['mean'], expected_mean)  # pylint: disable=no-member
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
     def test_invalid_aggregator(self):
@@ -337,7 +338,7 @@ class CourseCompletionSerializerTestCase(TestCase):
             aggregators=[]
         ))
         self.assertEqual(
-            serial.data['completion'],
+            serial.data['completion'],  # pylint: disable=no-member
             {
                 'earned': 0.0,
                 'possible': None,
