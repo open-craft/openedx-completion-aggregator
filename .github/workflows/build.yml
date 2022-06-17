@@ -1,0 +1,55 @@
+---
+name: Build
+
+on: [ push, release ]
+
+jobs:
+  build:
+    name: Test Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ '3.8' ]
+        django-version: [ 'django32' ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install requirements
+        run: |
+          pip install -U pip
+          pip install -r requirements/github-actions.txt
+
+      - name: Run quality checks
+        env:
+          TOXENV: quality
+        run: tox
+
+      - name: Run documentation checks
+        env:
+          TOXENV: docs
+        run: tox
+
+      - name: Run ${{ matrix.django-version }} tests
+        env:
+          TOXENV: ${{ matrix.django-version }}
+        run: tox
+
+      - name: Upload coverage report
+        if: ${{ matrix.python-version == '3.8' }}
+        run: codecov
+
+      - name: Deploy to PyPi
+        env:
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          TWINE_NON_INTERACTIVE: 'true'
+        if: ${{ github.event_name == 'release' && matrix.python-version == '3.8' }}
+        run: |
+          python -m build -n -w -s
+          twine upload --verbose dist/*

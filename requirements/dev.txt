@@ -10,7 +10,7 @@ appdirs==1.4.4
     # via fs
 asgiref==3.5.2
     # via django
-astroid==2.11.5
+astroid==2.11.6
     # via
     #   pylint
     #   pylint-celery
@@ -26,11 +26,11 @@ bleach==5.0.0
     # via readme-renderer
 caniusepython3==7.3.0
     # via -r requirements/quality.in
-celery==5.2.6
+celery==5.2.7
     # via
     #   -r requirements/base.in
     #   edx-celeryutils
-certifi==2022.5.18.1
+certifi==2022.6.15
     # via requests
 cffi==1.15.0
     # via
@@ -65,12 +65,10 @@ code-annotations==1.3.0
     #   edx-toggles
 commonmark==0.9.1
     # via rich
-coverage[toml]==6.4
+coverage[toml]==6.4.1
     # via pytest-cov
 cryptography==37.0.2
-    # via
-    #   pyjwt
-    #   secretstorage
+    # via pyjwt
 ddt==1.5.0
     # via -r requirements/test.in
 deprecated==1.2.13
@@ -110,7 +108,7 @@ django-model-utils==4.2.0
     #   edx-completion
 django-oauth-toolkit==1.3.3
     # via -r requirements/base.in
-django-waffle==2.4.1
+django-waffle==2.5.0
     # via
     #   edx-django-utils
     #   edx-drf-extensions
@@ -139,7 +137,7 @@ edx-drf-extensions==8.0.1
     # via edx-completion
 edx-i18n-tools==0.9.1
     # via -r requirements/dev.in
-edx-lint==5.2.2
+edx-lint==5.2.4
     # via
     #   -r requirements/dev.in
     #   -r requirements/quality.in
@@ -152,7 +150,7 @@ edx-toggles==4.3.1
     # via
     #   -r requirements/base.in
     #   edx-completion
-filelock==3.7.0
+filelock==3.7.1
     # via
     #   tox
     #   virtualenv
@@ -174,23 +172,19 @@ isort==5.10.1
     # via
     #   -r requirements/quality.in
     #   pylint
-jeepney==0.8.0
-    # via
-    #   keyring
-    #   secretstorage
 jinja2==3.1.2
     # via
     #   code-annotations
     #   diff-cover
 jsonfield==3.1.0
     # via edx-celeryutils
-keyring==23.5.1
+keyring==23.6.0
     # via twine
 kombu==5.2.4
     # via celery
 lazy-object-proxy==1.7.1
     # via astroid
-lxml==4.8.0
+lxml==4.9.0
     # via xblock
 mako==1.2.0
     # via xblock-utils
@@ -209,7 +203,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.1.0
     # via -r requirements/base.in
-newrelic==7.10.0.175
+newrelic==7.12.0.176
     # via edx-django-utils
 oauthlib==3.2.0
     # via django-oauth-toolkit
@@ -227,7 +221,7 @@ pep517==0.12.0
     # via pip-tools
 pip-tools==6.6.2
     # via -r requirements/dev.in
-pkginfo==1.8.2
+pkginfo==1.8.3
     # via twine
 platformdirs==2.5.2
     # via
@@ -267,7 +261,7 @@ pyjwt[crypto]==2.4.0
     # via
     #   drf-jwt
     #   edx-drf-extensions
-pylint==2.13.9
+pylint==2.14.2
     # via
     #   edx-lint
     #   pylint-celery
@@ -317,9 +311,9 @@ pyyaml==6.0
     #   xblock
 readme-renderer==35.0
     # via twine
-redis==4.3.1
+redis==4.3.3
     # via -r requirements/test.in
-requests==2.27.1
+requests==2.28.0
     # via
     #   caniusepython3
     #   django-oauth-toolkit
@@ -333,8 +327,6 @@ rfc3986==2.0.0
     # via twine
 rich==12.4.4
     # via twine
-secretstorage==3.3.2
-    # via keyring
 semantic-version==2.10.0
     # via edx-drf-extensions
 simplejson==3.17.6
@@ -372,13 +364,15 @@ tomli==2.0.1
     #   coverage
     #   pep517
     #   pylint
+tomlkit==0.11.0
+    # via pylint
 tox==3.25.0
     # via
     #   -r requirements/dev.in
     #   tox-battery
 tox-battery==0.2
     # via -r requirements/dev.in
-twine==4.0.0
+twine==4.0.1
     # via -r requirements/dev.in
 typing-extensions==4.2.0
     # via
