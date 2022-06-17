@@ -11,7 +11,7 @@ import mock
 from freezegun import freeze_time
 from opaque_keys.edx.keys import CourseKey
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import connection
 from django.test import TestCase, override_settings
 
@@ -19,6 +19,8 @@ from completion.models import BlockCompletion
 from completion_aggregator.tasks.aggregation_tasks import _migrate_batch
 from test_utils.compat import StubCompat
 from test_utils.test_app.models import CourseModuleCompletion
+
+User = get_user_model()
 
 
 @ddt.ddt

@@ -10,7 +10,7 @@ from mock import patch
 from opaque_keys.edx.keys import CourseKey
 from xblock.core import XBlock
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
@@ -18,6 +18,8 @@ from completion_aggregator import models, serializers
 from completion_aggregator.core import AggregationUpdater
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubSequential
+
+User = get_user_model()
 
 stub_compat = StubCompat([
     CourseKey.from_string('course-v1:abc+def+ghi').make_usage_key('course', 'course'),

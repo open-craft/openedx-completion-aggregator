@@ -18,8 +18,9 @@ from rest_framework.test import APIClient
 from waffle.testutils import override_flag
 from xblock.core import XBlock
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from completion.models import BlockCompletion, BlockCompletionManager
@@ -30,11 +31,7 @@ from completion_aggregator.utils import WAFFLE_AGGREGATE_STALE_FROM_SCRATCH
 from test_utils.compat import StubCompat
 from test_utils.test_blocks import StubCourse, StubHTML, StubSequential
 
-try:
-    from django.urls import reverse
-except ImportError:  # Django 1.8 compatibility
-    from django.core.urlresolvers import reverse
-
+User = get_user_model()
 
 empty_compat = StubCompat([])
 

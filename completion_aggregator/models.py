@@ -9,7 +9,7 @@ from opaque_keys.edx.django.models import CourseKeyField, UsageKeyField
 from opaque_keys.edx.keys import CourseKey, UsageKey
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import connection, models
 from django.db.models.signals import pre_save
@@ -18,6 +18,8 @@ from django.utils.translation import gettext as _
 from model_utils.models import TimeStampedModel
 
 from .utils import get_percent, make_datetime_timezone_unaware
+
+User = get_user_model()
 
 INSERT_OR_UPDATE_AGGREGATOR_QUERY = """
     INSERT INTO completion_aggregator_aggregator
