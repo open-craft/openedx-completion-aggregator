@@ -1,29 +1,49 @@
 ---
 name: Build
 
-on: [ push, release ]
+on: [push, release]
 
 jobs:
   build:
     name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        ports:
+          - 3306:3306
+
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ '3.8' ]
-        django-version: [ 'django32' ]
+        python-version: ["3.8"]
+        django-version: ["django32"]
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: "setup.cfg"
 
       - name: Install requirements
         run: |
           pip install -U pip
           pip install -r requirements/github-actions.txt
+
+      - name: Cache tox dir
+        id: cache-tox
+        uses: actions/cache@v3
+        with:
+          path: .tox
+          key: ${{ runner.os }}-${{ matrix.python-version }}-tox-${{ hashFiles('requirements/dev.txt') }}
 
       - name: Run quality checks
         env:
@@ -48,7 +68,7 @@ jobs:
         env:
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-          TWINE_NON_INTERACTIVE: 'true'
+          TWINE_NON_INTERACTIVE: "true"
         if: ${{ github.event_name == 'release' && matrix.python-version == '3.8' }}
         run: |
           python -m build -n -w -s
