@@ -27,3 +27,11 @@ def plugin_settings(settings):
     # 2. The management command didn't exit successfully. You should check the logs to find out why.
     settings.COMPLETION_AGGREGATOR_AGGREGATION_LOCK_TIMEOUT_SECONDS = 1800
     settings.COMPLETION_AGGREGATOR_CLEANUP_LOCK_TIMEOUT_SECONDS = 900
+
+    # Enables the use of course blocks with a release date set to a future date in the course completion calculation.
+    # By default, unreleased blocks are excluded from the aggregation, and course is considered 100% completed if all
+    # user-viewable blocks are completed.
+    # Notes:
+    # 1. All courses should be reaggregated for the changes to take effect.
+    # 2. It's not possible to revert this change by reaggregation without manually removing existing Aggregators.
+    settings.COMPLETION_AGGREGATOR_AGGREGATE_UNRELEASED_BLOCKS = False

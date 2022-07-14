@@ -57,7 +57,7 @@ def get_item_not_found_error():
 
 def init_course_blocks(user, root_block_key):
     """
-    Return a BlockStructure representing the course.
+    Return a BlockStructure representing the course, optionally ignoring content start dates.
 
     Blocks must have the following attributes:
 
@@ -68,13 +68,18 @@ def init_course_blocks(user, root_block_key):
     # pylint: disable=import-error
     from lms.djangoapps.course_blocks.api import get_course_block_access_transformers, get_course_blocks
     # pylint: disable=import-error
+    from lms.djangoapps.course_blocks.transformers.start_date import StartDateTransformer
+    # pylint: disable=import-error
     from openedx.core.djangoapps.content.block_structure.transformers import BlockStructureTransformers
 
-    transformers = BlockStructureTransformers(
-        get_course_block_access_transformers(user) + [AggregatorAnnotationTransformer()]
-    )
+    transformers = get_course_block_access_transformers(user) + [AggregatorAnnotationTransformer()]
 
-    return get_course_blocks(user, root_block_key, transformers)
+    if settings.COMPLETION_AGGREGATOR_AGGREGATE_UNRELEASED_BLOCKS:
+        transformers = [
+            tf for tf in transformers if not isinstance(tf, StartDateTransformer)
+        ]
+
+    return get_course_blocks(user, root_block_key, BlockStructureTransformers(transformers))
 
 
 def get_block_completions(user, course_key):

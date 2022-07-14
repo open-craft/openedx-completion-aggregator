@@ -14,6 +14,13 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
+[4.0.1] - 2022-07-13
+~~~~~~~~~~~~~~~~~~~~
+
+* Add `COMPLETION_AGGREGATOR_AGGREGATE_UNRELEASED_BLOCKS` setting, which
+  enables the use of course blocks with a release date set to a future date in
+  the course completion calculation.
+
 [4.0.0] - 2022-06-17
 ~~~~~~~~~~~~~~~~~~~~
 

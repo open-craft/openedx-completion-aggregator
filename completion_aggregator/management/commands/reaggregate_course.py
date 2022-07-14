@@ -1,13 +1,11 @@
 """
-run_aggregator_service management command.
+reaggregate_course management command.
 
 Usage:
 
-    ./manage.py run_aggregator_service
+    ./manage.py reaggregate_course <course_key>
 
-Performs the actual aggregation.
-
-For continuous aggregation, set a cron job to run this task periodically.
+Reaggregates some specific course or a set of courses.
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
