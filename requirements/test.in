@@ -9,5 +9,5 @@ pytest<6
 pytest-cov                # pytest extension for code coverage statistics
 pytest-django             # pytest extension for better Django support
 redis
-more-itertools < 6.0.0
+more-itertools < 10.0.0
 freezegun<0.4
