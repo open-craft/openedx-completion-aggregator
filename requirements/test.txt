@@ -18,9 +18,9 @@ billiard==3.6.4.0
     # via celery
 celery==5.2.7
     # via
-    #   -r requirements/base.in
+    #   -r base.in
     #   edx-celeryutils
-certifi==2022.6.15
+certifi==2022.12.7
     # via requests
 cffi==1.15.0
     # via
@@ -49,11 +49,12 @@ coverage[toml]==6.4.1
 cryptography==37.0.2
     # via pyjwt
 ddt==1.5.0
-    # via -r requirements/test.in
+    # via -r test.in
 deprecated==1.2.13
     # via redis
+django==3.2.16
     # via
-    #   -r requirements/base.in
+    #   -r base.in
     #   django-crum
     #   django-model-utils
     #   django-oauth-toolkit
@@ -71,12 +72,12 @@ django-crum==0.7.9
     #   edx-toggles
 django-model-utils==4.2.0
     # via
-    #   -r requirements/base.in
-    #   -r requirements/test.in
+    #   -r base.in
+    #   -r test.in
     #   edx-celeryutils
     #   edx-completion
 django-oauth-toolkit==1.3.3
-    # via -r requirements/base.in
+    # via -r base.in
 django-waffle==2.5.0
     # via
     #   edx-django-utils
@@ -84,7 +85,7 @@ django-waffle==2.5.0
     #   edx-toggles
 djangorestframework==3.13.1
     # via
-    #   -r requirements/base.in
+    #   -r base.in
     #   drf-jwt
     #   edx-completion
     #   edx-drf-extensions
@@ -92,10 +93,10 @@ drf-jwt==1.19.2
     # via edx-drf-extensions
 edx-celeryutils==1.2.1
     # via
-    #   -c requirements/constraints.txt
-    #   -r requirements/base.in
+    #   -c constraints.txt
+    #   -r base.in
 edx-completion==4.2.0
-    # via -r requirements/base.in
+    # via -r base.in
 edx-django-utils==5.0.0
     # via
     #   edx-drf-extensions
@@ -104,15 +105,15 @@ edx-drf-extensions==8.0.1
     # via edx-completion
 edx-opaque-keys==2.3.0
     # via
-    #   -r requirements/base.in
+    #   -r base.in
     #   edx-completion
     #   edx-drf-extensions
 edx-toggles==4.3.1
     # via
-    #   -r requirements/base.in
+    #   -r base.in
     #   edx-completion
 freezegun==0.3.15
-    # via -r requirements/test.in
+    # via -r test.in
 fs==2.4.16
     # via xblock
 future==0.18.2
@@ -137,13 +138,13 @@ markupsafe==2.1.1
     #   mako
     #   xblock
 mock==3.0.5
-    # via -r requirements/test.in
+    # via -r test.in
 more-itertools==5.0.0
     # via
-    #   -r requirements/test.in
+    #   -r test.in
     #   pytest
 mysqlclient==2.1.0
-    # via -r requirements/base.in
+    # via -r base.in
 newrelic==7.12.0.176
     # via edx-django-utils
 oauthlib==3.2.0
@@ -180,13 +181,13 @@ pyparsing==3.0.9
     # via packaging
 pytest==5.4.3
     # via
-    #   -r requirements/test.in
+    #   -r test.in
     #   pytest-cov
     #   pytest-django
 pytest-cov==3.0.0
-    # via -r requirements/test.in
+    # via -r test.in
 pytest-django==4.5.2
-    # via -r requirements/test.in
+    # via -r test.in
 python-dateutil==2.8.2
     # via
     #   edx-drf-extensions
@@ -206,7 +207,7 @@ pyyaml==6.0
     #   code-annotations
     #   xblock
 redis==4.3.3
-    # via -r requirements/test.in
+    # via -r test.in
 requests==2.28.0
     # via
     #   django-oauth-toolkit
@@ -218,7 +219,7 @@ simplejson==3.17.6
     # via xblock-utils
 six==1.16.0
     # via
-    #   -r requirements/base.in
+    #   -r base.in
     #   click-repl
     #   edx-drf-extensions
     #   freezegun
@@ -236,8 +237,6 @@ stevedore==3.5.0
     #   edx-opaque-keys
 text-unidecode==1.3
     # via python-slugify
-tomli==2.0.1
-    # via coverage
 urllib3==1.26.9
     # via requests
 vine==5.0.0
@@ -259,11 +258,11 @@ wrapt==1.14.1
     # via deprecated
 xblock==1.6.1
     # via
-    #   -r requirements/base.in
+    #   -r base.in
     #   edx-completion
     #   xblock-utils
 xblock-utils==2.2.0
-    # via -r requirements/base.in
+    # via -r base.in
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
