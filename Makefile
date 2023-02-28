@@ -1,6 +1,6 @@
 .PHONY: clean compile_translations coverage docs dummy_translations \
-	extract_translations fake_translations help pull_translations push_translations \
-	quality requirements selfcheck test test-all upgrade validate
+	extract_translations fake_translations help piptools pull_translations push_translations \
+	quality requirements requirements_python selfcheck test test-all upgrade validate
 
 .DEFAULT_GOAL := help
 
@@ -38,16 +38,27 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	tox -e docs
 	$(BROWSER) docs/_build/html/index.html
 
+# Define PIP_COMPILE_OPTS=-v to get more information during make upgrade.
+PIP_COMPILE = pip-compile --upgrade --resolver=backtracking $(PIP_COMPILE_OPTS)
+
+upgrade: export CUSTOM_COMPILE_COMMAND=make upgrade
 upgrade: ## update the requirements/*.txt files with the latest packages satisfying requirements/*.in
-	pip install -q pip-tools
-	pip-compile --upgrade -o requirements/dev.txt requirements/dev.in
-	pip-compile --upgrade -o requirements/doc.txt requirements/doc.in
-	pip-compile --upgrade -o requirements/quality.txt requirements/quality.in
-	pip-compile --upgrade -o requirements/test.txt requirements/test.in
-	pip-compile --upgrade -o requirements/github-actions.txt requirements/github-actions.in
+	pip install -qr requirements/pip-tools.txt
+	# Make sure to compile files after any other files they include!
+	$(PIP_COMPILE) --allow-unsafe -o requirements/pip.txt requirements/pip.in
+	$(PIP_COMPILE) -o requirements/pip-tools.txt requirements/pip-tools.in
+	pip install -qr requirements/pip.txt
+	pip install -qr requirements/pip-tools.txt
+	$(PIP_COMPILE) -o requirements/base.txt requirements/base.in
+	$(PIP_COMPILE) -o requirements/test.txt requirements/test.in
+	$(PIP_COMPILE) -o requirements/quality.txt requirements/quality.in
+	$(PIP_COMPILE) -o requirements/ci.txt requirements/ci.in
+	$(PIP_COMPILE) -o requirements/dev.txt requirements/dev.in
+	$(PIP_COMPILE) -o requirements/doc.txt requirements/doc.in
 	# Let tox control the Django version for tests
-	sed '/^django==/d' requirements/test.txt > requirements/test.tmp
+	sed '/^[dD]jango==/d' requirements/test.txt > requirements/test.tmp
 	mv requirements/test.tmp requirements/test.txt
+
 
 quality: ## check coding style with pycodestyle and pylint
 	tox -e quality
@@ -58,12 +69,18 @@ install_mysql: ## install MySQL for running tests.
 	sudo apt-get -y install mysql-server mysql-client
 	sudo service mysql restart
 
-requirements: ## install development environment requirements
-	pip install -qr requirements/dev.txt --exists-action w
-	pip-sync requirements/dev.txt requirements/private.* requirements/test.txt
+piptools: ## install pinned version of pip-compile and pip-sync
+	pip install -r requirements/pip.txt
+	pip install -r requirements/pip-tools.txt
+
+requirements: piptools  ## install test requirements locally
+	pip-sync requirements/ci.txt
+
+requirements_python: piptools  ## install all requirements locally
+	pip-sync requirements/dev.txt requirements/private.*
 
 test: clean ## run tests in the current virtualenv
-	py.test
+	pytest
 
 diff_cover: test
 	diff-cover coverage.xml
@@ -105,3 +122,6 @@ validate_translations: build_dummy_translations detect_changed_source_translatio
 
 sort_imports:
 	isort --recursive tests test_utils completion_aggregator manage.py setup.py test_settings.py
+
+mysql: ## run mysql database for tests
+	docker run --rm -it --name mysql -p 3307:3306 -e MYSQL_ROOT_PASSWORD=rootpw -e MYSQL_DATABASE=db mysql:8
