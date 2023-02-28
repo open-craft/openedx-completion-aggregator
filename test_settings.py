@@ -34,9 +34,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'completion_aggregator_test',
         'HOST': environ.get('EDXAGG_MYSQL_HOST', '127.0.0.1'),
-        'PORT': int(environ.get('EDXAGG_MYSQL_PORT', 3306)),
+        'PORT': int(environ.get('EDXAGG_MYSQL_PORT', 3307)),
         'USER': environ.get('EDXAGG_MYSQL_USER', 'root'),
-        'PASSWORD': environ.get('EDXAGG_MYSQL_PASSWORD', ''),
+        'PASSWORD': environ.get('EDXAGG_MYSQL_PASSWORD', 'rootpw'),
         'OPTIONS': {
             'init_command': "SET sql_mode='ALLOW_INVALID_DATES'",
         }

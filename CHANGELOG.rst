@@ -14,6 +14,14 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
+[4.0.2] - 2023-03-03
+~~~~~~~~~~~~~~~~~~~~
+
+* Update GitHub workflows.
+* Update requirements to logically organize them and allow scheduled
+  requirements updates.
+* Add base requirements to `setup.py`.
+
 [4.0.1] - 2022-07-13
 ~~~~~~~~~~~~~~~~~~~~
 

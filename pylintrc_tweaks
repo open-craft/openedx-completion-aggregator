@@ -1,7 +1,22 @@
 # pylintrc tweaks for use with edx_lint.
 [MASTER]
 ignore = migrations
-load-plugins = caniusepython3.pylint_checker,edx_lint.pylint,pylint_django,pylint_celery
+load-plugins = edx_lint.pylint,pylint_django,pylint_celery
 
 [MESSAGES CONTROL]
-enable = useless-suppression
+# TODO: Enable these rules.
+disable =
+    import-outside-toplevel,
+    too-many-arguments,
+    too-many-instance-attributes,
+    too-many-locals,
+    invalid-name,
+    too-many-ancestors,
+    duplicate-code,
+    too-many-public-methods,
+    too-few-public-methods,
+    too-many-lines,
+    no-else-return,
+    superfluous-parens,
+    unnecessary-pass,
+    too-many-branches,

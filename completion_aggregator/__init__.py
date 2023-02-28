@@ -5,4 +5,4 @@ An app that aggregates block level completion data for different block types for
 
 from __future__ import absolute_import, unicode_literals
 
-__version__ = '4.0.1'
+__version__ = '4.0.2'
