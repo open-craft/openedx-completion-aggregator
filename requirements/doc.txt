@@ -54,7 +54,7 @@ cffi==1.15.1
     #   -r requirements/test.txt
     #   cryptography
     #   pynacl
-charset-normalizer==3.0.1
+charset-normalizer==3.1.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -93,7 +93,7 @@ coverage[toml]==7.2.1
     # via
     #   -r requirements/test.txt
     #   pytest-cov
-cryptography==39.0.1
+cryptography==39.0.2
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -460,7 +460,7 @@ tomli==2.0.1
     #   -r requirements/test.txt
     #   coverage
     #   doc8
-urllib3==1.26.14
+urllib3==1.26.15
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
