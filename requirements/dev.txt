@@ -16,7 +16,7 @@ asgiref==3.6.0
     # via
     #   -r requirements/quality.txt
     #   django
-astroid==2.15.0
+astroid==2.15.1
     # via
     #   -r requirements/quality.txt
     #   pylint
@@ -98,7 +98,7 @@ coverage[toml]==7.2.2
     #   -r requirements/quality.txt
     #   codecov
     #   pytest-cov
-cryptography==39.0.2
+cryptography==40.0.1
     # via
     #   -r requirements/quality.txt
     #   jwcrypto
@@ -186,7 +186,7 @@ edx-toggles==5.0.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
-filelock==3.10.0
+filelock==3.10.6
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -256,7 +256,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.1.1
     # via -r requirements/quality.txt
-newrelic==8.7.0
+newrelic==8.7.1
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -281,7 +281,7 @@ pbr==5.11.1
     #   stevedore
 pip-tools==6.12.3
     # via -r requirements/pip-tools.txt
-platformdirs==3.1.1
+platformdirs==3.2.0
     # via
     #   -r requirements/ci.txt
     #   -r requirements/quality.txt
@@ -332,7 +332,7 @@ pyjwt[crypto]==2.6.0
     #   -r requirements/quality.txt
     #   drf-jwt
     #   edx-drf-extensions
-pylint==2.17.0
+pylint==2.17.1
     # via
     #   -r requirements/quality.txt
     #   edx-lint
@@ -383,7 +383,7 @@ python-slugify==8.0.1
     # via
     #   -r requirements/quality.txt
     #   code-annotations
-pytz==2022.7.1
+pytz==2023.2
     # via
     #   -r requirements/quality.txt
     #   celery
@@ -397,7 +397,7 @@ pyyaml==6.0
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==4.5.1
+redis==4.5.3
     # via -r requirements/quality.txt
 requests==2.28.2
     # via
