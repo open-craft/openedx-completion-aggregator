@@ -194,7 +194,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.1.1
     # via -r requirements/test.in
-newrelic==8.7.1
+newrelic==8.8.0
     # via
     #   -r requirements/base.txt
     #   edx-django-utils
@@ -268,7 +268,7 @@ python-slugify==8.0.1
     # via
     #   -r requirements/base.txt
     #   code-annotations
-pytz==2023.2
+pytz==2023.3
     # via
     #   -r requirements/base.txt
     #   celery
@@ -282,7 +282,7 @@ pyyaml==6.0
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==4.5.3
+redis==4.5.4
     # via -r requirements/test.in
 requests==2.28.2
     # via
