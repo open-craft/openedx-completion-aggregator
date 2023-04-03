@@ -186,7 +186,7 @@ edx-toggles==5.0.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
-filelock==3.10.6
+filelock==3.10.7
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -256,7 +256,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.1.1
     # via -r requirements/quality.txt
-newrelic==8.7.1
+newrelic==8.8.0
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -383,7 +383,7 @@ python-slugify==8.0.1
     # via
     #   -r requirements/quality.txt
     #   code-annotations
-pytz==2023.2
+pytz==2023.3
     # via
     #   -r requirements/quality.txt
     #   celery
@@ -397,7 +397,7 @@ pyyaml==6.0
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==4.5.3
+redis==4.5.4
     # via -r requirements/quality.txt
 requests==2.28.2
     # via
@@ -456,7 +456,7 @@ tomli==2.0.1
     #   pylint
     #   pyproject-hooks
     #   tox
-tomlkit==0.11.6
+tomlkit==0.11.7
     # via
     #   -r requirements/quality.txt
     #   pylint
