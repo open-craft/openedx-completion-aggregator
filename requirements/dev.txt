@@ -16,7 +16,7 @@ asgiref==3.6.0
     # via
     #   -r requirements/quality.txt
     #   django
-astroid==2.15.2
+astroid==2.15.3
     # via
     #   -r requirements/quality.txt
     #   pylint
@@ -25,7 +25,7 @@ async-timeout==4.0.2
     # via
     #   -r requirements/quality.txt
     #   redis
-attrs==22.2.0
+attrs==23.1.0
     # via
     #   -r requirements/quality.txt
     #   pytest
@@ -92,7 +92,7 @@ coverage[toml]==7.2.3
     # via
     #   -r requirements/quality.txt
     #   pytest-cov
-cryptography==40.0.1
+cryptography==40.0.2
     # via
     #   -r requirements/quality.txt
     #   jwcrypto
@@ -158,12 +158,12 @@ edx-celeryutils==1.2.2
     # via -r requirements/quality.txt
 edx-completion==4.2.0
     # via -r requirements/quality.txt
-edx-django-utils==5.3.0
+edx-django-utils==5.4.0
     # via
     #   -r requirements/quality.txt
     #   edx-drf-extensions
     #   edx-toggles
-edx-drf-extensions==8.4.1
+edx-drf-extensions==8.6.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
@@ -257,7 +257,7 @@ oauthlib==3.2.2
     # via
     #   -r requirements/quality.txt
     #   django-oauth-toolkit
-packaging==23.0
+packaging==23.1
     # via
     #   -r requirements/ci.txt
     #   -r requirements/pip-tools.txt
@@ -294,7 +294,7 @@ prompt-toolkit==3.0.38
     # via
     #   -r requirements/quality.txt
     #   click-repl
-psutil==5.9.4
+psutil==5.9.5
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -424,7 +424,7 @@ snowballstemmer==2.2.0
     # via
     #   -r requirements/quality.txt
     #   pydocstyle
-sqlparse==0.4.3
+sqlparse==0.4.4
     # via
     #   -r requirements/quality.txt
     #   django
