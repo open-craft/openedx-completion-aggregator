@@ -176,7 +176,7 @@ edx-django-utils==5.4.0
     #   -r requirements/test.txt
     #   edx-drf-extensions
     #   edx-toggles
-edx-drf-extensions==8.6.0
+edx-drf-extensions==8.7.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -215,7 +215,7 @@ idna==3.4
     #   requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==6.4.1
+importlib-metadata==6.6.0
     # via sphinx
 jinja2==3.1.2
     # via
@@ -317,7 +317,7 @@ pycryptodomex==3.17
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   pyjwkest
-pygments==2.15.0
+pygments==2.15.1
     # via
     #   doc8
     #   readme-renderer

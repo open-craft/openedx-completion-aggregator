@@ -163,7 +163,7 @@ edx-django-utils==5.4.0
     #   -r requirements/quality.txt
     #   edx-drf-extensions
     #   edx-toggles
-edx-drf-extensions==8.6.0
+edx-drf-extensions==8.7.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
@@ -180,7 +180,7 @@ edx-toggles==5.0.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
-filelock==3.11.0
+filelock==3.12.0
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -472,7 +472,7 @@ vine==5.0.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.21.0
+virtualenv==20.22.0
     # via
     #   -r requirements/ci.txt
     #   tox
