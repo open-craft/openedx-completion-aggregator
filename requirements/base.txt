@@ -16,7 +16,7 @@ celery==5.2.7
     # via
     #   -r requirements/base.in
     #   edx-celeryutils
-certifi==2022.12.7
+certifi==2023.5.7
     # via requests
 cffi==1.15.1
     # via
