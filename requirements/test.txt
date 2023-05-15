@@ -236,7 +236,7 @@ pyjwkest==1.4.2
     # via
     #   -r requirements/base.txt
     #   edx-drf-extensions
-pyjwt[crypto]==2.6.0
+pyjwt[crypto]==2.7.0
     # via
     #   -r requirements/base.txt
     #   drf-jwt
@@ -282,7 +282,7 @@ pyyaml==6.0
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==4.5.4
+redis==4.5.5
     # via -r requirements/test.in
 requests==2.30.0
     # via

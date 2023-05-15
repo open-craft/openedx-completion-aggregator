@@ -16,7 +16,7 @@ asgiref==3.6.0
     # via
     #   -r requirements/quality.txt
     #   django
-astroid==2.15.4
+astroid==2.15.5
     # via
     #   -r requirements/quality.txt
     #   pylint
@@ -274,7 +274,7 @@ pbr==5.11.1
     #   stevedore
 pip-tools==6.13.0
     # via -r requirements/pip-tools.txt
-platformdirs==3.5.0
+platformdirs==3.5.1
     # via
     #   -r requirements/ci.txt
     #   -r requirements/quality.txt
@@ -320,7 +320,7 @@ pyjwkest==1.4.2
     # via
     #   -r requirements/quality.txt
     #   edx-drf-extensions
-pyjwt[crypto]==2.6.0
+pyjwt[crypto]==2.7.0
     # via
     #   -r requirements/quality.txt
     #   drf-jwt
@@ -390,7 +390,7 @@ pyyaml==6.0
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==4.5.4
+redis==4.5.5
     # via -r requirements/quality.txt
 requests==2.30.0
     # via

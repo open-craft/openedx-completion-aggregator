@@ -327,7 +327,7 @@ pyjwkest==1.4.2
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-drf-extensions
-pyjwt[crypto]==2.6.0
+pyjwt[crypto]==2.7.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -383,7 +383,7 @@ pyyaml==6.0
     #   xblock
 readme-renderer==37.3
     # via -r requirements/doc.in
-redis==4.5.4
+redis==4.5.5
     # via -r requirements/test.txt
 requests==2.30.0
     # via
