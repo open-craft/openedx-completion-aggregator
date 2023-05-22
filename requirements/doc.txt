@@ -312,7 +312,7 @@ pycparser==2.21
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   cffi
-pycryptodomex==3.17
+pycryptodomex==3.18.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -442,7 +442,7 @@ sqlparse==0.4.4
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   django
-stevedore==5.0.0
+stevedore==5.1.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
