@@ -31,12 +31,13 @@ attrs==23.1.0
 backports-zoneinfo[tzdata]==0.2.1
     # via
     #   -r requirements/test.txt
+    #   celery
     #   kombu
-billiard==3.6.4.0
+billiard==4.1.0
     # via
     #   -r requirements/test.txt
     #   celery
-celery==5.2.7
+celery==5.3.0
     # via
     #   -r requirements/test.txt
     #   edx-celeryutils
@@ -245,7 +246,7 @@ pbr==5.11.1
     # via
     #   -r requirements/test.txt
     #   stevedore
-platformdirs==3.5.1
+platformdirs==3.5.3
     # via pylint
 pluggy==0.13.1
     # via
@@ -314,6 +315,7 @@ pytest-django==4.5.2
 python-dateutil==2.8.2
     # via
     #   -r requirements/test.txt
+    #   celery
     #   edx-drf-extensions
     #   freezegun
     #   xblock
@@ -324,7 +326,6 @@ python-slugify==8.0.1
 pytz==2023.3
     # via
     #   -r requirements/test.txt
-    #   celery
     #   django
     #   djangorestframework
     #   edx-completion
@@ -395,7 +396,8 @@ tzdata==2023.3
     # via
     #   -r requirements/test.txt
     #   backports-zoneinfo
-urllib3==2.0.2
+    #   celery
+urllib3==2.0.3
     # via
     #   -r requirements/test.txt
     #   requests
