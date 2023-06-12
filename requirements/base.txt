@@ -11,10 +11,12 @@ appdirs==1.4.4
 asgiref==3.7.2
     # via django
 backports-zoneinfo[tzdata]==0.2.1
-    # via kombu
-billiard==3.6.4.0
+    # via
+    #   celery
+    #   kombu
+billiard==4.1.0
     # via celery
-celery==5.2.7
+celery==5.3.0
     # via
     #   -r requirements/base.in
     #   edx-celeryutils
@@ -137,13 +139,13 @@ pynacl==1.5.0
     # via edx-django-utils
 python-dateutil==2.8.2
     # via
+    #   celery
     #   edx-drf-extensions
     #   xblock
 python-slugify==8.0.1
     # via code-annotations
 pytz==2023.3
     # via
-    #   celery
     #   django
     #   djangorestframework
     #   edx-completion
@@ -179,8 +181,10 @@ typing-extensions==4.6.3
     #   asgiref
     #   kombu
 tzdata==2023.3
-    # via backports-zoneinfo
-urllib3==2.0.2
+    # via
+    #   backports-zoneinfo
+    #   celery
+urllib3==2.0.3
     # via requests
 vine==5.0.0
     # via
