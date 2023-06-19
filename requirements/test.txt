@@ -29,7 +29,7 @@ billiard==4.1.0
     # via
     #   -r requirements/base.txt
     #   celery
-celery==5.3.0
+celery==5.3.1
     # via
     #   -r requirements/base.txt
     #   edx-celeryutils
@@ -63,7 +63,7 @@ click-plugins==1.1.1
     # via
     #   -r requirements/base.txt
     #   celery
-click-repl==0.2.0
+click-repl==0.3.0
     # via
     #   -r requirements/base.txt
     #   celery
@@ -169,7 +169,7 @@ jsonfield==3.1.0
     #   edx-celeryutils
 jwcrypto==1.5.0
     # via django-oauth-toolkit
-kombu==5.3.0
+kombu==5.3.1
     # via
     #   -r requirements/base.txt
     #   celery
@@ -293,7 +293,6 @@ simplejson==3.19.1
 six==1.16.0
     # via
     #   -r requirements/base.txt
-    #   click-repl
     #   edx-drf-extensions
     #   freezegun
     #   fs
@@ -357,7 +356,7 @@ xblock==1.6.2
     #   -r requirements/base.txt
     #   edx-completion
     #   xblock-utils
-xblock-utils==3.1.0
+xblock-utils==3.2.0
     # via -r requirements/base.txt
 
 # The following packages are considered to be unsafe in a requirements file:
