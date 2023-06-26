@@ -261,7 +261,7 @@ more-itertools==5.0.0
     # via
     #   -r requirements/test.txt
     #   pytest
-mysqlclient==2.1.1
+mysqlclient==2.2.0
     # via -r requirements/test.txt
 newrelic==8.8.0
     # via
@@ -372,9 +372,9 @@ pyyaml==6.0
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-readme-renderer==37.3
+readme-renderer==40.0
     # via -r requirements/doc.in
-redis==4.5.5
+redis==4.6.0
     # via -r requirements/test.txt
 requests==2.31.0
     # via
