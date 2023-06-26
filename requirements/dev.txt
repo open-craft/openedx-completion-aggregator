@@ -248,7 +248,7 @@ more-itertools==5.0.0
     # via
     #   -r requirements/quality.txt
     #   pytest
-mysqlclient==2.1.1
+mysqlclient==2.2.0
     # via -r requirements/quality.txt
 newrelic==8.8.0
     # via
@@ -275,7 +275,7 @@ pbr==5.11.1
     #   stevedore
 pip-tools==6.13.0
     # via -r requirements/pip-tools.txt
-platformdirs==3.6.0
+platformdirs==3.8.0
     # via
     #   -r requirements/ci.txt
     #   -r requirements/quality.txt
@@ -383,7 +383,7 @@ pyyaml==6.0
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==4.5.5
+redis==4.6.0
     # via -r requirements/quality.txt
 requests==2.31.0
     # via

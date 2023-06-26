@@ -224,7 +224,7 @@ more-itertools==5.0.0
     # via
     #   -r requirements/test.txt
     #   pytest
-mysqlclient==2.1.1
+mysqlclient==2.2.0
     # via -r requirements/test.txt
 newrelic==8.8.0
     # via
@@ -246,7 +246,7 @@ pbr==5.11.1
     # via
     #   -r requirements/test.txt
     #   stevedore
-platformdirs==3.6.0
+platformdirs==3.8.0
     # via pylint
 pluggy==0.13.1
     # via
@@ -336,7 +336,7 @@ pyyaml==6.0
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==4.5.5
+redis==4.6.0
     # via -r requirements/test.txt
 requests==2.31.0
     # via
