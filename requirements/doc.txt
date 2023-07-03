@@ -263,7 +263,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/test.txt
-newrelic==8.8.0
+newrelic==8.8.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -448,7 +448,7 @@ tomli==2.0.1
     #   -r requirements/test.txt
     #   coverage
     #   doc8
-typing-extensions==4.6.3
+typing-extensions==4.7.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
