@@ -49,7 +49,7 @@ celery==5.3.1
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-celeryutils
-certifi==2023.5.7
+certifi==2023.7.22
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -65,7 +65,7 @@ charset-normalizer==3.2.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   requests
-click==8.1.5
+click==8.1.6
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -90,7 +90,7 @@ click-repl==0.3.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   celery
-code-annotations==1.3.0
+code-annotations==1.5.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -99,7 +99,7 @@ coverage[toml]==7.2.7
     # via
     #   -r requirements/test.txt
     #   pytest-cov
-cryptography==41.0.2
+cryptography==41.0.3
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -118,6 +118,7 @@ django==3.2.20
     #   django-crum
     #   django-model-utils
     #   django-oauth-toolkit
+    #   django-waffle
     #   djangorestframework
     #   drf-jwt
     #   edx-celeryutils
@@ -141,7 +142,7 @@ django-model-utils==4.3.1
     #   edx-completion
 django-oauth-toolkit==2.3.0
     # via -r requirements/test.txt
-django-waffle==3.0.0
+django-waffle==4.0.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -168,15 +169,15 @@ drf-jwt==1.19.2
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-drf-extensions
-edx-celeryutils==1.2.2
+edx-celeryutils==1.2.3
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
-edx-completion==4.2.1
+edx-completion==4.3.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
-edx-django-utils==5.5.0
+edx-django-utils==5.7.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -187,7 +188,7 @@ edx-drf-extensions==8.8.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-completion
-edx-i18n-tools==1.0.0
+edx-i18n-tools==1.1.0
     # via -r requirements/test.txt
 edx-opaque-keys==2.3.0
     # via
@@ -197,7 +198,7 @@ edx-opaque-keys==2.3.0
     #   edx-drf-extensions
 edx-sphinx-theme==3.1.0
     # via -r requirements/doc.in
-edx-toggles==5.0.0
+edx-toggles==5.1.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -263,7 +264,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/test.txt
-newrelic==8.8.1
+newrelic==8.9.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -313,12 +314,12 @@ pycparser==2.21
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   cffi
-pygments==2.15.1
+pygments==2.16.1
     # via
     #   doc8
     #   readme-renderer
     #   sphinx
-pyjwt[crypto]==2.7.0
+pyjwt[crypto]==2.8.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -365,7 +366,7 @@ pytz==2023.3
     #   djangorestframework
     #   edx-completion
     #   xblock
-pyyaml==6.0
+pyyaml==6.0.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -460,7 +461,7 @@ tzdata==2023.3
     #   -r requirements/test.txt
     #   backports-zoneinfo
     #   celery
-urllib3==2.0.3
+urllib3==2.0.4
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -478,7 +479,7 @@ wcwidth==0.2.6
     #   -r requirements/test.txt
     #   prompt-toolkit
     #   pytest
-web-fragments==2.0.0
+web-fragments==2.1.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -495,13 +496,13 @@ wrapt==1.15.0
     # via
     #   -r requirements/test.txt
     #   deprecated
-xblock==1.6.2
+xblock==1.7.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-completion
     #   xblock-utils
-xblock-utils==3.2.0
+xblock-utils==3.3.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
