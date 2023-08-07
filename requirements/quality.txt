@@ -41,7 +41,7 @@ celery==5.3.1
     # via
     #   -r requirements/test.txt
     #   edx-celeryutils
-certifi==2023.5.7
+certifi==2023.7.22
     # via
     #   -r requirements/test.txt
     #   requests
@@ -54,7 +54,7 @@ charset-normalizer==3.2.0
     # via
     #   -r requirements/test.txt
     #   requests
-click==8.1.5
+click==8.1.6
     # via
     #   -r requirements/test.txt
     #   celery
@@ -79,7 +79,7 @@ click-repl==0.3.0
     # via
     #   -r requirements/test.txt
     #   celery
-code-annotations==1.3.0
+code-annotations==1.5.0
     # via
     #   -r requirements/test.txt
     #   edx-lint
@@ -88,7 +88,7 @@ coverage[toml]==7.2.7
     # via
     #   -r requirements/test.txt
     #   pytest-cov
-cryptography==41.0.2
+cryptography==41.0.3
     # via
     #   -r requirements/test.txt
     #   jwcrypto
@@ -99,7 +99,7 @@ deprecated==1.2.14
     # via
     #   -r requirements/test.txt
     #   jwcrypto
-dill==0.3.6
+dill==0.3.7
     # via pylint
 django==3.2.20
     # via
@@ -108,6 +108,7 @@ django==3.2.20
     #   django-crum
     #   django-model-utils
     #   django-oauth-toolkit
+    #   django-waffle
     #   djangorestframework
     #   drf-jwt
     #   edx-celeryutils
@@ -129,7 +130,7 @@ django-model-utils==4.3.1
     #   edx-completion
 django-oauth-toolkit==2.3.0
     # via -r requirements/test.txt
-django-waffle==3.0.0
+django-waffle==4.0.0
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
@@ -145,11 +146,11 @@ drf-jwt==1.19.2
     # via
     #   -r requirements/test.txt
     #   edx-drf-extensions
-edx-celeryutils==1.2.2
+edx-celeryutils==1.2.3
     # via -r requirements/test.txt
-edx-completion==4.2.1
+edx-completion==4.3.0
     # via -r requirements/test.txt
-edx-django-utils==5.5.0
+edx-django-utils==5.7.0
     # via
     #   -r requirements/test.txt
     #   edx-drf-extensions
@@ -158,7 +159,7 @@ edx-drf-extensions==8.8.0
     # via
     #   -r requirements/test.txt
     #   edx-completion
-edx-i18n-tools==1.0.0
+edx-i18n-tools==1.1.0
     # via -r requirements/test.txt
 edx-lint==5.3.4
     # via -r requirements/quality.in
@@ -167,7 +168,7 @@ edx-opaque-keys==2.3.0
     #   -r requirements/test.txt
     #   edx-completion
     #   edx-drf-extensions
-edx-toggles==5.0.0
+edx-toggles==5.1.0
     # via
     #   -r requirements/test.txt
     #   edx-completion
@@ -227,7 +228,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/test.txt
-newrelic==8.8.1
+newrelic==8.9.0
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
@@ -247,7 +248,7 @@ pbr==5.11.1
     # via
     #   -r requirements/test.txt
     #   stevedore
-platformdirs==3.9.1
+platformdirs==3.10.0
     # via pylint
 pluggy==0.13.1
     # via
@@ -270,7 +271,7 @@ py==1.11.0
     # via
     #   -r requirements/test.txt
     #   pytest
-pycodestyle==2.10.0
+pycodestyle==2.11.0
     # via -r requirements/quality.in
 pycparser==2.21
     # via
@@ -278,12 +279,12 @@ pycparser==2.21
     #   cffi
 pydocstyle==6.3.0
     # via -r requirements/quality.in
-pyjwt[crypto]==2.7.0
+pyjwt[crypto]==2.8.0
     # via
     #   -r requirements/test.txt
     #   drf-jwt
     #   edx-drf-extensions
-pylint==2.17.4
+pylint==2.17.5
     # via
     #   edx-lint
     #   pylint-celery
@@ -333,7 +334,7 @@ pytz==2023.3
     #   djangorestframework
     #   edx-completion
     #   xblock
-pyyaml==6.0
+pyyaml==6.0.1
     # via
     #   -r requirements/test.txt
     #   code-annotations
@@ -385,7 +386,7 @@ tomli==2.0.1
     #   -r requirements/test.txt
     #   coverage
     #   pylint
-tomlkit==0.11.8
+tomlkit==0.12.1
     # via pylint
 typing-extensions==4.7.1
     # via
@@ -399,7 +400,7 @@ tzdata==2023.3
     #   -r requirements/test.txt
     #   backports-zoneinfo
     #   celery
-urllib3==2.0.3
+urllib3==2.0.4
     # via
     #   -r requirements/test.txt
     #   requests
@@ -414,7 +415,7 @@ wcwidth==0.2.6
     #   -r requirements/test.txt
     #   prompt-toolkit
     #   pytest
-web-fragments==2.0.0
+web-fragments==2.1.0
     # via
     #   -r requirements/test.txt
     #   xblock
@@ -428,12 +429,12 @@ wrapt==1.15.0
     #   -r requirements/test.txt
     #   astroid
     #   deprecated
-xblock==1.6.2
+xblock==1.7.0
     # via
     #   -r requirements/test.txt
     #   edx-completion
     #   xblock-utils
-xblock-utils==3.2.0
+xblock-utils==3.3.0
     # via -r requirements/test.txt
 
 # The following packages are considered to be unsafe in a requirements file:
