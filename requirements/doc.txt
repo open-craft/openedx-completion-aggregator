@@ -21,7 +21,7 @@ asgiref==3.7.2
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   django
-async-timeout==4.0.2
+async-timeout==4.0.3
     # via
     #   -r requirements/test.txt
     #   redis
@@ -95,7 +95,7 @@ code-annotations==1.5.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-toggles
-coverage[toml]==7.2.7
+coverage[toml]==7.3.0
     # via
     #   -r requirements/test.txt
     #   pytest-cov
@@ -190,7 +190,7 @@ edx-drf-extensions==8.8.0
     #   edx-completion
 edx-i18n-tools==1.1.0
     # via -r requirements/test.txt
-edx-opaque-keys==2.3.0
+edx-opaque-keys==2.4.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -264,7 +264,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/test.txt
-newrelic==8.9.0
+newrelic==8.10.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -502,7 +502,7 @@ xblock==1.7.0
     #   -r requirements/test.txt
     #   edx-completion
     #   xblock-utils
-xblock-utils==3.3.0
+xblock-utils==3.4.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
