@@ -21,7 +21,7 @@ astroid==2.15.6
     #   -r requirements/quality.txt
     #   pylint
     #   pylint-celery
-async-timeout==4.0.2
+async-timeout==4.0.3
     # via
     #   -r requirements/quality.txt
     #   redis
@@ -93,7 +93,7 @@ code-annotations==1.5.0
     #   -r requirements/quality.txt
     #   edx-lint
     #   edx-toggles
-coverage[toml]==7.2.7
+coverage[toml]==7.3.0
     # via
     #   -r requirements/quality.txt
     #   pytest-cov
@@ -178,7 +178,7 @@ edx-i18n-tools==1.1.0
     # via -r requirements/quality.txt
 edx-lint==5.3.4
     # via -r requirements/quality.txt
-edx-opaque-keys==2.3.0
+edx-opaque-keys==2.4.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
@@ -252,7 +252,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/quality.txt
-newrelic==8.9.0
+newrelic==8.10.0
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -276,7 +276,7 @@ pbr==5.11.1
     # via
     #   -r requirements/quality.txt
     #   stevedore
-pip-tools==7.2.0
+pip-tools==7.3.0
     # via -r requirements/pip-tools.txt
 platformdirs==3.10.0
     # via
@@ -477,7 +477,7 @@ vine==5.0.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.24.2
+virtualenv==20.24.3
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -509,7 +509,7 @@ xblock==1.7.0
     #   -r requirements/quality.txt
     #   edx-completion
     #   xblock-utils
-xblock-utils==3.3.0
+xblock-utils==3.4.0
     # via -r requirements/quality.txt
 
 # The following packages are considered to be unsafe in a requirements file:
