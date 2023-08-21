@@ -44,6 +44,17 @@ billiard==4.1.0
     #   celery
 bleach==6.0.0
     # via readme-renderer
+boto3==1.28.30
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   fs-s3fs
+botocore==1.31.30
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   boto3
+    #   s3transfer
 celery==5.3.1
     # via
     #   -r requirements/base.txt
@@ -65,7 +76,7 @@ charset-normalizer==3.2.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   requests
-click==8.1.6
+click==8.1.7
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -128,6 +139,7 @@ django==3.2.20
     #   edx-i18n-tools
     #   edx-toggles
     #   jsonfield
+    #   openedx-django-pyfs
 django-crum==0.7.9
     # via
     #   -r requirements/base.txt
@@ -183,7 +195,7 @@ edx-django-utils==5.7.0
     #   -r requirements/test.txt
     #   edx-drf-extensions
     #   edx-toggles
-edx-drf-extensions==8.8.0
+edx-drf-extensions==8.9.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -209,7 +221,14 @@ fs==2.4.16
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   fs-s3fs
+    #   openedx-django-pyfs
     #   xblock
+fs-s3fs==1.1.1
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   openedx-django-pyfs
 idna==3.4
     # via
     #   -r requirements/base.txt
@@ -225,6 +244,12 @@ jinja2==3.1.2
     #   -r requirements/test.txt
     #   code-annotations
     #   sphinx
+jmespath==1.0.1
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   boto3
+    #   botocore
 jsonfield==3.1.0
     # via
     #   -r requirements/base.txt
@@ -239,6 +264,11 @@ kombu==5.3.1
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   celery
+lazy==1.5
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   xblock
 lxml==4.9.3
     # via
     #   -r requirements/base.txt
@@ -264,7 +294,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/test.txt
-newrelic==8.10.0
+newrelic==8.10.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -273,6 +303,11 @@ oauthlib==3.2.2
     # via
     #   -r requirements/test.txt
     #   django-oauth-toolkit
+openedx-django-pyfs==3.4.0
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   xblock
 packaging==23.1
     # via
     #   -r requirements/test.txt
@@ -348,6 +383,7 @@ python-dateutil==2.8.2
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   botocore
     #   celery
     #   edx-drf-extensions
     #   freezegun
@@ -373,9 +409,9 @@ pyyaml==6.0.1
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-readme-renderer==40.0
+readme-renderer==41.0
     # via -r requirements/doc.in
-redis==4.6.0
+redis==5.0.0
     # via -r requirements/test.txt
 requests==2.31.0
     # via
@@ -386,6 +422,11 @@ requests==2.31.0
     #   sphinx
 restructuredtext-lint==1.4.0
     # via doc8
+s3transfer==0.6.2
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   boto3
 semantic-version==2.10.0
     # via
     #   -r requirements/base.txt
@@ -405,6 +446,7 @@ six==1.16.0
     #   edx-sphinx-theme
     #   freezegun
     #   fs
+    #   fs-s3fs
     #   mock
     #   more-itertools
     #   python-dateutil
@@ -461,10 +503,11 @@ tzdata==2023.3
     #   -r requirements/test.txt
     #   backports-zoneinfo
     #   celery
-urllib3==2.0.4
+urllib3==1.26.16
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   botocore
     #   requests
 vine==5.0.0
     # via
@@ -496,13 +539,13 @@ wrapt==1.15.0
     # via
     #   -r requirements/test.txt
     #   deprecated
-xblock==1.7.0
+xblock[django]==1.7.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-completion
     #   xblock-utils
-xblock-utils==3.4.0
+xblock-utils==3.4.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt

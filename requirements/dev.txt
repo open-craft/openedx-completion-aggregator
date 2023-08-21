@@ -38,6 +38,15 @@ billiard==4.1.0
     # via
     #   -r requirements/quality.txt
     #   celery
+boto3==1.28.30
+    # via
+    #   -r requirements/quality.txt
+    #   fs-s3fs
+botocore==1.31.30
+    # via
+    #   -r requirements/quality.txt
+    #   boto3
+    #   s3transfer
 build==0.10.0
     # via
     #   -r requirements/pip-tools.txt
@@ -59,7 +68,7 @@ charset-normalizer==3.2.0
     # via
     #   -r requirements/quality.txt
     #   requests
-click==8.1.6
+click==8.1.7
     # via
     #   -r requirements/pip-tools.txt
     #   -r requirements/quality.txt
@@ -133,6 +142,7 @@ django==3.2.20
     #   edx-i18n-tools
     #   edx-toggles
     #   jsonfield
+    #   openedx-django-pyfs
 django-crum==0.7.9
     # via
     #   -r requirements/quality.txt
@@ -170,7 +180,7 @@ edx-django-utils==5.7.0
     #   -r requirements/quality.txt
     #   edx-drf-extensions
     #   edx-toggles
-edx-drf-extensions==8.8.0
+edx-drf-extensions==8.9.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
@@ -197,7 +207,13 @@ freezegun==0.3.15
 fs==2.4.16
     # via
     #   -r requirements/quality.txt
+    #   fs-s3fs
+    #   openedx-django-pyfs
     #   xblock
+fs-s3fs==1.1.1
+    # via
+    #   -r requirements/quality.txt
+    #   openedx-django-pyfs
 idna==3.4
     # via
     #   -r requirements/quality.txt
@@ -210,6 +226,11 @@ jinja2==3.1.2
     # via
     #   -r requirements/quality.txt
     #   code-annotations
+jmespath==1.0.1
+    # via
+    #   -r requirements/quality.txt
+    #   boto3
+    #   botocore
 jsonfield==3.1.0
     # via
     #   -r requirements/quality.txt
@@ -222,6 +243,10 @@ kombu==5.3.1
     # via
     #   -r requirements/quality.txt
     #   celery
+lazy==1.5
+    # via
+    #   -r requirements/quality.txt
+    #   xblock
 lazy-object-proxy==1.9.0
     # via
     #   -r requirements/quality.txt
@@ -252,7 +277,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/quality.txt
-newrelic==8.10.0
+newrelic==8.10.1
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -260,6 +285,10 @@ oauthlib==3.2.2
     # via
     #   -r requirements/quality.txt
     #   django-oauth-toolkit
+openedx-django-pyfs==3.4.0
+    # via
+    #   -r requirements/quality.txt
+    #   xblock
 packaging==23.1
     # via
     #   -r requirements/ci.txt
@@ -367,6 +396,7 @@ pytest-django==4.5.2
 python-dateutil==2.8.2
     # via
     #   -r requirements/quality.txt
+    #   botocore
     #   celery
     #   edx-drf-extensions
     #   freezegun
@@ -388,13 +418,17 @@ pyyaml==6.0.1
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==4.6.0
+redis==5.0.0
     # via -r requirements/quality.txt
 requests==2.31.0
     # via
     #   -r requirements/quality.txt
     #   django-oauth-toolkit
     #   edx-drf-extensions
+s3transfer==0.6.2
+    # via
+    #   -r requirements/quality.txt
+    #   boto3
 semantic-version==2.10.0
     # via
     #   -r requirements/quality.txt
@@ -411,6 +445,7 @@ six==1.16.0
     #   edx-lint
     #   freezegun
     #   fs
+    #   fs-s3fs
     #   mock
     #   more-itertools
     #   python-dateutil
@@ -453,7 +488,7 @@ tox==3.28.0
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/ci.txt
     #   tox-battery
-tox-battery==0.6.1
+tox-battery==0.6.2
     # via -r requirements/ci.txt
 typing-extensions==4.7.1
     # via
@@ -467,9 +502,10 @@ tzdata==2023.3
     #   -r requirements/quality.txt
     #   backports-zoneinfo
     #   celery
-urllib3==2.0.4
+urllib3==1.26.16
     # via
     #   -r requirements/quality.txt
+    #   botocore
     #   requests
 vine==5.0.0
     # via
@@ -504,12 +540,12 @@ wrapt==1.15.0
     #   -r requirements/quality.txt
     #   astroid
     #   deprecated
-xblock==1.7.0
+xblock[django]==1.7.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
     #   xblock-utils
-xblock-utils==3.4.0
+xblock-utils==3.4.1
     # via -r requirements/quality.txt
 
 # The following packages are considered to be unsafe in a requirements file:
