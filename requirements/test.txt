@@ -29,6 +29,15 @@ billiard==4.1.0
     # via
     #   -r requirements/base.txt
     #   celery
+boto3==1.28.30
+    # via
+    #   -r requirements/base.txt
+    #   fs-s3fs
+botocore==1.31.30
+    # via
+    #   -r requirements/base.txt
+    #   boto3
+    #   s3transfer
 celery==5.3.1
     # via
     #   -r requirements/base.txt
@@ -46,7 +55,7 @@ charset-normalizer==3.2.0
     # via
     #   -r requirements/base.txt
     #   requests
-click==8.1.6
+click==8.1.7
     # via
     #   -r requirements/base.txt
     #   celery
@@ -98,6 +107,7 @@ deprecated==1.2.14
     #   edx-i18n-tools
     #   edx-toggles
     #   jsonfield
+    #   openedx-django-pyfs
 django-crum==0.7.9
     # via
     #   -r requirements/base.txt
@@ -136,7 +146,7 @@ edx-django-utils==5.7.0
     #   -r requirements/base.txt
     #   edx-drf-extensions
     #   edx-toggles
-edx-drf-extensions==8.8.0
+edx-drf-extensions==8.9.0
     # via
     #   -r requirements/base.txt
     #   edx-completion
@@ -156,7 +166,13 @@ freezegun==0.3.15
 fs==2.4.16
     # via
     #   -r requirements/base.txt
+    #   fs-s3fs
+    #   openedx-django-pyfs
     #   xblock
+fs-s3fs==1.1.1
+    # via
+    #   -r requirements/base.txt
+    #   openedx-django-pyfs
 idna==3.4
     # via
     #   -r requirements/base.txt
@@ -165,6 +181,11 @@ jinja2==3.1.2
     # via
     #   -r requirements/base.txt
     #   code-annotations
+jmespath==1.0.1
+    # via
+    #   -r requirements/base.txt
+    #   boto3
+    #   botocore
 jsonfield==3.1.0
     # via
     #   -r requirements/base.txt
@@ -175,6 +196,10 @@ kombu==5.3.1
     # via
     #   -r requirements/base.txt
     #   celery
+lazy==1.5
+    # via
+    #   -r requirements/base.txt
+    #   xblock
 lxml==4.9.3
     # via
     #   -r requirements/base.txt
@@ -197,12 +222,16 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/test.in
-newrelic==8.10.0
+newrelic==8.10.1
     # via
     #   -r requirements/base.txt
     #   edx-django-utils
 oauthlib==3.2.2
     # via django-oauth-toolkit
+openedx-django-pyfs==3.4.0
+    # via
+    #   -r requirements/base.txt
+    #   xblock
 packaging==23.1
     # via pytest
 path==16.7.1
@@ -257,6 +286,7 @@ pytest-django==4.5.2
 python-dateutil==2.8.2
     # via
     #   -r requirements/base.txt
+    #   botocore
     #   celery
     #   edx-drf-extensions
     #   freezegun
@@ -278,13 +308,17 @@ pyyaml==6.0.1
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==4.6.0
+redis==5.0.0
     # via -r requirements/test.in
 requests==2.31.0
     # via
     #   -r requirements/base.txt
     #   django-oauth-toolkit
     #   edx-drf-extensions
+s3transfer==0.6.2
+    # via
+    #   -r requirements/base.txt
+    #   boto3
 semantic-version==2.10.0
     # via
     #   -r requirements/base.txt
@@ -299,6 +333,7 @@ six==1.16.0
     #   edx-drf-extensions
     #   freezegun
     #   fs
+    #   fs-s3fs
     #   mock
     #   more-itertools
     #   python-dateutil
@@ -328,9 +363,10 @@ tzdata==2023.3
     #   -r requirements/base.txt
     #   backports-zoneinfo
     #   celery
-urllib3==2.0.4
+urllib3==1.26.16
     # via
     #   -r requirements/base.txt
+    #   botocore
     #   requests
 vine==5.0.0
     # via
@@ -354,12 +390,12 @@ webob==1.8.7
     #   xblock
 wrapt==1.15.0
     # via deprecated
-xblock==1.7.0
+xblock[django]==1.7.0
     # via
     #   -r requirements/base.txt
     #   edx-completion
     #   xblock-utils
-xblock-utils==3.4.0
+xblock-utils==3.4.1
     # via -r requirements/base.txt
 
 # The following packages are considered to be unsafe in a requirements file:
