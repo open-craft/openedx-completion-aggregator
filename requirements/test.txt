@@ -29,11 +29,11 @@ billiard==4.1.0
     # via
     #   -r requirements/base.txt
     #   celery
-boto3==1.28.40
+boto3==1.28.44
     # via
     #   -r requirements/base.txt
     #   fs-s3fs
-botocore==1.31.40
+botocore==1.31.44
     # via
     #   -r requirements/base.txt
     #   boto3
@@ -80,7 +80,7 @@ code-annotations==1.5.0
     # via
     #   -r requirements/base.txt
     #   edx-toggles
-coverage[toml]==7.3.0
+coverage[toml]==7.3.1
     # via pytest-cov
 cryptography==41.0.3
     # via
@@ -295,7 +295,7 @@ python-slugify==8.0.1
     # via
     #   -r requirements/base.txt
     #   code-annotations
-pytz==2023.3
+pytz==2023.3.post1
     # via
     #   -r requirements/base.txt
     #   django
