@@ -37,11 +37,11 @@ billiard==4.1.0
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.28.40
+boto3==1.28.44
     # via
     #   -r requirements/test.txt
     #   fs-s3fs
-botocore==1.31.40
+botocore==1.31.44
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -93,7 +93,7 @@ code-annotations==1.5.0
     #   -r requirements/test.txt
     #   edx-lint
     #   edx-toggles
-coverage[toml]==7.3.0
+coverage[toml]==7.3.1
     # via
     #   -r requirements/test.txt
     #   pytest-cov
@@ -110,7 +110,7 @@ deprecated==1.2.14
     #   jwcrypto
 dill==0.3.7
     # via pylint
-django==3.2.20
+django==3.2.21
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/test.txt
@@ -357,7 +357,7 @@ python-slugify==8.0.1
     # via
     #   -r requirements/test.txt
     #   code-annotations
-pytz==2023.3
+pytz==2023.3.post1
     # via
     #   -r requirements/test.txt
     #   django
