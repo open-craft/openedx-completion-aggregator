@@ -16,7 +16,7 @@ asgiref==3.7.2
     # via
     #   -r requirements/test.txt
     #   django
-astroid==2.15.7
+astroid==2.15.8
     # via
     #   pylint
     #   pylint-celery
@@ -37,11 +37,11 @@ billiard==4.1.0
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.28.53
+boto3==1.28.57
     # via
     #   -r requirements/test.txt
     #   fs-s3fs
-botocore==1.31.53
+botocore==1.31.57
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -54,12 +54,12 @@ certifi==2023.7.22
     # via
     #   -r requirements/test.txt
     #   requests
-cffi==1.15.1
+cffi==1.16.0
     # via
     #   -r requirements/test.txt
     #   cryptography
     #   pynacl
-charset-normalizer==3.2.0
+charset-normalizer==3.3.0
     # via
     #   -r requirements/test.txt
     #   requests
@@ -253,7 +253,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/test.txt
-newrelic==9.0.0
+newrelic==9.1.0
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
@@ -265,7 +265,7 @@ openedx-django-pyfs==3.4.0
     # via
     #   -r requirements/test.txt
     #   xblock
-packaging==23.1
+packaging==23.2
     # via
     #   -r requirements/test.txt
     #   pytest
@@ -313,7 +313,7 @@ pyjwt[crypto]==2.8.0
     #   -r requirements/test.txt
     #   drf-jwt
     #   edx-drf-extensions
-pylint==2.17.5
+pylint==2.17.7
     # via
     #   edx-lint
     #   pylint-celery
@@ -369,14 +369,14 @@ pyyaml==6.0.1
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==5.0.0
+redis==5.0.1
     # via -r requirements/test.txt
 requests==2.31.0
     # via
     #   -r requirements/test.txt
     #   django-oauth-toolkit
     #   edx-drf-extensions
-s3transfer==0.6.2
+s3transfer==0.7.0
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -445,7 +445,7 @@ vine==5.0.0
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.2.6
+wcwidth==0.2.8
     # via
     #   -r requirements/test.txt
     #   prompt-toolkit
@@ -464,7 +464,7 @@ wrapt==1.15.0
     #   -r requirements/test.txt
     #   astroid
     #   deprecated
-xblock[django]==1.7.0
+xblock[django]==1.8.0
     # via
     #   -r requirements/test.txt
     #   edx-completion

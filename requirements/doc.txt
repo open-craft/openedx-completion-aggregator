@@ -42,12 +42,12 @@ billiard==4.1.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   celery
-boto3==1.28.53
+boto3==1.28.57
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   fs-s3fs
-botocore==1.31.53
+botocore==1.31.57
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -63,13 +63,13 @@ certifi==2023.7.22
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   requests
-cffi==1.15.1
+cffi==1.16.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   cryptography
     #   pynacl
-charset-normalizer==3.2.0
+charset-normalizer==3.3.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -292,7 +292,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/test.txt
-newrelic==9.0.0
+newrelic==9.1.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -308,7 +308,7 @@ openedx-django-pyfs==3.4.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   xblock
-packaging==23.1
+packaging==23.2
     # via
     #   -r requirements/test.txt
     #   pytest
@@ -410,7 +410,7 @@ pyyaml==6.0.1
     #   xblock
 readme-renderer==42.0
     # via -r requirements/doc.in
-redis==5.0.0
+redis==5.0.1
     # via -r requirements/test.txt
 requests==2.31.0
     # via
@@ -421,7 +421,7 @@ requests==2.31.0
     #   sphinx
 restructuredtext-lint==1.4.0
     # via doc8
-s3transfer==0.6.2
+s3transfer==0.7.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -514,7 +514,7 @@ vine==5.0.0
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.2.6
+wcwidth==0.2.8
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -535,7 +535,7 @@ wrapt==1.15.0
     # via
     #   -r requirements/test.txt
     #   deprecated
-xblock[django]==1.7.0
+xblock[django]==1.8.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
