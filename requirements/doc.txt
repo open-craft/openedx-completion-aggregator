@@ -29,12 +29,13 @@ attrs==23.1.0
     # via
     #   -r requirements/test.txt
     #   pytest
-babel==2.12.1
+babel==2.13.1
     # via sphinx
 backports-zoneinfo[tzdata]==0.2.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   backports-zoneinfo
     #   celery
     #   kombu
 billiard==4.1.0
@@ -42,12 +43,12 @@ billiard==4.1.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   celery
-boto3==1.28.57
+boto3==1.28.70
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   fs-s3fs
-botocore==1.31.57
+botocore==1.31.70
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -58,6 +59,7 @@ celery==5.3.4
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-celeryutils
+    #   event-tracking
 certifi==2023.7.22
     # via
     #   -r requirements/base.txt
@@ -69,7 +71,7 @@ cffi==1.16.0
     #   -r requirements/test.txt
     #   cryptography
     #   pynacl
-charset-normalizer==3.3.0
+charset-normalizer==3.3.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -104,11 +106,12 @@ code-annotations==1.5.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-toggles
-coverage[toml]==7.3.1
+coverage[toml]==7.3.2
     # via
     #   -r requirements/test.txt
+    #   coverage
     #   pytest-cov
-cryptography==41.0.4
+cryptography==41.0.5
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -120,7 +123,7 @@ deprecated==1.2.14
     # via
     #   -r requirements/test.txt
     #   jwcrypto
-django==3.2.21
+django==3.2.22
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -136,6 +139,7 @@ django==3.2.21
     #   edx-drf-extensions
     #   edx-i18n-tools
     #   edx-toggles
+    #   event-tracking
     #   jsonfield
     #   openedx-django-pyfs
 django-crum==0.7.9
@@ -183,7 +187,7 @@ edx-celeryutils==1.2.3
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
-edx-completion==4.3.0
+edx-completion==4.4.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -193,12 +197,13 @@ edx-django-utils==5.7.0
     #   -r requirements/test.txt
     #   edx-drf-extensions
     #   edx-toggles
-edx-drf-extensions==8.10.0
+    #   event-tracking
+edx-drf-extensions==8.12.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-completion
-edx-i18n-tools==1.2.0
+edx-i18n-tools==1.3.0
     # via -r requirements/test.txt
 edx-opaque-keys==2.5.1
     # via
@@ -209,6 +214,11 @@ edx-opaque-keys==2.5.1
 edx-sphinx-theme==3.1.0
     # via -r requirements/doc.in
 edx-toggles==5.1.0
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   edx-completion
+event-tracking==2.2.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -271,11 +281,13 @@ lxml==4.9.3
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   edx-i18n-tools
     #   xblock
 mako==1.2.4
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   xblock
     #   xblock-utils
 markupsafe==2.1.3
     # via
@@ -292,7 +304,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/test.txt
-newrelic==9.1.0
+newrelic==9.1.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -335,7 +347,7 @@ prompt-toolkit==3.0.39
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   click-repl
-psutil==5.9.5
+psutil==5.9.6
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -360,11 +372,13 @@ pyjwt[crypto]==2.8.0
     #   -r requirements/test.txt
     #   drf-jwt
     #   edx-drf-extensions
+    #   pyjwt
 pymongo==3.13.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-opaque-keys
+    #   event-tracking
 pynacl==1.5.0
     # via
     #   -r requirements/base.txt
@@ -400,6 +414,7 @@ pytz==2023.3.post1
     #   django
     #   djangorestframework
     #   edx-completion
+    #   event-tracking
     #   xblock
 pyyaml==6.0.1
     # via
@@ -431,16 +446,18 @@ semantic-version==2.10.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-drf-extensions
-simplejson==3.19.1
+simplejson==3.19.2
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   xblock
     #   xblock-utils
 six==1.16.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-sphinx-theme
+    #   event-tracking
     #   freezegun
     #   fs
     #   fs-s3fs
@@ -501,7 +518,7 @@ tzdata==2023.3
     #   -r requirements/test.txt
     #   backports-zoneinfo
     #   celery
-urllib3==1.26.16
+urllib3==1.26.18
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -535,13 +552,14 @@ wrapt==1.15.0
     # via
     #   -r requirements/test.txt
     #   deprecated
-xblock[django]==1.8.0
+xblock[django]==1.8.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-completion
+    #   xblock
     #   xblock-utils
-xblock-utils==3.4.1
+xblock-utils==4.0.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt

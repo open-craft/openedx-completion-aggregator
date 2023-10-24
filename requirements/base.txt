@@ -16,9 +16,9 @@ backports-zoneinfo[tzdata]==0.2.1
     #   kombu
 billiard==4.1.0
     # via celery
-boto3==1.28.57
+boto3==1.28.70
     # via fs-s3fs
-botocore==1.31.57
+botocore==1.31.70
     # via
     #   boto3
     #   s3transfer
@@ -26,13 +26,14 @@ celery==5.3.4
     # via
     #   -r requirements/base.in
     #   edx-celeryutils
+    #   event-tracking
 certifi==2023.7.22
     # via requests
 cffi==1.16.0
     # via
     #   cryptography
     #   pynacl
-charset-normalizer==3.3.0
+charset-normalizer==3.3.1
     # via requests
 click==8.1.7
     # via
@@ -50,9 +51,9 @@ click-repl==0.3.0
     # via celery
 code-annotations==1.5.0
     # via edx-toggles
-cryptography==41.0.4
+cryptography==41.0.5
     # via pyjwt
-django==3.2.21
+django==3.2.22
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.in
@@ -66,6 +67,7 @@ django==3.2.21
     #   edx-django-utils
     #   edx-drf-extensions
     #   edx-toggles
+    #   event-tracking
     #   jsonfield
     #   openedx-django-pyfs
 django-crum==0.7.9
@@ -92,13 +94,14 @@ drf-jwt==1.19.2
     # via edx-drf-extensions
 edx-celeryutils==1.2.3
     # via -r requirements/base.in
-edx-completion==4.3.0
+edx-completion==4.4.0
     # via -r requirements/base.in
 edx-django-utils==5.7.0
     # via
     #   edx-drf-extensions
     #   edx-toggles
-edx-drf-extensions==8.10.0
+    #   event-tracking
+edx-drf-extensions==8.12.0
     # via edx-completion
 edx-opaque-keys==2.5.1
     # via
@@ -109,6 +112,8 @@ edx-toggles==5.1.0
     # via
     #   -r requirements/base.in
     #   edx-completion
+event-tracking==2.2.0
+    # via edx-completion
 fs==2.4.16
     # via
     #   fs-s3fs
@@ -133,13 +138,15 @@ lazy==1.6
 lxml==4.9.3
     # via xblock
 mako==1.2.4
-    # via xblock-utils
+    # via
+    #   xblock
+    #   xblock-utils
 markupsafe==2.1.3
     # via
     #   jinja2
     #   mako
     #   xblock
-newrelic==9.1.0
+newrelic==9.1.1
     # via edx-django-utils
 openedx-django-pyfs==3.4.0
     # via xblock
@@ -147,7 +154,7 @@ pbr==5.11.1
     # via stevedore
 prompt-toolkit==3.0.39
     # via click-repl
-psutil==5.9.5
+psutil==5.9.6
     # via edx-django-utils
 pycparser==2.21
     # via cffi
@@ -155,8 +162,11 @@ pyjwt[crypto]==2.8.0
     # via
     #   drf-jwt
     #   edx-drf-extensions
+    #   pyjwt
 pymongo==3.13.0
-    # via edx-opaque-keys
+    # via
+    #   edx-opaque-keys
+    #   event-tracking
 pynacl==1.5.0
     # via edx-django-utils
 python-dateutil==2.8.2
@@ -171,6 +181,7 @@ pytz==2023.3.post1
     #   django
     #   djangorestframework
     #   edx-completion
+    #   event-tracking
     #   xblock
 pyyaml==6.0.1
     # via
@@ -182,11 +193,14 @@ s3transfer==0.7.0
     # via boto3
 semantic-version==2.10.0
     # via edx-drf-extensions
-simplejson==3.19.1
-    # via xblock-utils
+simplejson==3.19.2
+    # via
+    #   xblock
+    #   xblock-utils
 six==1.16.0
     # via
     #   -r requirements/base.in
+    #   event-tracking
     #   fs
     #   fs-s3fs
     #   python-dateutil
@@ -208,7 +222,7 @@ tzdata==2023.3
     # via
     #   backports-zoneinfo
     #   celery
-urllib3==1.26.16
+urllib3==1.26.18
     # via
     #   botocore
     #   requests
@@ -225,11 +239,11 @@ web-fragments==2.1.0
     #   xblock-utils
 webob==1.8.7
     # via xblock
-xblock[django]==1.8.0
+xblock[django]==1.8.1
     # via
     #   edx-completion
     #   xblock-utils
-xblock-utils==3.4.1
+xblock-utils==4.0.0
     # via -r requirements/base.in
 
 # The following packages are considered to be unsafe in a requirements file:
