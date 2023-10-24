@@ -3,13 +3,16 @@ Completion_aggregator App progress bar view.
 """
 from __future__ import absolute_import, unicode_literals
 
-from xblockutils.resources import ResourceLoader
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.shortcuts import render
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import TemplateView
+
+try:
+    from xblock.utils.resources import ResourceLoader
+except ModuleNotFoundError:  # For backward compatibility with releases older than Quince.
+    from xblockutils.resources import ResourceLoader
 
 from .api.v1.views import CompletionDetailView
 

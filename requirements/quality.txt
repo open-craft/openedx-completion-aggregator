@@ -16,7 +16,7 @@ asgiref==3.7.2
     # via
     #   -r requirements/test.txt
     #   django
-astroid==2.15.8
+astroid==3.0.1
     # via
     #   pylint
     #   pylint-celery
@@ -31,17 +31,18 @@ attrs==23.1.0
 backports-zoneinfo[tzdata]==0.2.1
     # via
     #   -r requirements/test.txt
+    #   backports-zoneinfo
     #   celery
     #   kombu
 billiard==4.1.0
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.28.57
+boto3==1.28.70
     # via
     #   -r requirements/test.txt
     #   fs-s3fs
-botocore==1.31.57
+botocore==1.31.70
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -50,6 +51,7 @@ celery==5.3.4
     # via
     #   -r requirements/test.txt
     #   edx-celeryutils
+    #   event-tracking
 certifi==2023.7.22
     # via
     #   -r requirements/test.txt
@@ -59,7 +61,7 @@ cffi==1.16.0
     #   -r requirements/test.txt
     #   cryptography
     #   pynacl
-charset-normalizer==3.3.0
+charset-normalizer==3.3.1
     # via
     #   -r requirements/test.txt
     #   requests
@@ -93,11 +95,12 @@ code-annotations==1.5.0
     #   -r requirements/test.txt
     #   edx-lint
     #   edx-toggles
-coverage[toml]==7.3.1
+coverage[toml]==7.3.2
     # via
     #   -r requirements/test.txt
+    #   coverage
     #   pytest-cov
-cryptography==41.0.4
+cryptography==41.0.5
     # via
     #   -r requirements/test.txt
     #   jwcrypto
@@ -110,7 +113,7 @@ deprecated==1.2.14
     #   jwcrypto
 dill==0.3.7
     # via pylint
-django==3.2.21
+django==3.2.22
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/test.txt
@@ -126,6 +129,7 @@ django==3.2.21
     #   edx-drf-extensions
     #   edx-i18n-tools
     #   edx-toggles
+    #   event-tracking
     #   jsonfield
     #   openedx-django-pyfs
 django-crum==0.7.9
@@ -158,20 +162,21 @@ drf-jwt==1.19.2
     #   edx-drf-extensions
 edx-celeryutils==1.2.3
     # via -r requirements/test.txt
-edx-completion==4.3.0
+edx-completion==4.4.0
     # via -r requirements/test.txt
 edx-django-utils==5.7.0
     # via
     #   -r requirements/test.txt
     #   edx-drf-extensions
     #   edx-toggles
-edx-drf-extensions==8.10.0
+    #   event-tracking
+edx-drf-extensions==8.12.0
     # via
     #   -r requirements/test.txt
     #   edx-completion
-edx-i18n-tools==1.2.0
+edx-i18n-tools==1.3.0
     # via -r requirements/test.txt
-edx-lint==5.3.4
+edx-lint==5.3.6
     # via -r requirements/quality.in
 edx-opaque-keys==2.5.1
     # via
@@ -179,6 +184,10 @@ edx-opaque-keys==2.5.1
     #   edx-completion
     #   edx-drf-extensions
 edx-toggles==5.1.0
+    # via
+    #   -r requirements/test.txt
+    #   edx-completion
+event-tracking==2.2.0
     # via
     #   -r requirements/test.txt
     #   edx-completion
@@ -227,16 +236,15 @@ lazy==1.6
     # via
     #   -r requirements/test.txt
     #   xblock
-lazy-object-proxy==1.9.0
-    # via astroid
 lxml==4.9.3
     # via
     #   -r requirements/test.txt
+    #   edx-i18n-tools
     #   xblock
 mako==1.2.4
     # via
     #   -r requirements/test.txt
-    #   xblock-utils
+    #   xblock
 markupsafe==2.1.3
     # via
     #   -r requirements/test.txt
@@ -253,7 +261,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/test.txt
-newrelic==9.1.0
+newrelic==9.1.1
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
@@ -277,7 +285,7 @@ pbr==5.11.1
     # via
     #   -r requirements/test.txt
     #   stevedore
-platformdirs==3.10.0
+platformdirs==3.11.0
     # via pylint
 pluggy==0.13.1
     # via
@@ -292,7 +300,7 @@ prompt-toolkit==3.0.39
     # via
     #   -r requirements/test.txt
     #   click-repl
-psutil==5.9.5
+psutil==5.9.6
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
@@ -300,7 +308,7 @@ py==1.11.0
     # via
     #   -r requirements/test.txt
     #   pytest
-pycodestyle==2.11.0
+pycodestyle==2.11.1
     # via -r requirements/quality.in
 pycparser==2.21
     # via
@@ -313,7 +321,8 @@ pyjwt[crypto]==2.8.0
     #   -r requirements/test.txt
     #   drf-jwt
     #   edx-drf-extensions
-pylint==2.17.7
+    #   pyjwt
+pylint==3.0.2
     # via
     #   edx-lint
     #   pylint-celery
@@ -321,7 +330,7 @@ pylint==2.17.7
     #   pylint-plugin-utils
 pylint-celery==0.3
     # via edx-lint
-pylint-django==2.5.3
+pylint-django==2.5.5
     # via edx-lint
 pylint-plugin-utils==0.8.2
     # via
@@ -331,6 +340,7 @@ pymongo==3.13.0
     # via
     #   -r requirements/test.txt
     #   edx-opaque-keys
+    #   event-tracking
 pynacl==1.5.0
     # via
     #   -r requirements/test.txt
@@ -362,6 +372,7 @@ pytz==2023.3.post1
     #   django
     #   djangorestframework
     #   edx-completion
+    #   event-tracking
     #   xblock
 pyyaml==6.0.1
     # via
@@ -384,14 +395,15 @@ semantic-version==2.10.0
     # via
     #   -r requirements/test.txt
     #   edx-drf-extensions
-simplejson==3.19.1
+simplejson==3.19.2
     # via
     #   -r requirements/test.txt
-    #   xblock-utils
+    #   xblock
 six==1.16.0
     # via
     #   -r requirements/test.txt
     #   edx-lint
+    #   event-tracking
     #   freezegun
     #   fs
     #   fs-s3fs
@@ -434,7 +446,7 @@ tzdata==2023.3
     #   -r requirements/test.txt
     #   backports-zoneinfo
     #   celery
-urllib3==1.26.16
+urllib3==1.26.18
     # via
     #   -r requirements/test.txt
     #   botocore
@@ -454,7 +466,6 @@ web-fragments==2.1.0
     # via
     #   -r requirements/test.txt
     #   xblock
-    #   xblock-utils
 webob==1.8.7
     # via
     #   -r requirements/test.txt
@@ -462,15 +473,12 @@ webob==1.8.7
 wrapt==1.15.0
     # via
     #   -r requirements/test.txt
-    #   astroid
     #   deprecated
-xblock[django]==1.8.0
+xblock[django]==1.8.1
     # via
     #   -r requirements/test.txt
     #   edx-completion
-    #   xblock-utils
-xblock-utils==3.4.1
-    # via -r requirements/test.txt
+    #   xblock
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
