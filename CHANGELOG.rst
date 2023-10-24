@@ -14,6 +14,13 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
+[4.0.3] - 2023-10-24
+~~~~~~~~~~~~~~~~~~~~
+
+* Replace `xblockutils.*` imports with `xblock.utils.*`. The old imports are
+  used as a fallback for compatibility with older releases.
+* Remove `xblockutils` dependency.
+
 [4.0.2] - 2023-03-03
 ~~~~~~~~~~~~~~~~~~~~
 

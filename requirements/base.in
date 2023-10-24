@@ -10,4 +10,4 @@ edx-opaque-keys    # Provides CourseKey and UsageKey
 edx-completion
 edx-toggles
 six
-xblock-utils
+XBlock[django]
