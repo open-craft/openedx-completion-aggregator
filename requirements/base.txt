@@ -16,9 +16,9 @@ backports-zoneinfo[tzdata]==0.2.1
     #   kombu
 billiard==4.1.0
     # via celery
-boto3==1.28.70
+boto3==1.28.78
     # via fs-s3fs
-botocore==1.31.70
+botocore==1.31.78
     # via
     #   boto3
     #   s3transfer
@@ -33,7 +33,7 @@ cffi==1.16.0
     # via
     #   cryptography
     #   pynacl
-charset-normalizer==3.3.1
+charset-normalizer==3.3.2
     # via requests
 click==8.1.7
     # via
@@ -53,7 +53,7 @@ code-annotations==1.5.0
     # via edx-toggles
 cryptography==41.0.5
     # via pyjwt
-django==3.2.22
+django==3.2.23
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.in
@@ -96,12 +96,12 @@ edx-celeryutils==1.2.3
     # via -r requirements/base.in
 edx-completion==4.4.0
     # via -r requirements/base.in
-edx-django-utils==5.7.0
+edx-django-utils==5.8.0
     # via
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
-edx-drf-extensions==8.12.0
+edx-drf-extensions==8.13.0
     # via edx-completion
 edx-opaque-keys==2.5.1
     # via
@@ -222,12 +222,12 @@ urllib3==1.26.18
     # via
     #   botocore
     #   requests
-vine==5.0.0
+vine==5.1.0
     # via
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.2.8
+wcwidth==0.2.9
     # via prompt-toolkit
 web-fragments==2.1.0
     # via xblock
