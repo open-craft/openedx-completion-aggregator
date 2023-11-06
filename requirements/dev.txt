@@ -39,11 +39,11 @@ billiard==4.1.0
     # via
     #   -r requirements/quality.txt
     #   celery
-boto3==1.28.70
+boto3==1.28.78
     # via
     #   -r requirements/quality.txt
     #   fs-s3fs
-botocore==1.31.70
+botocore==1.31.78
     # via
     #   -r requirements/quality.txt
     #   boto3
@@ -66,7 +66,7 @@ cffi==1.16.0
     #   -r requirements/quality.txt
     #   cryptography
     #   pynacl
-charset-normalizer==3.3.1
+charset-normalizer==3.3.2
     # via
     #   -r requirements/quality.txt
     #   requests
@@ -128,7 +128,7 @@ distlib==0.3.7
     # via
     #   -r requirements/ci.txt
     #   virtualenv
-django==3.2.22
+django==3.2.23
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/quality.txt
@@ -179,13 +179,13 @@ edx-celeryutils==1.2.3
     # via -r requirements/quality.txt
 edx-completion==4.4.0
     # via -r requirements/quality.txt
-edx-django-utils==5.7.0
+edx-django-utils==5.8.0
     # via
     #   -r requirements/quality.txt
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
-edx-drf-extensions==8.12.0
+edx-drf-extensions==8.13.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
@@ -206,7 +206,7 @@ event-tracking==2.2.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
-filelock==3.12.4
+filelock==3.13.1
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -491,7 +491,7 @@ tomli==2.0.1
     #   pylint
     #   pyproject-hooks
     #   tox
-tomlkit==0.12.1
+tomlkit==0.12.2
     # via
     #   -r requirements/quality.txt
     #   pylint
@@ -520,7 +520,7 @@ urllib3==1.26.18
     #   -r requirements/quality.txt
     #   botocore
     #   requests
-vine==5.0.0
+vine==5.1.0
     # via
     #   -r requirements/quality.txt
     #   amqp
@@ -530,7 +530,7 @@ virtualenv==20.24.6
     # via
     #   -r requirements/ci.txt
     #   tox
-wcwidth==0.2.8
+wcwidth==0.2.9
     # via
     #   -r requirements/quality.txt
     #   prompt-toolkit
@@ -543,7 +543,7 @@ webob==1.8.7
     # via
     #   -r requirements/quality.txt
     #   xblock
-wheel==0.41.2
+wheel==0.41.3
     # via
     #   -r requirements/pip-tools.txt
     #   pip-tools
