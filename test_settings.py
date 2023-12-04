@@ -18,6 +18,20 @@ def root(*args):
     return join(abspath(dirname(__file__)), *args)
 
 
+ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES = {
+    "progress": [
+        "course",
+        "chapter",
+        "sequential",
+        "vertical",
+    ],
+    "completion": [
+        "course",
+        "chapter",
+        "sequential",
+        "vertical",
+    ]
+}
 AUTH_USER_MODEL = 'auth.User'
 CELERY_ALWAYS_EAGER = True
 COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter', 'sequential'}
@@ -53,6 +67,7 @@ INSTALLED_APPS = (
     'oauth2_provider',
     'waffle',
     'test_utils.test_app',
+    'eventtracking.django.apps.EventTrackingConfig',
 )
 
 LOCALE_PATHS = [root('completion_aggregator', 'conf', 'locale')]
@@ -80,6 +95,8 @@ TEMPLATES = [
     },
 ]
 USE_TZ = True
+
+EVENT_TRACKING_ENABLED = True
 
 # pylint: disable=unused-import,wrong-import-position
 from test_utils.test_app import celery  # isort:skip

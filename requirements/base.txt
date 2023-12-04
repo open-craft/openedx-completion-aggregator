@@ -113,7 +113,9 @@ edx-toggles==5.1.0
     #   -r requirements/base.in
     #   edx-completion
 event-tracking==2.2.0
-    # via edx-completion
+    # via
+    #   -r requirements/base.in
+    #   edx-completion
 fs==2.4.16
     # via
     #   fs-s3fs
