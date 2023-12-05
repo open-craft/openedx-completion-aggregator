@@ -13,18 +13,18 @@ def plugin_settings(settings):
     # This setting controls which type of event will be published to change the default behavior
     # the block type should be removed or added from the progress or completion list.
     settings.ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES = {
-        "progress": [
+        "progress": {
             "course",
             "chapter",
             "sequential",
             "vertical",
-        ],
-        "completion": [
+        },
+        "completion": {
             "course",
             "chapter",
             "sequential",
             "vertical",
-        ]
+        }
     }
     settings.COMPLETION_AGGREGATOR_BLOCK_TYPES = {
         'course',

@@ -186,11 +186,11 @@ class AggregatorManager(models.Manager):
             updated_aggregators: List of Aggregator intances
 
         """
-        for obj in updated_aggregators:
-            event = "progress" if obj.percent < 1 else "completion"
-            event_type = obj.aggregation_name
+        for aggregator in updated_aggregators:
+            event = "progress" if aggregator.percent < 1 else "completion"
+            event_type = aggregator.aggregation_name
 
-            if event_type not in settings.ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES.get(event, []):
+            if event_type not in settings.ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES.get(event, {}):
                 continue
 
             event_name = f"edx.completion_aggregator.{event}.{event_type}"
@@ -198,14 +198,14 @@ class AggregatorManager(models.Manager):
             tracker.emit(
                 event_name,
                 {
-                    "user_id": obj.user_id,
-                    "course_id": str(obj.course_key),
-                    "block_id": str(obj.block_key),
-                    "modified": obj.modified,
-                    "created": obj.created,
-                    "earned": obj.earned,
-                    "possible": obj.possible,
-                    "percent": obj.percent,
+                    "user_id": aggregator.user_id,
+                    "course_id": str(aggregator.course_key),
+                    "block_id": str(aggregator.block_key),
+                    "modified": aggregator.modified,
+                    "created": aggregator.created,
+                    "earned": aggregator.earned,
+                    "possible": aggregator.possible,
+                    "percent": aggregator.percent,
                     "type": event_type,
                 }
             )
