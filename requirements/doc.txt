@@ -43,12 +43,12 @@ billiard==4.2.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   celery
-boto3==1.33.6
+boto3==1.33.11
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   fs-s3fs
-botocore==1.33.6
+botocore==1.33.11
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -198,7 +198,7 @@ edx-django-utils==5.9.0
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
-edx-drf-extensions==9.0.0
+edx-drf-extensions==9.0.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -303,12 +303,12 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/test.txt
-newrelic==9.2.0
+newrelic==9.3.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-django-utils
-nh3==0.2.14
+nh3==0.2.15
     # via readme-renderer
 oauthlib==3.2.2
     # via
@@ -324,7 +324,7 @@ packaging==23.2
     #   -r requirements/test.txt
     #   pytest
     #   sphinx
-path==16.7.1
+path==16.9.0
     # via
     #   -r requirements/test.txt
     #   edx-i18n-tools
@@ -503,7 +503,7 @@ tomli==2.0.1
     #   -r requirements/test.txt
     #   coverage
     #   doc8
-typing-extensions==4.8.0
+typing-extensions==4.9.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt

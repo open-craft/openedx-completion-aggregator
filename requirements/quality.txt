@@ -8,6 +8,8 @@ amqp==5.2.0
     # via
     #   -r requirements/test.txt
     #   kombu
+annotated-types==0.6.0
+    # via pydantic
 appdirs==1.4.4
     # via
     #   -r requirements/test.txt
@@ -38,11 +40,11 @@ billiard==4.2.0
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.33.6
+boto3==1.33.11
     # via
     #   -r requirements/test.txt
     #   fs-s3fs
-botocore==1.33.6
+botocore==1.33.11
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -52,6 +54,8 @@ celery==5.3.6
     #   -r requirements/test.txt
     #   edx-celeryutils
     #   event-tracking
+cerberus==1.3.5
+    # via plette
 certifi==2023.11.17
     # via
     #   -r requirements/test.txt
@@ -113,6 +117,8 @@ deprecated==1.2.14
     #   jwcrypto
 dill==0.3.7
     # via pylint
+distlib==0.3.7
+    # via requirementslib
 django==3.2.23
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
@@ -156,6 +162,8 @@ djangorestframework==3.14.0
     #   drf-jwt
     #   edx-completion
     #   edx-drf-extensions
+docopt==0.6.2
+    # via pipreqs
 drf-jwt==1.19.2
     # via
     #   -r requirements/test.txt
@@ -170,7 +178,7 @@ edx-django-utils==5.9.0
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
-edx-drf-extensions==9.0.0
+edx-drf-extensions==9.0.1
     # via
     #   -r requirements/test.txt
     #   edx-completion
@@ -207,7 +215,7 @@ idna==3.6
     # via
     #   -r requirements/test.txt
     #   requests
-isort==5.12.0
+isort==5.13.0
     # via
     #   -r requirements/quality.in
     #   pylint
@@ -261,7 +269,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.0
     # via -r requirements/test.txt
-newrelic==9.2.0
+newrelic==9.3.0
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
@@ -277,7 +285,7 @@ packaging==23.2
     # via
     #   -r requirements/test.txt
     #   pytest
-path==16.7.1
+path==16.9.0
     # via
     #   -r requirements/test.txt
     #   edx-i18n-tools
@@ -285,10 +293,18 @@ pbr==6.0.0
     # via
     #   -r requirements/test.txt
     #   stevedore
-platformdirs==3.11.0
+pep517==0.13.1
+    # via requirementslib
+pip-api==0.0.30
+    # via isort
+pipreqs==0.4.13
+    # via isort
+platformdirs==4.1.0
     # via
-    #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   pylint
+    #   requirementslib
+plette[validation]==0.4.4
+    # via requirementslib
 pluggy==0.13.1
     # via
     #   -c requirements/constraints.txt
@@ -316,6 +332,10 @@ pycparser==2.21
     # via
     #   -r requirements/test.txt
     #   cffi
+pydantic==2.5.2
+    # via requirementslib
+pydantic-core==2.14.5
+    # via pydantic
 pydocstyle==6.3.0
     # via -r requirements/quality.in
 pyjwt[crypto]==2.8.0
@@ -389,6 +409,10 @@ requests==2.31.0
     #   -r requirements/test.txt
     #   django-oauth-toolkit
     #   edx-drf-extensions
+    #   requirementslib
+    #   yarg
+requirementslib==3.0.0
+    # via isort
 s3transfer==0.8.2
     # via
     #   -r requirements/test.txt
@@ -432,16 +456,23 @@ tomli==2.0.1
     # via
     #   -r requirements/test.txt
     #   coverage
+    #   pep517
     #   pylint
 tomlkit==0.12.3
-    # via pylint
-typing-extensions==4.8.0
+    # via
+    #   plette
+    #   pylint
+    #   requirementslib
+typing-extensions==4.9.0
     # via
     #   -r requirements/test.txt
+    #   annotated-types
     #   asgiref
     #   astroid
     #   edx-opaque-keys
     #   kombu
+    #   pydantic
+    #   pydantic-core
     #   pylint
 tzdata==2023.3
     # via
@@ -481,6 +512,9 @@ xblock[django]==1.8.1
     #   -r requirements/test.txt
     #   edx-completion
     #   xblock
+yarg==0.1.9
+    # via pipreqs
 
 # The following packages are considered to be unsafe in a requirements file:
+# pip
 # setuptools
