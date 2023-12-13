@@ -16,7 +16,7 @@ asgiref==3.7.2
     # via
     #   -r requirements/quality.txt
     #   django
-astroid==3.0.1
+astroid==3.0.2
     # via
     #   -r requirements/quality.txt
     #   pylint
@@ -39,11 +39,11 @@ billiard==4.2.0
     # via
     #   -r requirements/quality.txt
     #   celery
-boto3==1.33.6
+boto3==1.33.13
     # via
     #   -r requirements/quality.txt
     #   fs-s3fs
-botocore==1.33.6
+botocore==1.33.13
     # via
     #   -r requirements/quality.txt
     #   boto3
@@ -124,7 +124,7 @@ dill==0.3.7
     # via
     #   -r requirements/quality.txt
     #   pylint
-distlib==0.3.7
+distlib==0.3.8
     # via
     #   -r requirements/ci.txt
     #   virtualenv
@@ -159,7 +159,7 @@ django-model-utils==4.3.1
     #   edx-completion
 django-oauth-toolkit==2.3.0
     # via -r requirements/quality.txt
-django-waffle==4.0.0
+django-waffle==4.1.0
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -185,7 +185,7 @@ edx-django-utils==5.9.0
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
-edx-drf-extensions==9.0.0
+edx-drf-extensions==9.0.1
     # via
     #   -r requirements/quality.txt
     #   edx-completion
@@ -231,7 +231,7 @@ importlib-metadata==7.0.0
     # via
     #   -r requirements/pip-tools.txt
     #   build
-isort==5.12.0
+isort==5.13.1
     # via
     #   -r requirements/quality.txt
     #   pylint
@@ -285,9 +285,9 @@ more-itertools==5.0.0
     # via
     #   -r requirements/quality.txt
     #   pytest
-mysqlclient==2.2.0
+mysqlclient==2.2.1
     # via -r requirements/quality.txt
-newrelic==9.2.0
+newrelic==9.3.0
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -307,7 +307,7 @@ packaging==23.2
     #   build
     #   pytest
     #   tox
-path==16.7.1
+path==16.9.0
     # via
     #   -r requirements/quality.txt
     #   edx-i18n-tools
@@ -317,9 +317,8 @@ pbr==6.0.0
     #   stevedore
 pip-tools==7.3.0
     # via -r requirements/pip-tools.txt
-platformdirs==3.11.0
+platformdirs==4.1.0
     # via
-    #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/ci.txt
     #   -r requirements/quality.txt
     #   pylint
@@ -335,7 +334,7 @@ polib==1.2.0
     # via
     #   -r requirements/quality.txt
     #   edx-i18n-tools
-prompt-toolkit==3.0.41
+prompt-toolkit==3.0.43
     # via
     #   -r requirements/quality.txt
     #   click-repl
@@ -363,7 +362,7 @@ pyjwt[crypto]==2.8.0
     #   drf-jwt
     #   edx-drf-extensions
     #   pyjwt
-pylint==3.0.2
+pylint==3.0.3
     # via
     #   -r requirements/quality.txt
     #   edx-lint
@@ -502,7 +501,7 @@ tox==3.28.0
     #   tox-battery
 tox-battery==0.6.2
     # via -r requirements/ci.txt
-typing-extensions==4.8.0
+typing-extensions==4.9.0
     # via
     #   -r requirements/quality.txt
     #   asgiref
