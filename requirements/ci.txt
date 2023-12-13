@@ -4,7 +4,7 @@
 #
 #    make upgrade
 #
-distlib==0.3.7
+distlib==0.3.8
     # via virtualenv
 filelock==3.13.1
     # via
@@ -12,9 +12,8 @@ filelock==3.13.1
     #   virtualenv
 packaging==23.2
     # via tox
-platformdirs==3.11.0
+platformdirs==4.1.0
     # via
-    #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   tox
     #   virtualenv
 pluggy==0.13.1
