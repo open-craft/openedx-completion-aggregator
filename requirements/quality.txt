@@ -38,11 +38,11 @@ billiard==4.2.0
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.33.13
+boto3==1.34.2
     # via
     #   -r requirements/test.txt
     #   fs-s3fs
-botocore==1.33.13
+botocore==1.34.2
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -95,7 +95,7 @@ code-annotations==1.5.0
     #   -r requirements/test.txt
     #   edx-lint
     #   edx-toggles
-coverage[toml]==7.3.2
+coverage[toml]==7.3.3
     # via
     #   -r requirements/test.txt
     #   coverage
@@ -207,7 +207,7 @@ idna==3.6
     # via
     #   -r requirements/test.txt
     #   requests
-isort==5.13.1
+isort==5.13.2
     # via
     #   -r requirements/quality.in
     #   pylint
@@ -269,7 +269,7 @@ oauthlib==3.2.2
     # via
     #   -r requirements/test.txt
     #   django-oauth-toolkit
-openedx-django-pyfs==3.4.0
+openedx-django-pyfs==3.4.1
     # via
     #   -r requirements/test.txt
     #   xblock
@@ -300,7 +300,7 @@ prompt-toolkit==3.0.43
     # via
     #   -r requirements/test.txt
     #   click-repl
-psutil==5.9.6
+psutil==5.9.7
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
@@ -387,7 +387,7 @@ requests==2.31.0
     #   -r requirements/test.txt
     #   django-oauth-toolkit
     #   edx-drf-extensions
-s3transfer==0.8.2
+s3transfer==0.9.0
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -474,7 +474,7 @@ wrapt==1.16.0
     # via
     #   -r requirements/test.txt
     #   deprecated
-xblock[django]==1.8.1
+xblock[django]==1.9.0
     # via
     #   -r requirements/test.txt
     #   edx-completion
