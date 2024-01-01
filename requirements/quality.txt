@@ -24,7 +24,7 @@ async-timeout==4.0.3
     # via
     #   -r requirements/test.txt
     #   redis
-attrs==23.1.0
+attrs==23.2.0
     # via
     #   -r requirements/test.txt
     #   pytest
@@ -38,11 +38,11 @@ billiard==4.2.0
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.34.7
+boto3==1.34.11
     # via
     #   -r requirements/test.txt
     #   fs-s3fs
-botocore==1.34.7
+botocore==1.34.11
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -95,7 +95,7 @@ code-annotations==1.5.0
     #   -r requirements/test.txt
     #   edx-lint
     #   edx-toggles
-coverage[toml]==7.3.4
+coverage[toml]==7.4.0
     # via
     #   -r requirements/test.txt
     #   coverage
@@ -224,7 +224,7 @@ jsonfield==3.1.0
     # via
     #   -r requirements/test.txt
     #   edx-celeryutils
-jwcrypto==1.5.0
+jwcrypto==1.5.1
     # via
     #   -r requirements/test.txt
     #   django-oauth-toolkit
@@ -236,7 +236,7 @@ lazy==1.6
     # via
     #   -r requirements/test.txt
     #   xblock
-lxml==4.9.4
+lxml==5.0.0
     # via
     #   -r requirements/test.txt
     #   edx-i18n-tools
@@ -441,7 +441,7 @@ typing-extensions==4.9.0
     #   edx-opaque-keys
     #   kombu
     #   pylint
-tzdata==2023.3
+tzdata==2023.4
     # via
     #   -r requirements/test.txt
     #   backports-zoneinfo
