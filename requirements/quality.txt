@@ -38,11 +38,11 @@ billiard==4.2.0
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.34.23
+boto3==1.34.29
     # via
     #   -r requirements/test.txt
     #   fs-s3fs
-botocore==1.34.23
+botocore==1.34.29
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -95,12 +95,12 @@ code-annotations==1.5.0
     #   -r requirements/test.txt
     #   edx-lint
     #   edx-toggles
-coverage[toml]==7.4.0
+coverage[toml]==7.4.1
     # via
     #   -r requirements/test.txt
     #   coverage
     #   pytest-cov
-cryptography==41.0.7
+cryptography==42.0.1
     # via
     #   -r requirements/test.txt
     #   jwcrypto
@@ -111,7 +111,7 @@ deprecated==1.2.14
     # via
     #   -r requirements/test.txt
     #   jwcrypto
-dill==0.3.7
+dill==0.3.8
     # via pylint
 django==3.2.23
     # via
@@ -170,7 +170,7 @@ edx-django-utils==5.10.1
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
-edx-drf-extensions==9.1.2
+edx-drf-extensions==10.0.0
     # via
     #   -r requirements/test.txt
     #   edx-completion
@@ -261,7 +261,7 @@ more-itertools==5.0.0
     #   pytest
 mysqlclient==2.2.1
     # via -r requirements/test.txt
-newrelic==9.5.0
+newrelic==9.6.0
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
@@ -362,7 +362,7 @@ python-dateutil==2.8.2
     #   celery
     #   freezegun
     #   xblock
-python-slugify==8.0.1
+python-slugify==8.0.2
     # via
     #   -r requirements/test.txt
     #   code-annotations
@@ -474,7 +474,7 @@ wrapt==1.16.0
     # via
     #   -r requirements/test.txt
     #   deprecated
-xblock[django]==1.9.1
+xblock[django]==1.10.0
     # via
     #   -r requirements/test.txt
     #   edx-completion
