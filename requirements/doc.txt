@@ -43,12 +43,12 @@ billiard==4.2.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   celery
-boto3==1.34.34
+boto3==1.34.39
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   fs-s3fs
-botocore==1.34.34
+botocore==1.34.39
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -119,11 +119,7 @@ cryptography==42.0.2
     #   pyjwt
 ddt==1.7.1
     # via -r requirements/test.txt
-deprecated==1.2.14
-    # via
-    #   -r requirements/test.txt
-    #   jwcrypto
-django==3.2.23
+django==3.2.24
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -148,7 +144,7 @@ django-crum==0.7.9
     #   -r requirements/test.txt
     #   edx-django-utils
     #   edx-toggles
-django-model-utils==4.3.1
+django-model-utils==4.4.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -198,7 +194,7 @@ edx-django-utils==5.10.1
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
-edx-drf-extensions==10.1.0
+edx-drf-extensions==10.2.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -263,7 +259,7 @@ jsonfield==3.1.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-celeryutils
-jwcrypto==1.5.1
+jwcrypto==1.5.3
     # via
     #   -r requirements/test.txt
     #   django-oauth-toolkit
@@ -301,7 +297,7 @@ more-itertools==5.0.0
     # via
     #   -r requirements/test.txt
     #   pytest
-mysqlclient==2.2.3
+mysqlclient==2.2.4
     # via -r requirements/test.txt
 newrelic==9.6.0
     # via
@@ -400,7 +396,7 @@ python-dateutil==2.8.2
     #   celery
     #   freezegun
     #   xblock
-python-slugify==8.0.3
+python-slugify==8.0.4
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -509,8 +505,9 @@ typing-extensions==4.9.0
     #   -r requirements/test.txt
     #   asgiref
     #   edx-opaque-keys
+    #   jwcrypto
     #   kombu
-tzdata==2023.4
+tzdata==2024.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -545,10 +542,6 @@ webob==1.8.7
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   xblock
-wrapt==1.16.0
-    # via
-    #   -r requirements/test.txt
-    #   deprecated
 xblock[django]==1.10.0
     # via
     #   -r requirements/base.txt
