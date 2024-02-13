@@ -9,14 +9,12 @@ import six
 
 from django.conf import settings
 from django.db.models.signals import post_save
-from django.dispatch import Signal
 
 from . import batch, compat, models
 from .tasks import handler_tasks
 
 log = logging.getLogger(__name__)
 
-AggregatorUpdate = Signal(providing_args=['aggregation_data'])
 def register():
     """
     Register signal handlers.

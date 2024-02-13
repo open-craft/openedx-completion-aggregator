@@ -18,8 +18,7 @@ from django.utils.translation import gettext as _
 from model_utils.models import TimeStampedModel
 
 from .utils import get_percent, make_datetime_timezone_unaware
-from .signals import AggregatorUpdate
-
+from .dispatch import AggregatorUpdate
 User = get_user_model()
 
 INSERT_OR_UPDATE_AGGREGATOR_QUERY = """
