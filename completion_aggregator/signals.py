@@ -15,7 +15,6 @@ from .tasks import handler_tasks
 
 log = logging.getLogger(__name__)
 
-
 def register():
     """
     Register signal handlers.
