@@ -9,6 +9,23 @@ def plugin_settings(settings):
     """
     Modify the provided settings object with settings specific to this plugin.
     """
+    # Emit feature allows to publish two kind of events progress and completion
+    # This setting controls which type of event will be published to change the default behavior
+    # the block type should be removed or added from the progress or completion list.
+    settings.ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES = {
+        "progress": {
+            "course",
+            "chapter",
+            "sequential",
+            "vertical",
+        },
+        "completion": {
+            "course",
+            "chapter",
+            "sequential",
+            "vertical",
+        }
+    }
     settings.COMPLETION_AGGREGATOR_BLOCK_TYPES = {
         'course',
         'chapter',
