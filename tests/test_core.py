@@ -33,6 +33,7 @@ class AggregationUpdaterTestCase(TestCase):
 
     It should create Aggregator records for new completion objects.
     """
+
     def setUp(self):
         """
         For the purpose of the tests, we will use the following course
@@ -63,15 +64,16 @@ class AggregationUpdaterTestCase(TestCase):
             course_key.make_usage_key('hidden', 'course-hidden0'),
             course_key.make_usage_key('html', 'course-other-html4'),
             course_key.make_usage_key('hidden', 'course-other-hidden1'),
+            course_key.make_usage_key('html', 'course-other-htmloptional5'),
         ])
         for compat_module in 'completion_aggregator.core.compat', 'completion_aggregator.core.compat':
             patch = mock.patch(compat_module, stubcompat)
             patch.start()
             self.addCleanup(patch.stop)
-        user = get_user_model().objects.create(username='saskia')
+        self.user = get_user_model().objects.create(username='saskia')
         self.course_key = CourseKey.from_string('course-v1:edx+course+test')
         self.agg, _ = Aggregator.objects.submit_completion(
-            user=user,
+            user=self.user,
             course_key=self.course_key,
             block_key=self.course_key.make_usage_key('course', 'course'),
             aggregation_name='course',
@@ -80,13 +82,13 @@ class AggregationUpdaterTestCase(TestCase):
             last_modified=self.agg_modified,
         )
         BlockCompletion.objects.create(
-            user=user,
+            user=self.user,
             context_key=self.course_key,
             block_key=self.course_key.make_usage_key('html', 'course-other-html4'),
             completion=1.0,
             modified=now(),
         )
-        self.updater = AggregationUpdater(user, self.course_key, mock.MagicMock())
+        self.updater = AggregationUpdater(self.user, self.course_key, mock.MagicMock())
 
     @XBlock.register_temp_plugin(CourseBlock, 'course')
     @XBlock.register_temp_plugin(HTMLBlock, 'html')
@@ -190,6 +192,78 @@ class AggregationUpdaterTestCase(TestCase):
                     username='saskia',
                     course_key='course-v1:OpenCraft+Onboarding+2018'
                 )
+
+    @XBlock.register_temp_plugin(CourseBlock, 'course')
+    @XBlock.register_temp_plugin(HTMLBlock, 'html')
+    @XBlock.register_temp_plugin(HiddenBlock, 'hidden')
+    @XBlock.register_temp_plugin(OtherAggBlock, 'other')
+    def test_optional_child_block_not_counted(self):
+        optional_block = BlockCompletion.objects.create(
+            user=self.user,
+            context_key=self.course_key,
+            block_key=self.course_key.make_usage_key('html', 'course-optional-html5'),
+            completion=0.1,
+            modified=now(),
+        )
+        self.updater.update()
+        self.agg.refresh_from_db()
+        assert self.agg.last_modified > self.agg_modified
+        assert self.agg.earned == 1.0
+        assert self.agg.possible == 5.0
+        optional_block.delete()
+
+    @XBlock.register_temp_plugin(CourseBlock, 'course')
+    @XBlock.register_temp_plugin(HTMLBlock, 'html')
+    @XBlock.register_temp_plugin(HiddenBlock, 'hidden')
+    @XBlock.register_temp_plugin(OtherAggBlock, 'other')
+    def test_optional_child_block_counted(self):
+        agg_modified = now() - timedelta(days=1)
+        course_key = CourseKey.from_string('course-v1:edx+course-optional+test-optional')
+        stubcompat = StubCompat([
+            course_key.make_usage_key('course', 'course-optional'),
+            course_key.make_usage_key('html', 'course-html0'),
+            course_key.make_usage_key('html', 'course-html1'),
+            course_key.make_usage_key('html', 'course-html2'),
+            course_key.make_usage_key('html', 'course-html3'),
+            course_key.make_usage_key('other', 'course-other'),
+            course_key.make_usage_key('hidden', 'course-hidden0'),
+            course_key.make_usage_key('html', 'course-other-html4'),
+            course_key.make_usage_key('html', 'course-other-optional'),
+            course_key.make_usage_key('hidden', 'course-other-hidden1'),
+        ])
+        for compat_module in 'completion_aggregator.core.compat', 'completion_aggregator.core.compat':
+            patch = mock.patch(compat_module, stubcompat)
+            patch.start()
+        agg, _ = Aggregator.objects.submit_completion(
+            user=self.user,
+            course_key=course_key,
+            block_key=course_key.make_usage_key('course', 'course'),
+            aggregation_name='course',
+            earned=0.0,
+            possible=0.0,
+            last_modified=agg_modified,
+        )
+        BlockCompletion.objects.create(
+            user=self.user,
+            context_key=course_key,
+            block_key=course_key.make_usage_key('html', 'course-other-html4'),
+            completion=1.0,
+            modified=now(),
+        )
+        BlockCompletion.objects.create(
+            user=self.user,
+            context_key=course_key,
+            block_key=course_key.make_usage_key('html', 'course-other-optional'),
+            completion=0.1,
+            modified=now(),
+        )
+        updater = AggregationUpdater(self.user, course_key, mock.MagicMock())
+        updater.update()
+        agg.refresh_from_db()
+        assert agg.last_modified > agg_modified
+        assert agg.earned == 1.1
+        assert agg.possible == 6.0
+        patch.stop()
 
 
 class CalculateUpdatedAggregatorsTestCase(TestCase):
@@ -450,6 +524,7 @@ class PartialUpdateTest(TestCase):
     Test that when performing an update for a particular block or subset of
     blocks, that only part of the course tree gets aggregated.
     """
+
     def setUp(self):
         super().setUp()
         self.user = get_user_model().objects.create()

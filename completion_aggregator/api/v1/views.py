@@ -315,7 +315,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
                   "completion": {
                     "earned": 12.0,
                     "possible": 24.0,
-                    "ratio": 0.5
+                    "ratio": 0.5,
+                    "optional": false
                   },
                   "mean": 0.25,
                   "chapter": [
@@ -325,7 +326,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
                       "completion": {
                         "earned: 12.0,
                         "possible": 24.0,
-                        "ratio": 0.5
+                        "ratio": 0.5,
+                        "optional": false
                       }
                     }
                   ],
@@ -337,7 +339,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
                       "completion": {
                         "earned: 12.0,
                         "possible": 12.0,
-                        "ratio": 1.0
+                        "ratio": 1.0,
+                        "optional": false
                       }
                     },
                     {
@@ -347,7 +350,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
                       "completion": {
                         "earned: 0.0,
                         "possible": 12.0,
-                        "ratio": 0.0
+                        "ratio": 0.0,
+                        "optional": false
                       }
                     },
                 },
