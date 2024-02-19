@@ -27,7 +27,9 @@ async-timeout==4.0.3
     #   redis
 attrs==23.2.0
     # via
+    #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   openedx-events
     #   pytest
 babel==2.14.0
     # via sphinx
@@ -35,7 +37,6 @@ backports-zoneinfo[tzdata]==0.2.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
-    #   backports-zoneinfo
     #   celery
     #   kombu
 billiard==4.2.0
@@ -43,12 +44,12 @@ billiard==4.2.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   celery
-boto3==1.34.39
+boto3==1.34.44
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   fs-s3fs
-botocore==1.34.39
+botocore==1.34.44
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -109,9 +110,8 @@ code-annotations==1.6.0
 coverage[toml]==7.4.1
     # via
     #   -r requirements/test.txt
-    #   coverage
     #   pytest-cov
-cryptography==42.0.2
+cryptography==42.0.3
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
@@ -138,6 +138,7 @@ django==3.2.24
     #   event-tracking
     #   jsonfield
     #   openedx-django-pyfs
+    #   openedx-events
 django-crum==0.7.9
     # via
     #   -r requirements/base.txt
@@ -194,6 +195,7 @@ edx-django-utils==5.10.1
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
+    #   openedx-events
 edx-drf-extensions==10.2.0
     # via
     #   -r requirements/base.txt
@@ -201,12 +203,13 @@ edx-drf-extensions==10.2.0
     #   edx-completion
 edx-i18n-tools==1.3.0
     # via -r requirements/test.txt
-edx-opaque-keys==2.5.1
+edx-opaque-keys[django]==2.5.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-completion
     #   edx-drf-extensions
+    #   openedx-events
 edx-sphinx-theme==3.1.0
     # via -r requirements/doc.in
 edx-toggles==5.1.1
@@ -214,11 +217,17 @@ edx-toggles==5.1.1
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-completion
-event-tracking==2.2.0
+    #   event-tracking
+event-tracking==2.3.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-completion
+fastavro==1.9.4
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   openedx-events
 freezegun==0.3.15
     # via -r requirements/test.txt
 fs==2.4.16
@@ -259,7 +268,7 @@ jsonfield==3.1.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-celeryutils
-jwcrypto==1.5.3
+jwcrypto==1.5.4
     # via
     #   -r requirements/test.txt
     #   django-oauth-toolkit
@@ -310,11 +319,16 @@ oauthlib==3.2.2
     # via
     #   -r requirements/test.txt
     #   django-oauth-toolkit
-openedx-django-pyfs==3.4.1
+openedx-django-pyfs==3.5.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   xblock
+openedx-events==9.5.1
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   event-tracking
 packaging==23.2
     # via
     #   -r requirements/test.txt
@@ -367,7 +381,6 @@ pyjwt[crypto]==2.8.0
     #   -r requirements/test.txt
     #   drf-jwt
     #   edx-drf-extensions
-    #   pyjwt
 pymongo==3.13.0
     # via
     #   -r requirements/base.txt
@@ -547,7 +560,6 @@ xblock[django]==1.10.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-completion
-    #   xblock
 zipp==3.17.0
     # via importlib-metadata
 
