@@ -10,15 +10,17 @@ appdirs==1.4.4
     # via fs
 asgiref==3.7.2
     # via django
+attrs==23.2.0
+    # via openedx-events
 backports-zoneinfo[tzdata]==0.2.1
     # via
     #   celery
     #   kombu
 billiard==4.2.0
     # via celery
-boto3==1.34.39
+boto3==1.34.44
     # via fs-s3fs
-botocore==1.34.39
+botocore==1.34.44
     # via
     #   boto3
     #   s3transfer
@@ -51,7 +53,7 @@ click-repl==0.3.0
     # via celery
 code-annotations==1.6.0
     # via edx-toggles
-cryptography==42.0.2
+cryptography==42.0.3
     # via pyjwt
 django==3.2.24
     # via
@@ -70,6 +72,7 @@ django==3.2.24
     #   event-tracking
     #   jsonfield
     #   openedx-django-pyfs
+    #   openedx-events
 django-crum==0.7.9
     # via
     #   edx-django-utils
@@ -101,19 +104,24 @@ edx-django-utils==5.10.1
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
+    #   openedx-events
 edx-drf-extensions==10.2.0
     # via edx-completion
-edx-opaque-keys==2.5.1
+edx-opaque-keys[django]==2.5.1
     # via
     #   -r requirements/base.in
     #   edx-completion
     #   edx-drf-extensions
+    #   openedx-events
 edx-toggles==5.1.1
     # via
     #   -r requirements/base.in
     #   edx-completion
-event-tracking==2.2.0
+    #   event-tracking
+event-tracking==2.3.0
     # via edx-completion
+fastavro==1.9.4
+    # via openedx-events
 fs==2.4.16
     # via
     #   fs-s3fs
@@ -146,8 +154,10 @@ markupsafe==2.1.5
     #   xblock
 newrelic==9.6.0
     # via edx-django-utils
-openedx-django-pyfs==3.4.1
+openedx-django-pyfs==3.5.0
     # via xblock
+openedx-events==9.5.1
+    # via event-tracking
 pbr==6.0.0
     # via stevedore
 prompt-toolkit==3.0.43
@@ -160,7 +170,6 @@ pyjwt[crypto]==2.8.0
     # via
     #   drf-jwt
     #   edx-drf-extensions
-    #   pyjwt
 pymongo==3.13.0
     # via
     #   edx-opaque-keys
