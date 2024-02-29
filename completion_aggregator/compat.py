@@ -143,7 +143,7 @@ def is_block_optional(course_blocks, block):
     return course_blocks.get_transformer_block_field(
         block,
         AggregatorAnnotationTransformer,
-        AggregatorAnnotationTransformer.OPTIONAL_CONTENT
+        AggregatorAnnotationTransformer.OPTIONAL_COMPLETION
     )
 
 

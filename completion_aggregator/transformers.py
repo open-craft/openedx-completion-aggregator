@@ -18,7 +18,7 @@ class AggregatorAnnotationTransformer(BlockStructureTransformer):
     READ_VERSION = 1
     WRITE_VERSION = 1
     AGGREGATORS = "aggregators"
-    OPTIONAL_CONTENT = "optional_content"
+    OPTIONAL_COMPLETION = "optional_completion"
 
     @classmethod
     def name(cls):
@@ -49,7 +49,7 @@ class AggregatorAnnotationTransformer(BlockStructureTransformer):
         """
         Collect the data required to perform this calculation.
         """
-        block_structure.request_xblock_fields("completion_mode", "optional_content")
+        block_structure.request_xblock_fields("completion_mode", "optional_completion")
 
     def calculate_aggregators(self, block_structure, block_key):
         """
@@ -61,7 +61,7 @@ class AggregatorAnnotationTransformer(BlockStructureTransformer):
         for parent in parents:
             parent_block = block_structure[parent]
             completion_mode = getattr(parent_block, 'completion_mode', XBlockCompletionMode.COMPLETABLE)
-            optional_parent = getattr(parent_block, 'optional_content', False)
+            optional_parent = getattr(parent_block, 'optional_completion', False)
             if completion_mode == XBlockCompletionMode.EXCLUDED:
                 continue
             if completion_mode == XBlockCompletionMode.AGGREGATOR:
@@ -84,4 +84,4 @@ class AggregatorAnnotationTransformer(BlockStructureTransformer):
             if completion_mode != XBlockCompletionMode.EXCLUDED:
                 aggregators, optional = self.calculate_aggregators(block_structure, block_key)
                 block_structure.set_transformer_block_field(block_key, self, self.AGGREGATORS, aggregators)
-                block_structure.set_transformer_block_field(block_key, self, self.OPTIONAL_CONTENT, optional)
+                block_structure.set_transformer_block_field(block_key, self, self.OPTIONAL_COMPLETION, optional)
