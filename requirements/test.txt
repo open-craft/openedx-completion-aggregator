@@ -27,16 +27,17 @@ backports-zoneinfo[tzdata]==0.2.1
     # via
     #   -r requirements/base.txt
     #   celery
+    #   django
     #   kombu
 billiard==4.2.0
     # via
     #   -r requirements/base.txt
     #   celery
-boto3==1.34.49
+boto3==1.34.54
     # via
     #   -r requirements/base.txt
     #   fs-s3fs
-botocore==1.34.49
+botocore==1.34.54
     # via
     #   -r requirements/base.txt
     #   boto3
@@ -91,7 +92,7 @@ cryptography==42.0.5
     #   -r requirements/base.txt
     #   jwcrypto
     #   pyjwt
-ddt==1.7.1
+ddt==1.7.2
     # via -r requirements/test.in
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
@@ -305,7 +306,7 @@ pytest-cov==4.1.0
     # via -r requirements/test.in
 pytest-django==4.5.2
     # via -r requirements/test.in
-python-dateutil==2.8.2
+python-dateutil==2.9.0.post0
     # via
     #   -r requirements/base.txt
     #   botocore
@@ -319,7 +320,6 @@ python-slugify==8.0.4
 pytz==2024.1
     # via
     #   -r requirements/base.txt
-    #   django
     #   djangorestframework
     #   edx-completion
     #   event-tracking
@@ -330,7 +330,7 @@ pyyaml==6.0.1
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==5.0.1
+redis==5.0.2
     # via -r requirements/test.in
 requests==2.31.0
     # via
@@ -411,7 +411,7 @@ webob==1.8.7
     # via
     #   -r requirements/base.txt
     #   xblock
-xblock[django]==1.10.0
+xblock[django]==2.0.0
     # via
     #   -r requirements/base.txt
     #   edx-completion
