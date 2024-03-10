@@ -124,6 +124,7 @@ class CompletionListView(CompletionViewMixin, APIView):
                         "earned: 20.0,
                         "possible": 30.0,
                         "ratio": 0.6666666666667
+                        "optional": false
                       }
                     },
                     {
@@ -133,6 +134,7 @@ class CompletionListView(CompletionViewMixin, APIView):
                         "earned: 22.0,
                         "possible": 24.0,
                         "ratio": 0.9166666666667
+                        "optional": false
                       }
                     }
                   ]
@@ -152,6 +154,7 @@ class CompletionListView(CompletionViewMixin, APIView):
                         "earned: 12.0,
                         "possible": 24.0,
                         "ratio": 0.5
+                        "optional": false
                       }
                     }
                   ]
@@ -251,7 +254,6 @@ class CompletionDetailView(CompletionViewMixin, APIView):
               in the course.
             * percent (float in the range [0.0, 1.0]): The percent of possible
               completions in the course that have been earned by the learner.
-
         Optional fields:
 
         * If "requested_fields" is specified, the response will include data
@@ -271,6 +273,8 @@ class CompletionDetailView(CompletionViewMixin, APIView):
                   * ratio (float in the range [0.0, 1.0]): The ratio of earned
                     completions to possible completions within the identified
                     block.
+                  * optional (boolean): Whether the block counts towards its parents
+                    completion in case the parent isn't optional.
 
     **Parameters**
 
