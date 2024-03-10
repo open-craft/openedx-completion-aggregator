@@ -184,6 +184,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             self.course_key.make_usage_key('html', 'course-sequence2-html6'),
             self.course_key.make_usage_key('html', 'course-sequence2-html7'),
             self.course_key.make_usage_key('html', 'course-sequence2-html8'),
+            self.course_key.make_usage_key('html', 'course-optional-sequence2-html9'),
         ]
         compat = StubCompat(self.blocks)
         for compat_import in (
@@ -210,7 +211,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.test_user)
 
-    def _get_expected_completion(self, version, earned=1.0, possible=8.0, percent=0.125):
+    def _get_expected_completion(self, version, earned=1.0, possible=8.0, percent=0.125, optional=False):
         """
         Return completion section based on version.
         """
@@ -218,6 +219,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
             'earned': earned,
             'possible': possible,
             'percent': percent,
+            'optional': optional,
         }
         if version == 0:
             completion['ratio'] = percent
@@ -458,6 +460,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
                     'earned': 0.0,
                     'possible': None,
                     'percent': 0.0,
+                    'optional': False
                 },
                 'course_key': six.text_type(self.course_key),
                 'sequential': [
@@ -468,6 +471,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
                             'earned': 1.0,
                             'possible': 5.0,
                             'percent': 0.2,
+                            'optional': False,
                         }
                     },
                 ],

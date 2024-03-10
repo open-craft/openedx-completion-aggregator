@@ -18,6 +18,7 @@ class AggregatorAnnotationTransformer(BlockStructureTransformer):
     READ_VERSION = 1
     WRITE_VERSION = 1
     AGGREGATORS = "aggregators"
+    OPTIONAL_COMPLETION = "optional_completion"
 
     @classmethod
     def name(cls):
@@ -48,23 +49,27 @@ class AggregatorAnnotationTransformer(BlockStructureTransformer):
         """
         Collect the data required to perform this calculation.
         """
-        block_structure.request_xblock_fields("completion_mode")
+        block_structure.request_xblock_fields("completion_mode", "optional_completion")
 
     def calculate_aggregators(self, block_structure, block_key):
         """
         Calculate the set of aggregators for the specified block.
         """
         aggregators = set()
+        optional = False
         parents = block_structure.get_parents(block_key)
         for parent in parents:
             parent_block = block_structure[parent]
             completion_mode = getattr(parent_block, 'completion_mode', XBlockCompletionMode.COMPLETABLE)
+            optional_parent = getattr(parent_block, 'optional_completion', False)
             if completion_mode == XBlockCompletionMode.EXCLUDED:
                 continue
             if completion_mode == XBlockCompletionMode.AGGREGATOR:
                 aggregators.add(parent)
+                if optional_parent:
+                    optional = True
             aggregators.update(self.get_block_aggregators(block_structure, parent))
-        return aggregators
+        return aggregators, optional
 
     def transform(self, usage_info, block_structure):  # pylint: disable=unused-argument
         """
@@ -77,5 +82,6 @@ class AggregatorAnnotationTransformer(BlockStructureTransformer):
                 XBlockCompletionMode.COMPLETABLE
             )
             if completion_mode != XBlockCompletionMode.EXCLUDED:
-                aggregators = self.calculate_aggregators(block_structure, block_key)
+                aggregators, optional = self.calculate_aggregators(block_structure, block_key)
                 block_structure.set_transformer_block_field(block_key, self, self.AGGREGATORS, aggregators)
+                block_structure.set_transformer_block_field(block_key, self, self.OPTIONAL_COMPLETION, optional)

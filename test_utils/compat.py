@@ -56,6 +56,12 @@ class StubCompat:
 
         return [agg for agg in course_blocks.blocks if block.block_id.startswith(f'{agg.block_id}-')]
 
+    def is_block_optional(self, _, block):
+        """
+        Return whether a block is optional or not.
+        """
+        return "optional" in block.block_id or "optional" in block.run
+
     def get_block_completions(self, user, course_key):
         """
         Return all completions for the current course.

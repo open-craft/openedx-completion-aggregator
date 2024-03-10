@@ -14,6 +14,12 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
+[4.1.0] - 2024-02-17
+~~~~~~~~~~~~~~~~~~~~
+
+* Include 'optional' boolean field in responses
+* Exclude 'optional' completions from non-optional aggregations
+
 [4.0.3] - 2023-10-24
 ~~~~~~~~~~~~~~~~~~~~
 

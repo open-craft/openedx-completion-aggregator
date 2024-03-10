@@ -265,6 +265,7 @@ class CourseCompletionSerializerTestCase(TestCase):
                 'earned': 0.0,
                 'possible': 0.0,
                 'percent': 1.0,
+                'optional': False,
             },
         )
 
@@ -343,6 +344,7 @@ class CourseCompletionSerializerTestCase(TestCase):
                 'earned': 0.0,
                 'possible': None,
                 'percent': 0.0,
+                'optional': False,
             },
         )
 

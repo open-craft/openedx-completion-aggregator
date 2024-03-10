@@ -23,16 +23,17 @@ User = get_user_model()
 
 INSERT_OR_UPDATE_AGGREGATOR_QUERY = """
     INSERT INTO completion_aggregator_aggregator
-        (user_id, course_key, block_key, aggregation_name, earned, possible, percent, last_modified, created, modified)
+        (user_id, course_key, block_key, aggregation_name, earned, possible, percent, last_modified, created, modified, optional)
     VALUES
         (%(user)s, %(course_key)s, %(block_key)s, %(aggregation_name)s, %(earned)s,
-        %(possible)s, %(percent)s, %(last_modified)s, %(created)s, %(modified)s)
+        %(possible)s, %(percent)s, %(last_modified)s, %(created)s, %(modified)s, %(optional)s)
     ON DUPLICATE KEY UPDATE
         earned=VALUES(earned),
         possible=VALUES(possible),
         percent=VALUES(percent),
         last_modified=VALUES(last_modified),
-        modified=VALUES(modified);
+        modified=VALUES(modified),
+        optional=VALUES(optional);
 """
 
 
@@ -100,7 +101,7 @@ class AggregatorManager(models.Manager):
         instance.full_clean()
 
     def submit_completion(self, user, course_key, block_key, aggregation_name, earned, possible,
-                          last_modified):
+                          last_modified, optional=False):
         """
         Insert and Update the completion Aggregator for the specified record.
 
@@ -169,6 +170,7 @@ class AggregatorManager(models.Manager):
                 'possible': possible,
                 'earned': earned,
                 'last_modified': last_modified,
+                'optional': optional,
             },
         )
         return obj, is_new
@@ -190,6 +192,7 @@ class AggregatorManager(models.Manager):
                             possible=aggregator.possible,
                             earned=aggregator.earned,
                             last_modified=aggregator.last_modified,
+                            optional=aggregator.optional,
                         )
                 else:
                     aggregation_data = [obj.get_values() for obj in updated_aggregators]
@@ -211,6 +214,7 @@ class Aggregator(TimeStampedModel):
     possible = models.FloatField(validators=[validate_positive_float])
     percent = models.FloatField(validators=[validate_percent])
     last_modified = models.DateTimeField()
+    optional = models.BooleanField(default=False)
 
     objects = AggregatorManager()
 
@@ -239,7 +243,7 @@ class Aggregator(TimeStampedModel):
         Return a dict object containing fields and their values to be used in bulk create or update query.
         """
         values = {key: getattr(self, key) for key in [
-            'course_key', 'block_key', 'aggregation_name', 'earned', 'possible',
+            'course_key', 'block_key', 'aggregation_name', 'earned', 'possible', 'optional'
         ]}
         values['user'] = self.user.id
         values['percent'] = get_percent(values['earned'], values['possible'])

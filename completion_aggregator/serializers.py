@@ -174,6 +174,7 @@ class AggregatorAdapter:
             earned=0.0,
             possible=None,
             percent=0.0,
+            optional=False,
         )
 
     @property
@@ -210,6 +211,7 @@ class _CompletionSerializer(serializers.Serializer):
     earned = serializers.FloatField()
     possible = serializers.FloatField()
     percent = serializers.FloatField()
+    optional = serializers.BooleanField(default=False)
 
 
 class _CompletionSerializerV0(_CompletionSerializer):
