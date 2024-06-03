@@ -16,7 +16,7 @@ asgiref==3.7.2
     # via
     #   -r requirements/quality.txt
     #   django
-astroid==3.0.1
+astroid==3.1.0
     # via
     #   -r requirements/quality.txt
     #   pylint
@@ -25,25 +25,25 @@ async-timeout==4.0.3
     # via
     #   -r requirements/quality.txt
     #   redis
-attrs==23.1.0
+attrs==23.2.0
     # via
     #   -r requirements/quality.txt
+    #   openedx-events
     #   pytest
 backports-zoneinfo[tzdata]==0.2.1
     # via
     #   -r requirements/quality.txt
-    #   backports-zoneinfo
     #   celery
     #   kombu
 billiard==4.2.0
     # via
     #   -r requirements/quality.txt
     #   celery
-boto3==1.33.6
+boto3==1.34.49
     # via
     #   -r requirements/quality.txt
     #   fs-s3fs
-botocore==1.33.6
+botocore==1.34.49
     # via
     #   -r requirements/quality.txt
     #   boto3
@@ -57,7 +57,7 @@ celery==5.3.6
     #   -r requirements/quality.txt
     #   edx-celeryutils
     #   event-tracking
-certifi==2023.11.17
+certifi==2024.2.2
     # via
     #   -r requirements/quality.txt
     #   requests
@@ -99,36 +99,31 @@ click-repl==0.3.0
     # via
     #   -r requirements/quality.txt
     #   celery
-code-annotations==1.5.0
+code-annotations==1.6.0
     # via
     #   -r requirements/quality.txt
     #   edx-lint
     #   edx-toggles
-coverage[toml]==7.3.2
+coverage[toml]==7.4.3
     # via
     #   -r requirements/quality.txt
-    #   coverage
     #   pytest-cov
-cryptography==41.0.7
+cryptography==42.0.5
     # via
     #   -r requirements/quality.txt
     #   jwcrypto
     #   pyjwt
-ddt==1.7.0
+ddt==1.7.1
     # via -r requirements/quality.txt
-deprecated==1.2.14
-    # via
-    #   -r requirements/quality.txt
-    #   jwcrypto
-dill==0.3.7
+dill==0.3.8
     # via
     #   -r requirements/quality.txt
     #   pylint
-distlib==0.3.7
+distlib==0.3.8
     # via
     #   -r requirements/ci.txt
     #   virtualenv
-django==3.2.23
+django==3.2.24
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/quality.txt
@@ -147,19 +142,20 @@ django==3.2.23
     #   event-tracking
     #   jsonfield
     #   openedx-django-pyfs
+    #   openedx-events
 django-crum==0.7.9
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
     #   edx-toggles
-django-model-utils==4.3.1
+django-model-utils==4.4.0
     # via
     #   -r requirements/quality.txt
     #   edx-celeryutils
     #   edx-completion
 django-oauth-toolkit==2.3.0
     # via -r requirements/quality.txt
-django-waffle==4.0.0
+django-waffle==4.1.0
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -175,17 +171,18 @@ drf-jwt==1.19.2
     # via
     #   -r requirements/quality.txt
     #   edx-drf-extensions
-edx-celeryutils==1.2.3
+edx-celeryutils==1.2.5
     # via -r requirements/quality.txt
 edx-completion==4.4.0
     # via -r requirements/quality.txt
-edx-django-utils==5.9.0
+edx-django-utils==5.10.1
     # via
     #   -r requirements/quality.txt
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
-edx-drf-extensions==9.0.0
+    #   openedx-events
+edx-drf-extensions==10.2.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
@@ -193,19 +190,25 @@ edx-i18n-tools==1.3.0
     # via -r requirements/quality.txt
 edx-lint==5.3.6
     # via -r requirements/quality.txt
-edx-opaque-keys==2.5.1
+edx-opaque-keys[django]==2.5.1
     # via
     #   -r requirements/quality.txt
     #   edx-completion
     #   edx-drf-extensions
-edx-toggles==5.1.0
+    #   openedx-events
+edx-toggles==5.1.1
     # via
     #   -r requirements/quality.txt
     #   edx-completion
-event-tracking==2.2.0
+    #   event-tracking
+event-tracking==2.3.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
+fastavro==1.9.4
+    # via
+    #   -r requirements/quality.txt
+    #   openedx-events
 filelock==3.13.1
     # via
     #   -r requirements/ci.txt
@@ -227,15 +230,15 @@ idna==3.6
     # via
     #   -r requirements/quality.txt
     #   requests
-importlib-metadata==7.0.0
+importlib-metadata==7.0.1
     # via
     #   -r requirements/pip-tools.txt
     #   build
-isort==5.12.0
+isort==5.13.2
     # via
     #   -r requirements/quality.txt
     #   pylint
-jinja2==3.1.2
+jinja2==3.1.3
     # via
     #   -r requirements/quality.txt
     #   code-annotations
@@ -248,11 +251,11 @@ jsonfield==3.1.0
     # via
     #   -r requirements/quality.txt
     #   edx-celeryutils
-jwcrypto==1.5.0
+jwcrypto==1.5.4
     # via
     #   -r requirements/quality.txt
     #   django-oauth-toolkit
-kombu==5.3.4
+kombu==5.3.5
     # via
     #   -r requirements/quality.txt
     #   celery
@@ -260,16 +263,16 @@ lazy==1.6
     # via
     #   -r requirements/quality.txt
     #   xblock
-lxml==4.9.3
+lxml==5.1.0
     # via
     #   -r requirements/quality.txt
     #   edx-i18n-tools
     #   xblock
-mako==1.3.0
+mako==1.3.2
     # via
     #   -r requirements/quality.txt
     #   xblock
-markupsafe==2.1.3
+markupsafe==2.1.5
     # via
     #   -r requirements/quality.txt
     #   jinja2
@@ -285,9 +288,9 @@ more-itertools==5.0.0
     # via
     #   -r requirements/quality.txt
     #   pytest
-mysqlclient==2.2.0
+mysqlclient==2.2.4
     # via -r requirements/quality.txt
-newrelic==9.2.0
+newrelic==9.7.0
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -295,10 +298,14 @@ oauthlib==3.2.2
     # via
     #   -r requirements/quality.txt
     #   django-oauth-toolkit
-openedx-django-pyfs==3.4.0
+openedx-django-pyfs==3.5.0
     # via
     #   -r requirements/quality.txt
     #   xblock
+openedx-events==9.5.2
+    # via
+    #   -r requirements/quality.txt
+    #   event-tracking
 packaging==23.2
     # via
     #   -r requirements/ci.txt
@@ -307,7 +314,7 @@ packaging==23.2
     #   build
     #   pytest
     #   tox
-path==16.7.1
+path==16.10.0
     # via
     #   -r requirements/quality.txt
     #   edx-i18n-tools
@@ -315,11 +322,10 @@ pbr==6.0.0
     # via
     #   -r requirements/quality.txt
     #   stevedore
-pip-tools==7.3.0
+pip-tools==7.4.0
     # via -r requirements/pip-tools.txt
-platformdirs==3.11.0
+platformdirs==4.2.0
     # via
-    #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/ci.txt
     #   -r requirements/quality.txt
     #   pylint
@@ -335,11 +341,11 @@ polib==1.2.0
     # via
     #   -r requirements/quality.txt
     #   edx-i18n-tools
-prompt-toolkit==3.0.41
+prompt-toolkit==3.0.43
     # via
     #   -r requirements/quality.txt
     #   click-repl
-psutil==5.9.6
+psutil==5.9.8
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -362,8 +368,7 @@ pyjwt[crypto]==2.8.0
     #   -r requirements/quality.txt
     #   drf-jwt
     #   edx-drf-extensions
-    #   pyjwt
-pylint==3.0.2
+pylint==3.1.0
     # via
     #   -r requirements/quality.txt
     #   edx-lint
@@ -396,6 +401,7 @@ pyproject-hooks==1.0.0
     # via
     #   -r requirements/pip-tools.txt
     #   build
+    #   pip-tools
 pytest==5.4.3
     # via
     #   -c requirements/constraints.txt
@@ -413,11 +419,11 @@ python-dateutil==2.8.2
     #   celery
     #   freezegun
     #   xblock
-python-slugify==8.0.1
+python-slugify==8.0.4
     # via
     #   -r requirements/quality.txt
     #   code-annotations
-pytz==2023.3.post1
+pytz==2024.1
     # via
     #   -r requirements/quality.txt
     #   django
@@ -438,7 +444,7 @@ requests==2.31.0
     #   -r requirements/quality.txt
     #   django-oauth-toolkit
     #   edx-drf-extensions
-s3transfer==0.8.2
+s3transfer==0.10.0
     # via
     #   -r requirements/quality.txt
     #   boto3
@@ -471,7 +477,7 @@ sqlparse==0.4.4
     # via
     #   -r requirements/quality.txt
     #   django
-stevedore==5.1.0
+stevedore==5.2.0
     # via
     #   -r requirements/quality.txt
     #   code-annotations
@@ -502,15 +508,16 @@ tox==3.28.0
     #   tox-battery
 tox-battery==0.6.2
     # via -r requirements/ci.txt
-typing-extensions==4.8.0
+typing-extensions==4.10.0
     # via
     #   -r requirements/quality.txt
     #   asgiref
     #   astroid
     #   edx-opaque-keys
+    #   jwcrypto
     #   kombu
     #   pylint
-tzdata==2023.3
+tzdata==2024.1
     # via
     #   -r requirements/quality.txt
     #   backports-zoneinfo
@@ -526,11 +533,11 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.25.0
+virtualenv==20.25.1
     # via
     #   -r requirements/ci.txt
     #   tox
-wcwidth==0.2.12
+wcwidth==0.2.13
     # via
     #   -r requirements/quality.txt
     #   prompt-toolkit
@@ -547,15 +554,10 @@ wheel==0.42.0
     # via
     #   -r requirements/pip-tools.txt
     #   pip-tools
-wrapt==1.16.0
-    # via
-    #   -r requirements/quality.txt
-    #   deprecated
-xblock[django]==1.8.1
+xblock[django]==1.10.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
-    #   xblock
 zipp==3.17.0
     # via
     #   -r requirements/pip-tools.txt
