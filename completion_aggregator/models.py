@@ -193,7 +193,7 @@ class AggregatorManager(models.Manager):
             if event_type not in settings.ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES.get(event, {}):
                 continue
 
-            event_name = f"edx.completion_aggregator.{event}.{event_type}"
+            event_name = f"openedx.completion_aggregator.{event}.{event_type}"
 
             tracker.emit(
                 event_name,

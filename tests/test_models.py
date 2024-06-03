@@ -234,7 +234,7 @@ class AggregatorTestCase(TestCase):
         event = "progress" if obj.percent < 1 else "completion"
 
         self.tracker_mock.emit.assert_called_once_with(
-            f"edx.completion_aggregator.{event}.{obj.aggregation_name}",
+            f"openedx.completion_aggregator.{event}.{obj.aggregation_name}",
             {
                 "user_id": obj.user_id,
                 "course_id": str(obj.course_key),
