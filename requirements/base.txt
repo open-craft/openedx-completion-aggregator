@@ -97,7 +97,7 @@ drf-jwt==1.19.2
     # via edx-drf-extensions
 edx-celeryutils==1.2.5
     # via -r requirements/base.in
-edx-completion==4.4.0
+edx-completion==4.6.0
     # via -r requirements/base.in
 edx-django-utils==5.10.1
     # via
