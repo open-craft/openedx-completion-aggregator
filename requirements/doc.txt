@@ -11,6 +11,16 @@ amqp==5.2.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   kombu
+aniso8601==9.0.1
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   tincan
+apache-libcloud==3.8.0
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   edx-event-routing-backends
 appdirs==1.4.4
     # via
     #   -r requirements/base.txt
@@ -23,6 +33,7 @@ asgiref==3.7.2
     #   django
 async-timeout==4.0.3
     # via
+    #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   redis
 attrs==23.2.0
@@ -115,6 +126,7 @@ cryptography==42.0.5
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   django-fernet-fields-v2
     #   jwcrypto
     #   pyjwt
 ddt==1.7.1
@@ -123,9 +135,12 @@ django==3.2.24
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   django-config-models
     #   django-crum
+    #   django-fernet-fields-v2
     #   django-model-utils
     #   django-oauth-toolkit
+    #   django-redis
     #   django-waffle
     #   djangorestframework
     #   drf-jwt
@@ -133,18 +148,30 @@ django==3.2.24
     #   edx-completion
     #   edx-django-utils
     #   edx-drf-extensions
+    #   edx-event-routing-backends
     #   edx-i18n-tools
     #   edx-toggles
     #   event-tracking
     #   jsonfield
     #   openedx-django-pyfs
     #   openedx-events
+    #   openedx-filters
+django-config-models==2.7.0
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   edx-event-routing-backends
 django-crum==0.7.9
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-django-utils
     #   edx-toggles
+django-fernet-fields-v2==0.9
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   edx-event-routing-backends
 django-model-utils==4.4.0
     # via
     #   -r requirements/base.txt
@@ -153,6 +180,11 @@ django-model-utils==4.4.0
     #   edx-completion
 django-oauth-toolkit==2.3.0
     # via -r requirements/test.txt
+django-redis==5.4.0
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   edx-event-routing-backends
 django-waffle==4.1.0
     # via
     #   -r requirements/base.txt
@@ -164,6 +196,7 @@ djangorestframework==3.14.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   django-config-models
     #   drf-jwt
     #   edx-completion
     #   edx-drf-extensions
@@ -184,6 +217,7 @@ edx-celeryutils==1.2.5
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   edx-event-routing-backends
 edx-completion==4.6.0
     # via
     #   -r requirements/base.txt
@@ -192,6 +226,7 @@ edx-django-utils==5.10.1
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   django-config-models
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
@@ -201,6 +236,10 @@ edx-drf-extensions==10.2.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-completion
+edx-event-routing-backends @ git+https://github.com/open-craft/event-routing-backends.git@jill/fix-no-openedx
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
 edx-i18n-tools==1.3.0
     # via -r requirements/test.txt
 edx-opaque-keys[django]==2.5.1
@@ -217,17 +256,24 @@ edx-toggles==5.1.1
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-completion
+    #   edx-event-routing-backends
     #   event-tracking
-event-tracking==2.3.0
+event-tracking==2.4.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-completion
+    #   edx-event-routing-backends
 fastavro==1.9.4
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   openedx-events
+fasteners==0.19
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   edx-event-routing-backends
 freezegun==0.3.15
     # via -r requirements/test.txt
 fs==2.4.16
@@ -251,6 +297,11 @@ imagesize==1.4.1
     # via sphinx
 importlib-metadata==7.0.1
     # via sphinx
+isodate==0.6.1
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   edx-event-routing-backends
 jinja2==3.1.3
     # via
     #   -r requirements/base.txt
@@ -268,6 +319,7 @@ jsonfield==3.1.0
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   edx-celeryutils
+    #   edx-event-routing-backends
 jwcrypto==1.5.4
     # via
     #   -r requirements/test.txt
@@ -329,6 +381,11 @@ openedx-events==9.5.2
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   event-tracking
+openedx-filters==1.8.1
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   edx-event-routing-backends
 packaging==23.2
     # via
     #   -r requirements/test.txt
@@ -407,6 +464,7 @@ python-dateutil==2.8.2
     #   -r requirements/test.txt
     #   botocore
     #   celery
+    #   edx-event-routing-backends
     #   freezegun
     #   xblock
 python-slugify==8.0.4
@@ -422,7 +480,9 @@ pytz==2024.1
     #   django
     #   djangorestframework
     #   edx-completion
+    #   edx-event-routing-backends
     #   event-tracking
+    #   tincan
     #   xblock
 pyyaml==6.0.1
     # via
@@ -433,14 +493,19 @@ pyyaml==6.0.1
     #   xblock
 readme-renderer==42.0
     # via -r requirements/doc.in
-redis==5.0.1
-    # via -r requirements/test.txt
+redis==5.0.5
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   django-redis
 requests==2.31.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
+    #   apache-libcloud
     #   django-oauth-toolkit
     #   edx-drf-extensions
+    #   edx-event-routing-backends
     #   sphinx
 restructuredtext-lint==1.4.0
     # via doc8
@@ -468,6 +533,7 @@ six==1.16.0
     #   freezegun
     #   fs
     #   fs-s3fs
+    #   isodate
     #   mock
     #   more-itertools
     #   python-dateutil
@@ -507,6 +573,11 @@ text-unidecode==1.3
     #   -r requirements/base.txt
     #   -r requirements/test.txt
     #   python-slugify
+tincan==1.0.0
+    # via
+    #   -r requirements/base.txt
+    #   -r requirements/test.txt
+    #   edx-event-routing-backends
 tomli==2.0.1
     # via
     #   -r requirements/test.txt

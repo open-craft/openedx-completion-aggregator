@@ -68,6 +68,7 @@ INSTALLED_APPS = (
     'waffle',
     'test_utils.test_app',
     'eventtracking.django.apps.EventTrackingConfig',
+    'event_routing_backends',
 )
 
 LOCALE_PATHS = [root('completion_aggregator', 'conf', 'locale')]
@@ -97,6 +98,8 @@ TEMPLATES = [
 USE_TZ = True
 
 EVENT_TRACKING_ENABLED = True
+EVENT_TRACKING_BACKENDS = {}
+LMS_ROOT_URL = "http://lms.url"
 
 # pylint: disable=unused-import,wrong-import-position
 from test_utils.test_app import celery  # isort:skip

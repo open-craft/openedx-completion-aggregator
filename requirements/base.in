@@ -12,3 +12,4 @@ edx-toggles
 event-tracking
 six
 XBlock[django]
+edx-event-routing-backends  # Provides xAPI transforms for aggregator events
