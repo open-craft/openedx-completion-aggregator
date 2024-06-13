@@ -18,8 +18,8 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils.timezone import now
 
-from completion_aggregator.settings import common as common_settings
 from completion_aggregator.models import Aggregator
+from completion_aggregator.settings import common as common_settings
 
 
 @ddt.ddt

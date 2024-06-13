@@ -10,7 +10,7 @@ from mock import patch
 from opaque_keys.edx.keys import CourseKey, UsageKey
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils.timezone import now
 
 from completion.models import BlockCompletion
@@ -35,6 +35,7 @@ class SignalsTestCase(TestCase):
             user_model.objects.get_or_create(username='user2')[0],
         ]
 
+    @override_settings(COMPLETION_AGGREGATOR_ASYNC_AGGREGATION=True)
     @patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async')
     def test_basic(self, mock_task):
         course_key = CourseKey.from_string('edX/test/2018')
