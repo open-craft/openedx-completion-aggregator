@@ -19,22 +19,22 @@ def root(*args):
 
 
 ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES = {
-    "progress": [
+    "progress": {
         "course",
         "chapter",
         "sequential",
         "vertical",
-    ],
-    "completion": [
+    },
+    "completion": {
         "course",
         "chapter",
         "sequential",
         "vertical",
-    ]
+    }
 }
 AUTH_USER_MODEL = 'auth.User'
 CELERY_ALWAYS_EAGER = True
-COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter', 'sequential'}
+COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter', 'sequential', 'vertical'}
 COMPLETION_AGGREGATOR_ASYNC_AGGREGATION = False
 COMPLETION_AGGREGATOR_AGGREGATION_LOCK = 'COMPLETION_AGGREGATOR_AGGREGATION_LOCK'
 COMPLETION_AGGREGATOR_CLEANUP_LOCK = 'COMPLETION_AGGREGATOR_CLEANUP_LOCK'
@@ -96,6 +96,7 @@ TEMPLATES = [
 ]
 USE_TZ = True
 
+# Enables event tracking in the tests, see https://github.com/openedx/event-tracking
 EVENT_TRACKING_ENABLED = True
 
 # pylint: disable=unused-import,wrong-import-position
