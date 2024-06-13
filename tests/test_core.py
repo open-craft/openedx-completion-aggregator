@@ -15,7 +15,7 @@ from opaque_keys.edx.keys import CourseKey
 from xblock.core import XBlock
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils.timezone import now
 
 from completion.models import BlockCompletion
@@ -282,6 +282,7 @@ class CalculateUpdatedAggregatorsTestCase(TestCase):
             ]
         )
 
+    @override_settings(COMPLETION_AGGREGATOR_ASYNC_AGGREGATION=True)
     @XBlock.register_temp_plugin(CourseBlock, 'course')
     @XBlock.register_temp_plugin(OtherAggBlock, 'chapter')
     @XBlock.register_temp_plugin(HTMLBlock, 'html')
@@ -319,6 +320,7 @@ class CalculateUpdatedAggregatorsTestCase(TestCase):
             ]
         )
 
+    @override_settings(COMPLETION_AGGREGATOR_ASYNC_AGGREGATION=True)
     @XBlock.register_temp_plugin(CourseBlock, 'course')
     @XBlock.register_temp_plugin(OtherAggBlock, 'chapter')
     @XBlock.register_temp_plugin(HTMLBlock, 'html')
@@ -356,6 +358,7 @@ class CalculateUpdatedAggregatorsTestCase(TestCase):
             ]
         )
 
+    @override_settings(COMPLETION_AGGREGATOR_ASYNC_AGGREGATION=True)
     @XBlock.register_temp_plugin(CourseBlock, 'course')
     @XBlock.register_temp_plugin(OtherAggBlock, 'chapter')
     @XBlock.register_temp_plugin(HTMLBlock, 'html')
