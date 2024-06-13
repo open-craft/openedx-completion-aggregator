@@ -18,6 +18,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils.timezone import now
 
+from completion_aggregator.settings import common as common_settings
 from completion_aggregator.models import Aggregator
 
 
@@ -35,6 +36,7 @@ class AggregatorTestCase(TestCase):
         self.user = get_user_model().objects.create(username='testuser')
         self.tracker_patch = patch('completion_aggregator.models.tracker')
         self.tracker_mock = self.tracker_patch.start()
+        common_settings.plugin_settings(settings)
 
     def tearDown(self):
         """Stop patching."""
