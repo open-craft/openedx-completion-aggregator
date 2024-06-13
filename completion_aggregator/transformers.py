@@ -98,7 +98,7 @@ class BaseAggregatorXApiTransformer(XApiTransformer):
         Get object for xAPI transformed event.
         """
         if not self.object_type:
-            raise NotImplementedError()
+            raise NotImplementedError()  # pragma: no cover
 
         return Activity(
             id=self.get_object_iri("xblock", self.get_data("data.block_id")),

@@ -101,7 +101,8 @@ EVENT_TRACKING_ENABLED = True
 EVENT_TRACKING_BACKENDS = {}
 EVENT_TRACKING_BACKENDS_ALLOWED_XAPI_EVENTS = []
 EVENT_TRACKING_BACKENDS_ALLOWED_CALIPER_EVENTS = []
-LMS_ROOT_URL = "http://lms.url"
+LMS_ROOT_URL = "http://localhost:18000"
+RUNNING_WITH_TEST_SETTINGS = True
 
 # pylint: disable=unused-import,wrong-import-position
 from test_utils.test_app import celery  # isort:skip

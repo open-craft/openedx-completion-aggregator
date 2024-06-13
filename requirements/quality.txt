@@ -226,6 +226,12 @@ event-tracking==2.4.0
     #   -r requirements/test.txt
     #   edx-completion
     #   edx-event-routing-backends
+factory-boy==3.3.0
+    # via -r requirements/test.txt
+faker==25.8.0
+    # via
+    #   -r requirements/test.txt
+    #   factory-boy
 fastavro==1.9.4
     # via
     #   -r requirements/test.txt
@@ -416,6 +422,7 @@ python-dateutil==2.8.2
     #   botocore
     #   celery
     #   edx-event-routing-backends
+    #   faker
     #   freezegun
     #   xblock
 python-slugify==8.0.4
