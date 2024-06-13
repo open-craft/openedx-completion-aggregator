@@ -62,13 +62,13 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.sessions',
     'django.contrib.admin',
-    'completion_aggregator',
     'completion',
     'oauth2_provider',
     'waffle',
     'test_utils.test_app',
     'eventtracking.django.apps.EventTrackingConfig',
     'event_routing_backends',
+    'completion_aggregator',
 )
 
 LOCALE_PATHS = [root('completion_aggregator', 'conf', 'locale')]
@@ -99,6 +99,8 @@ USE_TZ = True
 
 EVENT_TRACKING_ENABLED = True
 EVENT_TRACKING_BACKENDS = {}
+EVENT_TRACKING_BACKENDS_ALLOWED_XAPI_EVENTS = []
+EVENT_TRACKING_BACKENDS_ALLOWED_CALIPER_EVENTS = []
 LMS_ROOT_URL = "http://lms.url"
 
 # pylint: disable=unused-import,wrong-import-position
