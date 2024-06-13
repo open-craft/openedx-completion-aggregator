@@ -183,9 +183,12 @@ class AggregatorManager(models.Manager):
 
         Parameters
         ----------
-            updated_aggregators: List of Aggregator intances
+            updated_aggregators: List of Aggregator instances
 
         """
+        if not settings.ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES:
+            return
+
         for aggregator in updated_aggregators:
             event = "progress" if aggregator.percent < 1 else "completion"
             event_type = aggregator.aggregation_name

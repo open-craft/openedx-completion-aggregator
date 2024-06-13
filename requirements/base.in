@@ -9,7 +9,7 @@ django-model-utils    # Provides TimeStampedModel abstract base class
 edx-opaque-keys    # Provides CourseKey and UsageKey
 edx-completion
 edx-toggles
-event-tracking
+event-tracking     # Allows the aggregator to emit tracking events
 six
 XBlock[django]
 edx-event-routing-backends  # Provides xAPI transforms for aggregator events

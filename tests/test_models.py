@@ -15,7 +15,7 @@ from opaque_keys.edx.keys import UsageKey
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils.timezone import now
 
 from completion_aggregator.models import Aggregator
@@ -227,6 +227,21 @@ class AggregatorTestCase(TestCase):
         values = aggregator.get_values()
         self.assertEqual(values['user'], self.user.id)
         self.assertEqual(values['percent'], expected_percent)
+
+    @override_settings(ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES=None)
+    def test_submit_completion_with_tracking_disabled(self):
+        _obj, is_new = Aggregator.objects.submit_completion(
+            user=self.user,
+            course_key=self.BLOCK_KEY_OBJ.course_key,
+            block_key=self.BLOCK_KEY_OBJ,
+            aggregation_name='course',
+            earned=0.5,
+            possible=1,
+            last_modified=now(),
+        )
+        self.assertTrue(is_new)
+        self.assertEqual(len(Aggregator.objects.all()), 1)
+        self.tracker_mock.emit.assert_not_called()
 
     def assert_emit_method_called(self, obj):
         """Verify that the tracker.emit method was called once with the right values."""

@@ -14,7 +14,7 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
-[4.0.4] - 2024-06-13
+[4.1.0] - 2024-06-18
 ~~~~~~~~~~~~~~~~~~~~
 
 * Emit tracking log events for `openedx.completion_aggregator.progress.*` and
