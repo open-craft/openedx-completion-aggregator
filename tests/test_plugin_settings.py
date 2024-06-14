@@ -14,4 +14,4 @@ def test_production_settings():
     """
     aws_settings.plugin_settings(settings)
 
-    assert list(settings.ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES.keys()) == ["progress", "completion"]
+    assert settings.COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES == settings.COMPLETION_AGGREGATOR_BLOCK_TYPES

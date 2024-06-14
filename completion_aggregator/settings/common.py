@@ -9,29 +9,19 @@ def plugin_settings(settings):
     """
     Modify the provided settings object with settings specific to this plugin.
     """
-    # Emit feature allows to publish two kind of events progress and completion
-    # This setting controls which type of event will be published to change the default behavior
-    # the block type should be removed or added from the progress or completion list.
-    settings.ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES = {
-        "progress": {
-            "course",
-            "chapter",
-            "sequential",
-            "vertical",
-        },
-        "completion": {
-            "course",
-            "chapter",
-            "sequential",
-            "vertical",
-        }
-    }
     settings.COMPLETION_AGGREGATOR_BLOCK_TYPES = {
         'course',
         'chapter',
         'sequential',
         'vertical',
     }
+
+    # Emit feature publishes progress events to track aggregated completion.
+    # Defaults to the full set of block types subject to completion aggregation.
+    # Block types may be removed from this list to limit the tracking log events emitted.
+    settings.COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES = settings.COMPLETION_AGGREGATOR_BLOCK_TYPES
+
+    # Synchronous completion aggregation is enabled by default
     settings.COMPLETION_AGGREGATOR_ASYNC_AGGREGATION = False
 
     # Names of the batch operations locks

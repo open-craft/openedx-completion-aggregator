@@ -18,24 +18,11 @@ def root(*args):
     return join(abspath(dirname(__file__)), *args)
 
 
-ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES = {
-    "progress": {
-        "course",
-        "chapter",
-        "sequential",
-        "vertical",
-    },
-    "completion": {
-        "course",
-        "chapter",
-        "sequential",
-        "vertical",
-    }
-}
 AUTH_USER_MODEL = 'auth.User'
 CELERY_ALWAYS_EAGER = True
-COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter', 'sequential', 'vertical'}
 COMPLETION_AGGREGATOR_ASYNC_AGGREGATION = False
+COMPLETION_AGGREGATOR_BLOCK_TYPES = {'course', 'chapter', 'sequential', 'vertical'}
+COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES = COMPLETION_AGGREGATOR_BLOCK_TYPES
 COMPLETION_AGGREGATOR_AGGREGATION_LOCK = 'COMPLETION_AGGREGATOR_AGGREGATION_LOCK'
 COMPLETION_AGGREGATOR_CLEANUP_LOCK = 'COMPLETION_AGGREGATOR_CLEANUP_LOCK'
 COMPLETION_AGGREGATOR_AGGREGATION_LOCK_TIMEOUT_SECONDS = 1800
