@@ -102,7 +102,9 @@ EVENT_TRACKING_ENABLED = True
 EVENT_TRACKING_BACKENDS = {}
 EVENT_TRACKING_BACKENDS_ALLOWED_XAPI_EVENTS = []
 EVENT_TRACKING_BACKENDS_ALLOWED_CALIPER_EVENTS = []
+# Provided so the generated xAPI events use a known LMS URL when testing.
 LMS_ROOT_URL = "http://localhost:18000"
+# Provided so the generated xAPI events use a known "event routing backends package string" when testing.
 RUNNING_WITH_TEST_SETTINGS = True
 
 # pylint: disable=unused-import,wrong-import-position

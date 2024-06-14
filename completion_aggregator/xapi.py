@@ -6,7 +6,7 @@ from event_routing_backends.processors.openedx_filters.decorators import openedx
 from event_routing_backends.processors.xapi import constants
 from event_routing_backends.processors.xapi.registry import XApiTransformersRegistry
 from event_routing_backends.processors.xapi.transformer import XApiTransformer
-from tincan import Activity, ActivityDefinition, LanguageMap, Result, Verb
+from tincan import Activity, ActivityDefinition, Extensions, LanguageMap, Result, Verb
 
 
 class BaseAggregatorXApiTransformer(XApiTransformer):
@@ -58,9 +58,9 @@ class BaseProgressTransformer(BaseAggregatorXApiTransformer):
         """
         return Result(
             completion=self.get_data("data.percent") == 1.0,
-            score={
-                "scaled": self.get_data("data.percent") or 0
-            }
+            extensions=Extensions({
+                "progress": self.get_data("data.percent") or 0,
+            }),
         )
 
 

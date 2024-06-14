@@ -42,10 +42,10 @@
       }
    },
    "result":{
-      "score":{
-         "scaled":1.0
-      },
-      "completion":true
+      "completion":true,
+      "extensions": {
+        "progress":1.0
+      }
    },
    "timestamp":"2023-12-05T21:34:52.909063+00:00"
 }
