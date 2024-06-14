@@ -43,5 +43,5 @@ class CompletionAggregatorAppConfig(AppConfig):
         signals.register()
 
         # pylint: disable=unused-import
-        from . import transformers
+        from . import xapi
         from .tasks import aggregation_tasks, handler_tasks
