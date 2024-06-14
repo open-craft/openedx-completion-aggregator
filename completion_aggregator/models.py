@@ -186,17 +186,16 @@ class AggregatorManager(models.Manager):
             updated_aggregators: List of Aggregator instances
 
         """
-        if not settings.ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES:
+        if not settings.COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES:
             return
 
         for aggregator in updated_aggregators:
-            event = "progress" if aggregator.percent < 1 else "completion"
-            event_type = aggregator.aggregation_name
+            block_type = aggregator.aggregation_name
 
-            if event_type not in settings.ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES.get(event, {}):
+            if block_type not in settings.COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES:
                 continue
 
-            event_name = f"openedx.completion_aggregator.{event}.{event_type}"
+            event_name = f"openedx.completion_aggregator.progress.{block_type}"
 
             tracker.emit(
                 event_name,
@@ -209,7 +208,7 @@ class AggregatorManager(models.Manager):
                     "earned": aggregator.earned,
                     "possible": aggregator.possible,
                     "percent": aggregator.percent,
-                    "type": event_type,
+                    "type": block_type,
                 }
             )
 

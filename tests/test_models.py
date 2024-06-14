@@ -228,7 +228,7 @@ class AggregatorTestCase(TestCase):
         self.assertEqual(values['user'], self.user.id)
         self.assertEqual(values['percent'], expected_percent)
 
-    @override_settings(ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES=None)
+    @override_settings(COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES=None)
     def test_submit_completion_with_tracking_disabled(self):
         _obj, is_new = Aggregator.objects.submit_completion(
             user=self.user,
@@ -245,13 +245,9 @@ class AggregatorTestCase(TestCase):
 
     def assert_emit_method_called(self, obj):
         """Verify that the tracker.emit method was called once with the right values."""
-        if obj.aggregation_name not in settings.ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES:
-            return
-
-        event = "progress" if obj.percent < 1 else "completion"
 
         self.tracker_mock.emit.assert_called_once_with(
-            f"openedx.completion_aggregator.{event}.{obj.aggregation_name}",
+            f"openedx.completion_aggregator.progress.{obj.aggregation_name}",
             {
                 "user_id": obj.user_id,
                 "course_id": str(obj.course_key),

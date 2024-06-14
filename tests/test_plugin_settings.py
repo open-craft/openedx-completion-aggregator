@@ -17,7 +17,7 @@ def test_production_settings():
     """
     aws_settings.plugin_settings(settings)
 
-    assert list(settings.ALLOWED_COMPLETION_AGGREGATOR_EVENT_TYPES.keys()) == ["progress", "completion"]
+    assert settings.COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES == settings.COMPLETION_AGGREGATOR_BLOCK_TYPES
 
 
 def test_event_tracking_backends():
@@ -40,10 +40,6 @@ def test_event_tracking_backends():
         'openedx.completion_aggregator.progress.chapter',
         'openedx.completion_aggregator.progress.sequential',
         'openedx.completion_aggregator.progress.vertical',
-        'openedx.completion_aggregator.completion.course',
-        'openedx.completion_aggregator.completion.chapter',
-        'openedx.completion_aggregator.completion.sequential',
-        'openedx.completion_aggregator.completion.vertical',
     }
 
     # Ensure expected_events is a subset of these whitelists
