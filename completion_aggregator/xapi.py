@@ -9,13 +9,21 @@ from event_routing_backends.processors.xapi.transformer import XApiTransformer
 from tincan import Activity, ActivityDefinition, Extensions, LanguageMap, Result, Verb
 
 
-class BaseAggregatorXApiTransformer(XApiTransformer):
+class BaseProgressTransformer(XApiTransformer):
     """
-    Base transformer for all completion aggregator events.
+    Base transformer for completion aggregator progress events.
     """
 
+    _verb = Verb(
+        id=constants.XAPI_VERB_PROGRESSED,
+        display=LanguageMap({constants.EN: constants.PROGRESSED}),
+    )
     object_type = None
+    additional_fields = ('result', )
 
+    @openedx_filter(
+        filter_type="completion_aggregator.xapi.progress.get_object",
+    )
     def get_object(self) -> Activity:
         """
         Get object for xAPI transformed event.
@@ -30,36 +38,15 @@ class BaseAggregatorXApiTransformer(XApiTransformer):
             ),
         )
 
-
-class BaseProgressTransformer(BaseAggregatorXApiTransformer):
-    """
-    Base transformer for completion aggregator progress events.
-    """
-
-    _verb = Verb(
-        id=constants.XAPI_VERB_PROGRESSED,
-        display=LanguageMap({constants.EN: constants.PROGRESSED}),
-    )
-    object_type = None
-    additional_fields = ('result', )
-
-    @openedx_filter(
-        filter_type="completion_aggregator.xapi.base_progress.get_object",
-    )
-    def get_object(self) -> Activity:
-        """
-        Get object for xAPI transformed event.
-        """
-        return super().get_object()
-
     def get_result(self) -> Result:
         """
         Get result for xAPI transformed event.
         """
+        progress = self.get_data("data.percent") or 0
         return Result(
-            completion=self.get_data("data.percent") == 1.0,
+            completion=progress == 1.0,
             extensions=Extensions({
-                "progress": self.get_data("data.percent") or 0,
+                constants.XAPI_ACTIVITY_PROGRESS: (progress * 100),
             }),
         )
 
@@ -79,47 +66,6 @@ class ModuleProgressTransformer(BaseProgressTransformer):
 class CourseProgressTransformer(BaseProgressTransformer):
     """
     Transformer for event generated when a user makes progress in a course.
-    """
-
-    object_type = constants.XAPI_ACTIVITY_COURSE
-
-
-class BaseCompletionTransformer(BaseAggregatorXApiTransformer):
-    """
-    Base transformer for aggregator completion events.
-    """
-
-    _verb = Verb(
-        id=constants.XAPI_VERB_COMPLETED,
-        display=LanguageMap({constants.EN: constants.COMPLETED}),
-    )
-    object_type = None
-
-    @openedx_filter(
-        filter_type="completion_aggregator.xapi.base_completion.get_object",
-    )
-    def get_object(self) -> Activity:
-        """
-        Get object for xAPI transformed event.
-        """
-        return super().get_object()
-
-
-@XApiTransformersRegistry.register("openedx.completion_aggregator.completion.chapter")
-@XApiTransformersRegistry.register("openedx.completion_aggregator.completion.sequential")
-@XApiTransformersRegistry.register("openedx.completion_aggregator.completion.vertical")
-class ModuleCompletionTransformer(BaseCompletionTransformer):
-    """
-    Transformer for events generated when a user completes a section, subsection or unit.
-    """
-
-    object_type = constants.XAPI_ACTIVITY_MODULE
-
-
-@XApiTransformersRegistry.register("openedx.completion_aggregator.completion.course")
-class CourseCompletionTransformer(BaseCompletionTransformer):
-    """
-    Transformer for event generated when a user completes a course.
     """
 
     object_type = constants.XAPI_ACTIVITY_COURSE
