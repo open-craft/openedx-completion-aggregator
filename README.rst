@@ -50,7 +50,7 @@ For details about how the completion aggregator's REST APIs can be used, please 
 Event tracking
 --------------
 
-Like other parts of Open edX, the completion aggregator emits "tracking logs" events whenever completion aggregator records are created or updated by this plugin. These events can be used for analytics, for example to track learner progress in a course.
+Like other parts of Open edX, the completion aggregator emits "tracking logs" events whenever completion aggregator records are created or updated by this plugin. These events are transformed into xAPI and routed using `edx-event-routing-backends` so they can be used for analytics, for example to track learner progress in a course.
 
 Event tracking is enabled by default for edx-platform, and so event tracking is also enabled by default in the completion aggregator. This can result in a lot of events being generated — for example when a user completes the final block in a course, aggregator completion events will be generated for the containing unit, subsection, section, and course.
 
