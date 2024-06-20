@@ -52,9 +52,9 @@ Event tracking
 
 Like other parts of Open edX, the completion aggregator emits "tracking logs" events whenever completion aggregator records are created or updated by this plugin. These events can be used for analytics, for example to track learner progress in a course.
 
-Event tracking is enabled by default for edx-platform, and so event tracking is also enabled by default in the completion aggregator. This can result in a lot of events being generated -- for example when a user completes the final block in a course, aggregator completion events will be generated for the containing unit, subsection, section, and course.
+Event tracking is enabled by default for edx-platform, and so event tracking is also enabled by default in the completion aggregator. This can result in a lot of events being generated — for example when a user completes the final block in a course, aggregator completion events will be generated for the containing unit, subsection, section, and course.
 
-You can limit which aggregator events are emitted by modifying the `COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES` setting to limit which block types (`course`, `chapter`, `sequential`, `vertical`) cause tracking events to be emitted. To disable sending any completion aggregator tracking events, set `COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES = None`.
+You can limit which aggregator events are emitted by modifying the ``COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES`` setting to limit which block types (``course``, ``chapter``, ``sequential``, ``vertical``) cause tracking events to be emitted. To disable sending any completion aggregator tracking events, set ``COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES = None``.
 
 Installation and Configuration
 ------------------------------
