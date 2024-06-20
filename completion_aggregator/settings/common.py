@@ -46,6 +46,12 @@ def plugin_settings(settings):
     settings.COMPLETION_AGGREGATOR_AGGREGATE_UNRELEASED_BLOCKS = False
 
     # Whitelist the aggregator events for use with event routing backends xAPI backend.
+    # If these settings don't already exist, then ERB hasn't been loaded yet, so we need to set them to empty lists.
+    # But once ERB does load it will append its events to our list, preserving what we added here.
+    if not hasattr(settings, 'EVENT_TRACKING_BACKENDS_ALLOWED_XAPI_EVENTS'):
+        settings.EVENT_TRACKING_BACKENDS_ALLOWED_XAPI_EVENTS = []
+    if not hasattr(settings, 'EVENT_TRACKING_BACKENDS_ALLOWED_CALIPER_EVENTS'):
+        settings.EVENT_TRACKING_BACKENDS_ALLOWED_CALIPER_EVENTS = []
     enabled_aggregator_events = [
         f'openedx.completion_aggregator.progress.{block_type}'
 
