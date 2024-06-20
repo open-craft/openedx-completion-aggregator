@@ -184,7 +184,7 @@ edx-celeryutils==1.2.5
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt
-edx-completion==4.4.0
+edx-completion==4.6.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.txt

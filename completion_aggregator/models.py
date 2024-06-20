@@ -5,6 +5,7 @@ Database models for completion aggregator.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from eventtracking import tracker
 from opaque_keys.edx.django.models import CourseKeyField, UsageKeyField
 from opaque_keys.edx.keys import CourseKey, UsageKey
 
@@ -171,7 +172,45 @@ class AggregatorManager(models.Manager):
                 'last_modified': last_modified,
             },
         )
+        self.emit_completion_aggregator_logs([obj])
+
         return obj, is_new
+
+    @staticmethod
+    def emit_completion_aggregator_logs(updated_aggregators):
+        """
+        Emit a tracking log for each element of the list parameter.
+
+        Parameters
+        ----------
+            updated_aggregators: List of Aggregator instances
+
+        """
+        if not settings.COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES:
+            return
+
+        for aggregator in updated_aggregators:
+            block_type = aggregator.aggregation_name
+
+            if block_type not in settings.COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES:
+                continue
+
+            event_name = f"openedx.completion_aggregator.progress.{block_type}"
+
+            tracker.emit(
+                event_name,
+                {
+                    "user_id": aggregator.user_id,
+                    "course_id": str(aggregator.course_key),
+                    "block_id": str(aggregator.block_key),
+                    "modified": aggregator.modified,
+                    "created": aggregator.created,
+                    "earned": aggregator.earned,
+                    "possible": aggregator.possible,
+                    "percent": aggregator.percent,
+                    "type": block_type,
+                }
+            )
 
     def bulk_create_or_update(self, updated_aggregators):
         """
@@ -194,6 +233,7 @@ class AggregatorManager(models.Manager):
                 else:
                     aggregation_data = [obj.get_values() for obj in updated_aggregators]
                     cur.executemany(INSERT_OR_UPDATE_AGGREGATOR_QUERY, aggregation_data)
+                    self.emit_completion_aggregator_logs(updated_aggregators)
 
 
 class Aggregator(TimeStampedModel):

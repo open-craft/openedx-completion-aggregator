@@ -14,6 +14,12 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
+[4.1.0] - 2024-06-18
+~~~~~~~~~~~~~~~~~~~~
+
+* Emit `openedx.completion_aggregator.progress.*` tracking log events for the
+  various block/course types
+
 [4.0.3] - 2023-10-24
 ~~~~~~~~~~~~~~~~~~~~
 

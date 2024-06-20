@@ -97,7 +97,7 @@ drf-jwt==1.19.2
     # via edx-drf-extensions
 edx-celeryutils==1.2.5
     # via -r requirements/base.in
-edx-completion==4.4.0
+edx-completion==4.6.0
     # via -r requirements/base.in
 edx-django-utils==5.10.1
     # via
@@ -119,7 +119,9 @@ edx-toggles==5.1.1
     #   edx-completion
     #   event-tracking
 event-tracking==2.3.0
-    # via edx-completion
+    # via
+    #   -r requirements/base.in
+    # edx-completion
 fastavro==1.9.4
     # via openedx-events
 fs==2.4.16

@@ -9,6 +9,11 @@ def plugin_settings(settings):
     """
     Modify the provided settings object with settings specific to this plugin.
     """
+    settings.COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES = settings.ENV_TOKENS.get(
+        'COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES',
+        settings.COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES,
+    )
+
     settings.COMPLETION_AGGREGATOR_BLOCK_TYPES = set(settings.ENV_TOKENS.get(
         'COMPLETION_AGGREGATOR_BLOCK_TYPES',
         settings.COMPLETION_AGGREGATOR_BLOCK_TYPES,

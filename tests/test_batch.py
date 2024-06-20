@@ -60,6 +60,7 @@ def test_synchronous_aggregation(mock_task, users):
     assert mock_task.call_count == 4  # Called once per created BlockCompletion
 
 
+@override_settings(COMPLETION_AGGREGATOR_ASYNC_AGGREGATION=True)
 @patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async')
 def test_with_multiple_batches(mock_task, users):
     course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
@@ -87,6 +88,7 @@ def test_with_multiple_batches(mock_task, users):
     }
 
 
+@override_settings(COMPLETION_AGGREGATOR_ASYNC_AGGREGATION=True)
 @patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async')
 def test_with_stale_completions(mock_task, users):
     course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')
@@ -107,6 +109,7 @@ def test_with_stale_completions(mock_task, users):
     assert mock_task.call_count == 2  # Called once for each user
 
 
+@override_settings(COMPLETION_AGGREGATOR_ASYNC_AGGREGATION=True)
 @patch('completion_aggregator.tasks.aggregation_tasks.update_aggregators.apply_async')
 def test_with_full_course_stale_completion(mock_task, users):
     course_key = CourseKey.from_string('course-v1:OpenCraft+Onboarding+2018')

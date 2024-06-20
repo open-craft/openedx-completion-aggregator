@@ -15,6 +15,13 @@ def plugin_settings(settings):
         'sequential',
         'vertical',
     }
+
+    # Emit feature publishes progress events to track aggregated completion.
+    # Defaults to the full set of block types subject to completion aggregation.
+    # Block types may be removed from this list to limit the tracking log events emitted.
+    settings.COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES = settings.COMPLETION_AGGREGATOR_BLOCK_TYPES.copy()
+
+    # Synchronous completion aggregation is enabled by default
     settings.COMPLETION_AGGREGATOR_ASYNC_AGGREGATION = False
 
     # Names of the batch operations locks

@@ -9,14 +9,17 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import ddt
 import pytest
 import six
+from mock import patch
 from opaque_keys.edx.keys import UsageKey
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils.timezone import now
 
 from completion_aggregator.models import Aggregator
+from completion_aggregator.settings import common as common_settings
 
 
 @ddt.ddt
@@ -31,6 +34,13 @@ class AggregatorTestCase(TestCase):
     def setUp(self):
         super().setUp()
         self.user = get_user_model().objects.create(username='testuser')
+        self.tracker_patch = patch('completion_aggregator.models.tracker')
+        self.tracker_mock = self.tracker_patch.start()
+        common_settings.plugin_settings(settings)
+
+    def tearDown(self):
+        """Stop patching."""
+        self.tracker_mock.stop()
 
     def test_submit_completion_with_invalid_user(self):
         with pytest.raises(TypeError):
@@ -43,6 +53,7 @@ class AggregatorTestCase(TestCase):
                 possible=27.0,
                 last_modified=now(),
             )
+            self.tracker_mock.assert_not_called()
 
     @ddt.data(
         # Valid arguments
@@ -64,6 +75,7 @@ class AggregatorTestCase(TestCase):
         self.assertEqual(obj.earned, earned)
         self.assertEqual(obj.possible, possible)
         self.assertEqual(obj.percent, expected_percent)
+        self.assert_emit_method_called(obj)
 
     @ddt.data(
         # Earned greater than possible
@@ -105,6 +117,7 @@ class AggregatorTestCase(TestCase):
             )
 
             self.assertEqual(exception_message, str(context_manager.exception))
+            self.tracker_mock.assert_not_called()
 
     @ddt.data(
         (
@@ -129,6 +142,7 @@ class AggregatorTestCase(TestCase):
             f'{six.text_type(block_key_obj)}: {expected_percent}'
         )
         self.assertEqual(six.text_type(obj), expected_string)
+        self.assert_emit_method_called(obj)
 
     @ddt.data(
         # Changes the value of earned. This does not create a new object.
@@ -179,6 +193,7 @@ class AggregatorTestCase(TestCase):
         )
         self.assertEqual(obj.percent, expected_percent)
         self.assertTrue(is_new)
+        self.assert_emit_method_called(obj)
 
         new_obj, is_new = Aggregator.objects.submit_completion(
             user=self.user,
@@ -193,6 +208,7 @@ class AggregatorTestCase(TestCase):
         self.assertEqual(is_new, is_second_obj_new)
         if is_second_obj_new:
             self.assertNotEqual(obj.id, new_obj.id)
+        self.assert_emit_method_called(new_obj)
 
     @ddt.data(
         (BLOCK_KEY_OBJ, 'course', 0.5, 1, 0.5),
@@ -211,3 +227,37 @@ class AggregatorTestCase(TestCase):
         values = aggregator.get_values()
         self.assertEqual(values['user'], self.user.id)
         self.assertEqual(values['percent'], expected_percent)
+
+    @override_settings(COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES=None)
+    def test_submit_completion_with_tracking_disabled(self):
+        _obj, is_new = Aggregator.objects.submit_completion(
+            user=self.user,
+            course_key=self.BLOCK_KEY_OBJ.course_key,
+            block_key=self.BLOCK_KEY_OBJ,
+            aggregation_name='course',
+            earned=0.5,
+            possible=1,
+            last_modified=now(),
+        )
+        self.assertTrue(is_new)
+        self.assertEqual(len(Aggregator.objects.all()), 1)
+        self.tracker_mock.emit.assert_not_called()
+
+    def assert_emit_method_called(self, obj):
+        """Verify that the tracker.emit method was called once with the right values."""
+
+        self.tracker_mock.emit.assert_called_once_with(
+            f"openedx.completion_aggregator.progress.{obj.aggregation_name}",
+            {
+                "user_id": obj.user_id,
+                "course_id": str(obj.course_key),
+                "block_id": str(obj.block_key),
+                "modified": obj.modified,
+                "created": obj.created,
+                "earned": obj.earned,
+                "possible": obj.possible,
+                "percent": obj.percent,
+                "type": obj.aggregation_name,
+            }
+        )
+        self.tracker_mock.emit.reset_mock()
