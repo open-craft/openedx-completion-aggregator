@@ -16,7 +16,3 @@
 #  https://github.com/openedx/completion/blob/v4.2.0/completion/__init__.py#L7
 pytest<6.0.0
 pluggy<1.0.0
-
-
-# TODO Temporary constraint to fix issues with using event-routing-backends
-git+https://github.com/open-craft/event-routing-backends.git@jill/fix-no-openedx#egg=edx_event_routing_backends

@@ -130,7 +130,7 @@ edx-django-utils==5.10.1
     #   openedx-events
 edx-drf-extensions==10.2.0
     # via edx-completion
-edx-event-routing-backends @ git+https://github.com/open-craft/event-routing-backends.git@jill/fix-no-openedx
+edx-event-routing-backends==9.3.0
     # via
     #   -c requirements/constraints.txt
     #   -r requirements/base.in

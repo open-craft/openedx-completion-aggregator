@@ -216,7 +216,7 @@ edx-drf-extensions==10.2.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
-edx-event-routing-backends @ git+https://github.com/open-craft/event-routing-backends.git@jill/fix-no-openedx
+edx-event-routing-backends==9.3.0
     # via
     #   -c requirements/constraints.txt
     #   -r requirements/quality.txt
