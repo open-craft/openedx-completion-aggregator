@@ -14,6 +14,12 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
+[4.2.0] - 2024-06-21
+~~~~~~~~~~~~~~~~~~~~
+
+* Transform `openedx.completion_aggregator.progress.*` tracking log events into xAPI using edx-event-routing-backends so
+  they can be included in Aspects analytics data.
+
 [4.1.0] - 2024-06-18
 ~~~~~~~~~~~~~~~~~~~~
 

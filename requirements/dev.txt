@@ -8,6 +8,14 @@ amqp==5.2.0
     # via
     #   -r requirements/quality.txt
     #   kombu
+aniso8601==9.0.1
+    # via
+    #   -r requirements/quality.txt
+    #   tincan
+apache-libcloud==3.8.0
+    # via
+    #   -r requirements/quality.txt
+    #   edx-event-routing-backends
 appdirs==1.4.4
     # via
     #   -r requirements/quality.txt
@@ -111,6 +119,7 @@ coverage[toml]==7.4.3
 cryptography==42.0.5
     # via
     #   -r requirements/quality.txt
+    #   django-fernet-fields-v2
     #   jwcrypto
     #   pyjwt
 ddt==1.7.1
@@ -127,9 +136,12 @@ django==3.2.24
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/quality.txt
+    #   django-config-models
     #   django-crum
+    #   django-fernet-fields-v2
     #   django-model-utils
     #   django-oauth-toolkit
+    #   django-redis
     #   django-waffle
     #   djangorestframework
     #   drf-jwt
@@ -137,17 +149,27 @@ django==3.2.24
     #   edx-completion
     #   edx-django-utils
     #   edx-drf-extensions
+    #   edx-event-routing-backends
     #   edx-i18n-tools
     #   edx-toggles
     #   event-tracking
     #   jsonfield
     #   openedx-django-pyfs
     #   openedx-events
+    #   openedx-filters
+django-config-models==2.7.0
+    # via
+    #   -r requirements/quality.txt
+    #   edx-event-routing-backends
 django-crum==0.7.9
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
     #   edx-toggles
+django-fernet-fields-v2==0.9
+    # via
+    #   -r requirements/quality.txt
+    #   edx-event-routing-backends
 django-model-utils==4.4.0
     # via
     #   -r requirements/quality.txt
@@ -155,6 +177,10 @@ django-model-utils==4.4.0
     #   edx-completion
 django-oauth-toolkit==2.3.0
     # via -r requirements/quality.txt
+django-redis==5.4.0
+    # via
+    #   -r requirements/quality.txt
+    #   edx-event-routing-backends
 django-waffle==4.1.0
     # via
     #   -r requirements/quality.txt
@@ -164,6 +190,7 @@ django-waffle==4.1.0
 djangorestframework==3.14.0
     # via
     #   -r requirements/quality.txt
+    #   django-config-models
     #   drf-jwt
     #   edx-completion
     #   edx-drf-extensions
@@ -172,12 +199,15 @@ drf-jwt==1.19.2
     #   -r requirements/quality.txt
     #   edx-drf-extensions
 edx-celeryutils==1.2.5
-    # via -r requirements/quality.txt
+    # via
+    #   -r requirements/quality.txt
+    #   edx-event-routing-backends
 edx-completion==4.6.0
     # via -r requirements/quality.txt
 edx-django-utils==5.10.1
     # via
     #   -r requirements/quality.txt
+    #   django-config-models
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
@@ -186,6 +216,10 @@ edx-drf-extensions==10.2.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
+edx-event-routing-backends==9.3.0
+    # via
+    #   -c requirements/constraints.txt
+    #   -r requirements/quality.txt
 edx-i18n-tools==1.3.0
     # via -r requirements/quality.txt
 edx-lint==5.3.6
@@ -200,15 +234,27 @@ edx-toggles==5.1.1
     # via
     #   -r requirements/quality.txt
     #   edx-completion
+    #   edx-event-routing-backends
     #   event-tracking
-event-tracking==2.3.0
+event-tracking==2.4.0
     # via
     #   -r requirements/quality.txt
     #   edx-completion
+    #   edx-event-routing-backends
+factory-boy==3.3.0
+    # via -r requirements/quality.txt
+faker==25.8.0
+    # via
+    #   -r requirements/quality.txt
+    #   factory-boy
 fastavro==1.9.4
     # via
     #   -r requirements/quality.txt
     #   openedx-events
+fasteners==0.19
+    # via
+    #   -r requirements/quality.txt
+    #   edx-event-routing-backends
 filelock==3.13.1
     # via
     #   -r requirements/ci.txt
@@ -230,10 +276,15 @@ idna==3.6
     # via
     #   -r requirements/quality.txt
     #   requests
-importlib-metadata==7.0.1
+importlib-metadata==6.11.0
     # via
+    #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/pip-tools.txt
     #   build
+isodate==0.6.1
+    # via
+    #   -r requirements/quality.txt
+    #   edx-event-routing-backends
 isort==5.13.2
     # via
     #   -r requirements/quality.txt
@@ -251,6 +302,7 @@ jsonfield==3.1.0
     # via
     #   -r requirements/quality.txt
     #   edx-celeryutils
+    #   edx-event-routing-backends
 jwcrypto==1.5.4
     # via
     #   -r requirements/quality.txt
@@ -306,6 +358,10 @@ openedx-events==9.5.2
     # via
     #   -r requirements/quality.txt
     #   event-tracking
+openedx-filters==1.8.1
+    # via
+    #   -r requirements/quality.txt
+    #   edx-event-routing-backends
 packaging==23.2
     # via
     #   -r requirements/ci.txt
@@ -417,6 +473,8 @@ python-dateutil==2.8.2
     #   -r requirements/quality.txt
     #   botocore
     #   celery
+    #   edx-event-routing-backends
+    #   faker
     #   freezegun
     #   xblock
 python-slugify==8.0.4
@@ -429,7 +487,9 @@ pytz==2024.1
     #   django
     #   djangorestframework
     #   edx-completion
+    #   edx-event-routing-backends
     #   event-tracking
+    #   tincan
     #   xblock
 pyyaml==6.0.1
     # via
@@ -437,13 +497,17 @@ pyyaml==6.0.1
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==5.0.1
-    # via -r requirements/quality.txt
+redis==5.0.5
+    # via
+    #   -r requirements/quality.txt
+    #   django-redis
 requests==2.31.0
     # via
     #   -r requirements/quality.txt
+    #   apache-libcloud
     #   django-oauth-toolkit
     #   edx-drf-extensions
+    #   edx-event-routing-backends
 s3transfer==0.10.0
     # via
     #   -r requirements/quality.txt
@@ -465,6 +529,7 @@ six==1.16.0
     #   freezegun
     #   fs
     #   fs-s3fs
+    #   isodate
     #   mock
     #   more-itertools
     #   python-dateutil
@@ -487,6 +552,10 @@ text-unidecode==1.3
     # via
     #   -r requirements/quality.txt
     #   python-slugify
+tincan==1.0.0
+    # via
+    #   -r requirements/quality.txt
+    #   edx-event-routing-backends
 tomli==2.0.1
     # via
     #   -r requirements/ci.txt

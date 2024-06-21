@@ -38,6 +38,10 @@ class CompletionAggregatorAppConfig(AppConfig):
         """
         Load signal handlers when the app is ready.
         """
+        # pylint: disable=import-outside-toplevel
         from . import signals
         signals.register()
-        from .tasks import aggregation_tasks, handler_tasks  # pylint: disable=unused-import
+
+        # pylint: disable=unused-import
+        from . import xapi
+        from .tasks import aggregation_tasks, handler_tasks

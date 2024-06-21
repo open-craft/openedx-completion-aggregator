@@ -16,3 +16,4 @@ django-oauth-toolkit
 
 mysqlclient           # For connecting to MySQL
 edx-i18n-tools        # For i18n_tool dummy
+factory-boy           # For event transformers
