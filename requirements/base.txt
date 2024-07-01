@@ -12,7 +12,7 @@ apache-libcloud==3.8.0
     # via edx-event-routing-backends
 appdirs==1.4.4
     # via fs
-asgiref==3.7.2
+asgiref==3.8.1
     # via django
 async-timeout==4.0.3
     # via redis
@@ -21,21 +21,23 @@ attrs==23.2.0
 backports-zoneinfo[tzdata]==0.2.1
     # via
     #   celery
+    #   django
+    #   djangorestframework
     #   kombu
 billiard==4.2.0
     # via celery
-boto3==1.34.49
+boto3==1.34.136
     # via fs-s3fs
-botocore==1.34.49
+botocore==1.34.136
     # via
     #   boto3
     #   s3transfer
-celery==5.3.6
+celery==5.4.0
     # via
     #   -r requirements/base.in
     #   edx-celeryutils
     #   event-tracking
-certifi==2024.2.2
+certifi==2024.6.2
     # via requests
 cffi==1.16.0
     # via
@@ -51,19 +53,19 @@ click==8.1.7
     #   click-repl
     #   code-annotations
     #   edx-django-utils
-click-didyoumean==0.3.0
+click-didyoumean==0.3.1
     # via celery
 click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-code-annotations==1.6.0
+code-annotations==1.8.0
     # via edx-toggles
-cryptography==42.0.5
+cryptography==42.0.8
     # via
     #   django-fernet-fields-v2
     #   pyjwt
-django==3.2.24
+django==4.2.13
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.in
@@ -94,7 +96,7 @@ django-crum==0.7.9
     #   edx-toggles
 django-fernet-fields-v2==0.9
     # via edx-event-routing-backends
-django-model-utils==4.4.0
+django-model-utils==4.5.1
     # via
     #   -r requirements/base.in
     #   edx-celeryutils
@@ -106,7 +108,7 @@ django-waffle==4.1.0
     #   edx-django-utils
     #   edx-drf-extensions
     #   edx-toggles
-djangorestframework==3.14.0
+djangorestframework==3.15.2
     # via
     #   -r requirements/base.in
     #   django-config-models
@@ -115,32 +117,33 @@ djangorestframework==3.14.0
     #   edx-drf-extensions
 drf-jwt==1.19.2
     # via edx-drf-extensions
-edx-celeryutils==1.2.5
+edx-ccx-keys==1.3.0
+    # via openedx-events
+edx-celeryutils==1.3.0
     # via
     #   -r requirements/base.in
     #   edx-event-routing-backends
-edx-completion==4.6.0
+edx-completion==4.6.5
     # via -r requirements/base.in
-edx-django-utils==5.10.1
+edx-django-utils==5.14.2
     # via
     #   django-config-models
     #   edx-drf-extensions
     #   edx-toggles
     #   event-tracking
     #   openedx-events
-edx-drf-extensions==10.2.0
+edx-drf-extensions==10.3.0
     # via edx-completion
 edx-event-routing-backends==9.3.0
-    # via
-    #   -c requirements/constraints.txt
-    #   -r requirements/base.in
-edx-opaque-keys[django]==2.5.1
+    # via -r requirements/base.in
+edx-opaque-keys[django]==2.10.0
     # via
     #   -r requirements/base.in
+    #   edx-ccx-keys
     #   edx-completion
     #   edx-drf-extensions
     #   openedx-events
-edx-toggles==5.1.1
+edx-toggles==5.2.0
     # via
     #   -r requirements/base.in
     #   edx-completion
@@ -162,11 +165,11 @@ fs==2.4.16
     #   xblock
 fs-s3fs==1.1.1
     # via openedx-django-pyfs
-idna==3.6
+idna==3.7
     # via requests
 isodate==0.6.1
     # via edx-event-routing-backends
-jinja2==3.1.3
+jinja2==3.1.4
     # via code-annotations
 jmespath==1.0.1
     # via
@@ -176,34 +179,34 @@ jsonfield==3.1.0
     # via
     #   edx-celeryutils
     #   edx-event-routing-backends
-kombu==5.3.5
+kombu==5.3.7
     # via celery
 lazy==1.6
     # via xblock
-lxml==5.1.0
+lxml==5.2.2
     # via xblock
-mako==1.3.2
+mako==1.3.5
     # via xblock
 markupsafe==2.1.5
     # via
     #   jinja2
     #   mako
     #   xblock
-newrelic==9.7.0
+newrelic==9.11.0
     # via edx-django-utils
-openedx-django-pyfs==3.5.0
+openedx-django-pyfs==3.6.0
     # via xblock
-openedx-events==9.5.2
+openedx-events==9.11.0
     # via event-tracking
-openedx-filters==1.8.1
+openedx-filters==1.9.0
     # via edx-event-routing-backends
 pbr==6.0.0
     # via stevedore
-prompt-toolkit==3.0.43
+prompt-toolkit==3.0.47
     # via click-repl
-psutil==5.9.8
+psutil==6.0.0
     # via edx-django-utils
-pycparser==2.21
+pycparser==2.22
     # via cffi
 pyjwt[crypto]==2.8.0
     # via
@@ -215,7 +218,7 @@ pymongo==3.13.0
     #   event-tracking
 pynacl==1.5.0
     # via edx-django-utils
-python-dateutil==2.8.2
+python-dateutil==2.9.0.post0
     # via
     #   botocore
     #   celery
@@ -225,8 +228,6 @@ python-slugify==8.0.4
     # via code-annotations
 pytz==2024.1
     # via
-    #   django
-    #   djangorestframework
     #   edx-completion
     #   edx-event-routing-backends
     #   event-tracking
@@ -236,14 +237,14 @@ pyyaml==6.0.1
     # via
     #   code-annotations
     #   xblock
-redis==5.0.5
+redis==5.0.7
     # via django-redis
-requests==2.31.0
+requests==2.32.3
     # via
     #   apache-libcloud
     #   edx-drf-extensions
     #   edx-event-routing-backends
-s3transfer==0.10.0
+s3transfer==0.10.2
     # via boto3
 semantic-version==2.10.0
     # via edx-drf-extensions
@@ -252,12 +253,13 @@ simplejson==3.19.2
 six==1.16.0
     # via
     #   -r requirements/base.in
+    #   edx-ccx-keys
     #   event-tracking
     #   fs
     #   fs-s3fs
     #   isodate
     #   python-dateutil
-sqlparse==0.4.4
+sqlparse==0.5.0
     # via django
 stevedore==5.2.0
     # via
@@ -268,7 +270,7 @@ text-unidecode==1.3
     # via python-slugify
 tincan==1.0.0
     # via edx-event-routing-backends
-typing-extensions==4.10.0
+typing-extensions==4.12.2
     # via
     #   asgiref
     #   edx-opaque-keys
@@ -277,7 +279,7 @@ tzdata==2024.1
     # via
     #   backports-zoneinfo
     #   celery
-urllib3==1.26.18
+urllib3==1.26.19
     # via
     #   botocore
     #   requests
@@ -288,11 +290,11 @@ vine==5.1.0
     #   kombu
 wcwidth==0.2.13
     # via prompt-toolkit
-web-fragments==2.1.0
+web-fragments==2.2.0
     # via xblock
 webob==1.8.7
     # via xblock
-xblock[django]==1.10.0
+xblock[django]==4.0.1
     # via
     #   -r requirements/base.in
     #   edx-completion
