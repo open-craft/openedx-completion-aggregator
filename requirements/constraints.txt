@@ -10,9 +10,3 @@
 
 # Common constraints for edx repos
 -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
-
-
-# Newer versions of pytest fail because `edx-completion` defines `default_app_config`:
-#  https://github.com/openedx/completion/blob/v4.2.0/completion/__init__.py#L7
-pytest<6.0.0
-pluggy<1.0.0
