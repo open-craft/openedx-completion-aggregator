@@ -1,9 +1,10 @@
 """
 Various utility functionality.
 """
+from datetime import timezone
+
 import django
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 from django.utils.translation import gettext as _
 
 WAFFLE_AGGREGATE_STALE_FROM_SCRATCH = 'completion_aggregator.aggregate_stale_from_scratch'

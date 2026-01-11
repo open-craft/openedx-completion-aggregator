@@ -47,6 +47,7 @@ DEBUG = True
 INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.auth',
+    'django.contrib.messages',
     'django.contrib.sessions',
     'django.contrib.admin',
     'completion',
@@ -80,9 +81,28 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',  # this is required for admin
+                'django.contrib.messages.context_processors.messages',  # this is required for admin
+                'django.template.context_processors.request',  # this is required for admin
+            ],
+        },
     },
 ]
 USE_TZ = True
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+# Suppress noisy import errors from event_routing_backends when running outside LMS.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'loggers': {
+        'event_routing_backends.helpers': {
+            'level': 'CRITICAL',
+        },
+    },
+}
 
 # Enables event tracking in the tests, see https://github.com/openedx/event-tracking
 EVENT_TRACKING_ENABLED = True

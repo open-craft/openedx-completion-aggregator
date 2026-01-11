@@ -8,6 +8,7 @@ load-plugins = edx_lint.pylint,pylint_django,pylint_celery
 disable =
     import-outside-toplevel,
     too-many-arguments,
+    too-many-positional-arguments,
     too-many-instance-attributes,
     too-many-locals,
     invalid-name,
@@ -20,3 +21,6 @@ disable =
     superfluous-parens,
     unnecessary-pass,
     too-many-branches,
+
+[EXCEPTIONS]
+overgeneral-exceptions = builtins.Exception

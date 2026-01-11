@@ -72,6 +72,6 @@ class Command(BaseCommand):
 
         if options.get('verbosity') == 0:
             log_level = logging.WARNING
-        elif options.get('verbosity') >= 1:
+        else:
             log_level = logging.INFO
         log.setLevel(log_level)
