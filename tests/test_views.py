@@ -490,7 +490,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         token = _create_oauth2_token(self.test_user)
         response = self.client.get(
             self.get_detail_url(version, self.course_key, username=self.test_user.username),
-            HTTP_AUTHORIZATION=f"Bearer {token}"
+            headers={"authorization": f"Bearer {token}"}
         )
         self.assertEqual(response.status_code, 200)
         if version == 0:
@@ -1124,7 +1124,7 @@ class CompletionBlockUpdateViewTestCase(CompletionAPITestMixin, TestCase):
 
         # Now, try with a valid token header:
         token = _create_oauth2_token(self.test_user)
-        response = self.client.post(self.update_url, {'completion': 1.0}, HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = self.client.post(self.update_url, {'completion': 1.0}, headers={"authorization": f"Bearer {token}"})
         self.assertEqual(response.status_code, 201)
         stub_submit.assert_called_once()
 

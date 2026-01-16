@@ -3,7 +3,6 @@ Various utility functionality.
 """
 from datetime import timezone
 
-import django
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext as _
 
@@ -42,8 +41,7 @@ def make_datetime_timezone_unaware(date):
     # pylint: disable=line-too-long
     # Ref: https://github.com/django/django/commit/e707e4c709c2e3f2dad69643eb838f87491891f8#diff-af003fcfed7cfbdeb396f8647ed0f92fR258
     # pylint: enable=line-too-long
-    if django.VERSION >= (1, 10):
-        date = date.astimezone(timezone.utc).replace(tzinfo=None)
+    date = date.astimezone(timezone.utc).replace(tzinfo=None)
     return date
 
 
