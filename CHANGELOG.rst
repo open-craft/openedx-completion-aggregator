@@ -14,6 +14,11 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
+[4.4.0] - 2026-01-28
+~~~~~~~~~~~~~~~~~~~~
+
+* Count XBlocks with `optional_completion`.
+
 [4.3.0] - 2026-01-28
 ~~~~~~~~~~~~~~~~~~~~
 

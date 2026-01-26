@@ -27,7 +27,9 @@ OLD_DATETIME = pytz.utc.localize(datetime(1900, 1, 1, 0, 0, 0))
 UPDATER_CACHE_TIMEOUT = 600  # 10 minutes
 
 CacheEntry = namedtuple('CacheEntry', ['course_blocks', 'root_block'])
-CompletionStats = namedtuple('CompletionStats', ['earned', 'possible', 'last_modified'])
+CompletionStats = namedtuple(
+    "CompletionStats", ["earned", "possible", "optional_earned", "optional_possible", "last_modified"]
+)
 
 log = logging.getLogger(__name__)
 
@@ -83,7 +85,7 @@ class UpdaterCache:
         )
 
 
-CourseBlocksEntry = namedtuple('CourseBlocksEntry', ['children', 'aggregators'])
+CourseBlocksEntry = namedtuple('CourseBlocksEntry', ['children', 'aggregators', 'optional'])
 
 
 class AggregationUpdater:
@@ -150,6 +152,7 @@ class AggregationUpdater:
                 structure[block] = CourseBlocksEntry(
                     children=compat.get_children(course_blocks, block),
                     aggregators=compat.get_block_aggregators(course_blocks, block),
+                    optional=compat.is_block_optional(course_blocks, block),
                 )
                 for child in structure[block].children:
                     populate(structure, child)
@@ -240,23 +243,37 @@ class AggregationUpdater:
         """
         total_earned = 0.0
         total_possible = 0.0
+        total_optional_earned = 0.0
+        total_optional_possible = 0.0
         last_modified = OLD_DATETIME
 
         if block not in affected_aggregators:
             obj = self.aggregators.get(block)
             if obj:
-                return CompletionStats(earned=obj.earned, possible=obj.possible, last_modified=obj.last_modified)
+                return CompletionStats(
+                    earned=obj.earned,
+                    possible=obj.possible,
+                    optional_earned=obj.optional_earned,
+                    optional_possible=obj.optional_possible,
+                    last_modified=obj.last_modified,
+                )
         for child in self.course_blocks[block].children:
-            (earned, possible, modified) = self.update_for_block(child, affected_aggregators, force)
-            total_earned += earned
-            total_possible += possible
-            if modified is not None:
-                last_modified = max(last_modified, modified)
+            stats = self.update_for_block(child, affected_aggregators, force)
+            total_earned += stats.earned
+            total_possible += stats.possible
+            total_optional_earned += stats.optional_earned
+            total_optional_possible += stats.optional_possible
+            if stats.last_modified is not None:
+                last_modified = max(last_modified, stats.last_modified)
         if self._aggregator_needs_update(block, last_modified, force):
             if total_possible == 0.0:
                 percent = 1.0
             else:
                 percent = total_earned / total_possible
+            if total_optional_possible == 0.0:
+                optional_percent = 1.0
+            else:
+                optional_percent = total_optional_earned / total_optional_possible
             Aggregator.objects.validate(self.user, self.course_key, block)
             if block not in self.aggregators:
                 aggregator = Aggregator(
@@ -267,6 +284,9 @@ class AggregationUpdater:
                     earned=total_earned,
                     possible=total_possible,
                     percent=percent,
+                    optional_earned=total_optional_earned,
+                    optional_possible=total_optional_possible,
+                    optional_percent=optional_percent,
                     last_modified=last_modified,
                     modified=timezone.now(),
                 )
@@ -276,20 +296,38 @@ class AggregationUpdater:
                 aggregator.earned = total_earned
                 aggregator.possible = total_possible
                 aggregator.percent = percent
+                aggregator.optional_earned = total_optional_earned
+                aggregator.optional_possible = total_optional_possible
+                aggregator.optional_percent = optional_percent
                 aggregator.last_modified = last_modified
                 aggregator.modified = timezone.now()
             self.updated_aggregators.append(aggregator)
-        return CompletionStats(earned=total_earned, possible=total_possible, last_modified=last_modified)
+        return CompletionStats(
+            earned=total_earned,
+            possible=total_possible,
+            optional_earned=total_optional_earned,
+            optional_possible=total_optional_possible,
+            last_modified=last_modified,
+        )
 
     def update_for_excluded(self):
         """
         Return a sentinel empty completion value for excluded blocks.
         """
-        return CompletionStats(earned=0.0, possible=0.0, last_modified=OLD_DATETIME)
+        return CompletionStats(
+            earned=0.0,
+            possible=0.0,
+            optional_earned=0.0,
+            optional_possible=0.0,
+            last_modified=OLD_DATETIME,
+        )
 
     def update_for_completable(self, block):
         """
         Return the block completion value for a given completable block.
+
+        If the block is optional, the completion contributes to optional_earned/optional_possible
+        instead of earned/possible.
         """
         completion = self.block_completions.get(block)
         if completion:
@@ -298,7 +336,22 @@ class AggregationUpdater:
         else:
             earned = 0.0
             last_modified = OLD_DATETIME
-        return CompletionStats(earned=earned, possible=1.0, last_modified=last_modified)
+
+        if self.course_blocks[block].optional:
+            return CompletionStats(
+                earned=0.0,
+                possible=0.0,
+                optional_earned=earned,
+                optional_possible=1.0,
+                last_modified=last_modified,
+            )
+        return CompletionStats(
+            earned=earned,
+            possible=1.0,
+            optional_earned=0.0,
+            optional_possible=0.0,
+            last_modified=last_modified,
+        )
 
     def _aggregator_needs_update(self, block, modified, force):
         """

@@ -48,7 +48,7 @@ class AggregatorAnnotationTransformer(BlockStructureTransformer):
         """
         Collect the data required to perform this calculation.
         """
-        block_structure.request_xblock_fields("completion_mode")
+        block_structure.request_xblock_fields("completion_mode", "optional_completion")
 
     def calculate_aggregators(self, block_structure, block_key):
         """
