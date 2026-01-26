@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model
 
 from completion.models import BlockCompletion
 
-from .test_app.models import CohortMembership, CourseAccessRole, CourseEnrollment, CourseUserGroup
+from .test_app.models import CohortMembership, CourseEnrollment, CourseUserGroup
 
 User = get_user_model()
 
@@ -103,12 +103,6 @@ class StubCompat:
         mock.count.return_value = 5
 
         return mock
-
-    def course_access_role_model(self):
-        """
-        Return this replacement for CourseAccessRole
-        """
-        return CourseAccessRole
 
     def course_user_group(self):
         """
