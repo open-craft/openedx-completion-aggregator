@@ -136,6 +136,13 @@ def get_block_aggregators(course_blocks, block):
     ) or []
 
 
+def is_block_optional(course_blocks, block):
+    """
+    Return whether a block is optional.
+    """
+    return course_blocks.get_xblock_field(block, 'optional_completion', False)
+
+
 def get_mobile_only_courses(enrollments):
     """
     Return list of courses with mobile available given a list of enrollments.

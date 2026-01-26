@@ -83,7 +83,7 @@ class UpdaterCache:
         )
 
 
-CourseBlocksEntry = namedtuple('CourseBlocksEntry', ['children', 'aggregators'])
+CourseBlocksEntry = namedtuple('CourseBlocksEntry', ['children', 'aggregators', 'optional'])
 
 
 class AggregationUpdater:
@@ -150,6 +150,7 @@ class AggregationUpdater:
                 structure[block] = CourseBlocksEntry(
                     children=compat.get_children(course_blocks, block),
                     aggregators=compat.get_block_aggregators(course_blocks, block),
+                    optional=compat.is_block_optional(course_blocks, block),
                 )
                 for child in structure[block].children:
                     populate(structure, child)
@@ -225,7 +226,7 @@ class AggregationUpdater:
         except PluginMissingError:
             # Do not count blocks that aren't registered
             mode = XBlockCompletionMode.EXCLUDED
-        if mode == XBlockCompletionMode.EXCLUDED:
+        if mode == XBlockCompletionMode.EXCLUDED or self.course_blocks[block].optional:
             return self.update_for_excluded()
         elif mode == XBlockCompletionMode.COMPLETABLE:
             return self.update_for_completable(block)

@@ -67,10 +67,10 @@ class AggregationUpdaterTestCase(TestCase):
             patch = mock.patch(compat_module, stubcompat)
             patch.start()
             self.addCleanup(patch.stop)
-        user = get_user_model().objects.create(username='saskia')
+        self.user = get_user_model().objects.create(username='saskia')
         self.course_key = CourseKey.from_string('course-v1:edx+course+test')
         self.agg, _ = Aggregator.objects.submit_completion(
-            user=user,
+            user=self.user,
             course_key=self.course_key,
             block_key=self.course_key.make_usage_key('course', 'course'),
             aggregation_name='course',
@@ -79,13 +79,13 @@ class AggregationUpdaterTestCase(TestCase):
             last_modified=self.agg_modified,
         )
         BlockCompletion.objects.create(
-            user=user,
+            user=self.user,
             context_key=self.course_key,
             block_key=self.course_key.make_usage_key('html', 'course-other-html4'),
             completion=1.0,
             modified=now(),
         )
-        self.updater = AggregationUpdater(user, self.course_key, mock.MagicMock())
+        self.updater = AggregationUpdater(self.user, self.course_key, mock.MagicMock())
 
     @XBlock.register_temp_plugin(CourseBlock, 'course')
     @XBlock.register_temp_plugin(HTMLBlock, 'html')
@@ -189,6 +189,48 @@ class AggregationUpdaterTestCase(TestCase):
                     username='saskia',
                     course_key='course-v1:OpenCraft+Onboarding+2018'
                 )
+
+    @XBlock.register_temp_plugin(CourseBlock, "course")
+    @XBlock.register_temp_plugin(HTMLBlock, "html")
+    @XBlock.register_temp_plugin(HiddenBlock, "hidden")
+    @XBlock.register_temp_plugin(OtherAggBlock, "other")
+    def test_optional_blocks_excluded(self):
+        """
+        Blocks with 'optional' in their ID should be excluded from aggregation.
+
+        Course structure:
+                        course
+                          |
+                +--+------^------+
+               /   |              \\
+            html html           html (optional)
+
+        The optional html block should not count toward earned or possible.
+        """
+        course_key = CourseKey.from_string("course-v1:edx+optional+test")
+        stubcompat = StubCompat(
+            [
+                course_key.make_usage_key("course", "course"),
+                course_key.make_usage_key("html", "course-html0"),
+                course_key.make_usage_key("html", "course-html1"),
+                course_key.make_usage_key("html", "course-optional-html2"),
+            ]
+        )
+        with mock.patch("completion_aggregator.core.compat", stubcompat):
+            for block_id in ["course-html0", "course-html1", "course-optional-html2"]:
+                BlockCompletion.objects.create(
+                    user=self.user,
+                    context_key=course_key,
+                    block_key=course_key.make_usage_key("html", block_id),
+                    completion=1.0,
+                    modified=now(),
+                )
+            updater = AggregationUpdater(self.user, course_key, mock.MagicMock())
+            updater.update()
+
+        agg = Aggregator.objects.get(course_key=course_key, block_key=course_key.make_usage_key("course", "course"))
+        assert agg.possible == 2.0
+        assert agg.earned == 2.0
 
 
 class CalculateUpdatedAggregatorsTestCase(TestCase):
