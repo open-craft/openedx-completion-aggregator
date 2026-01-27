@@ -227,6 +227,7 @@ class AggregatorManager(models.Manager):
                 event_name,
                 {
                     "user_id": aggregator.user_id,
+                    "username": aggregator.user.username,
                     "course_id": str(aggregator.course_key),
                     "block_id": str(aggregator.block_key),
                     "modified": aggregator.modified,
