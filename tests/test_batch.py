@@ -8,7 +8,6 @@ Test the aggregator functions directly.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import pytest
-import six
 from mock import patch
 from opaque_keys.edx.keys import CourseKey
 from xblock.core import XBlock
@@ -82,8 +81,8 @@ def test_with_multiple_batches(mock_task, users):
     mock_task.call_args[1]['kwargs']['block_keys'] = set(mock_task.call_args[1]['kwargs']['block_keys'])
     assert mock_task.call_args[1]['kwargs'] == {
         'username': users[1].username,
-        'course_key': six.text_type(course_key),
-        'block_keys': {six.text_type(key) for key in block_keys},
+        'course_key': str(course_key),
+        'block_keys': {str(key) for key in block_keys},
         'force': False,
     }
 
@@ -172,7 +171,7 @@ def test_plethora_of_stale_completions(users):
     mock_task.assert_called_once_with(
         kwargs={
             'username': users[0].username,
-            'course_key': six.text_type(course_key),
+            'course_key': str(course_key),
             'block_keys': [],
             'force': False,
         },

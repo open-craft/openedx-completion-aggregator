@@ -6,7 +6,6 @@ from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
 import opaque_keys.edx.django.models
-import six
 import time
 
 
@@ -38,7 +37,7 @@ def copy_data(apps, schema_editor):
     }
     print()
 
-    for start_id in six.moves.range(0, initial_max_id, BATCH_SIZE):
+    for start_id in range(0, initial_max_id, BATCH_SIZE):
         end_id = min(start_id + BATCH_SIZE, initial_max_id)
         cursor.execute(copy_sql, [start_id, end_id])
         time.sleep(.1)
@@ -70,7 +69,7 @@ def copy_data(apps, schema_editor):
         'source': 'completion_aggregator_stalecompletionold',
         'target': 'completion_aggregator_stalecompletion',
     }
-    for start_id in six.moves.range(initial_max_id, final_max_id, BATCH_SIZE):
+    for start_id in range(initial_max_id, final_max_id, BATCH_SIZE):
         end_id = start_id + BATCH_SIZE
         cursor.execute(copy_sql, [start_id, end_id])
         if end_id - initial_max_id % 100000 == 0:

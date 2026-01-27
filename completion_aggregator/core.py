@@ -12,7 +12,6 @@ from collections import namedtuple
 from datetime import datetime
 
 import pytz
-import six
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 from xblock.plugin import PluginMissingError
@@ -63,7 +62,7 @@ class UpdaterCache:
 
         Sets the group to `str(self.course_key)`.
         """
-        group = six.text_type(self.course_key)
+        group = str(self.course_key)
         CacheGroup().set(group, self.cache_key, value, timeout=UPDATER_CACHE_TIMEOUT)
 
     def touch(self):
