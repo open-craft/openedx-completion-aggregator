@@ -3,8 +3,11 @@ branch = True
 data_file = .coverage
 source=completion_aggregation
 omit =
+    compat.py
     test_settings
-    *migrations*
+    */migrations/*
     *admin.py
-    *static*
-    *templates*
+    */static/*
+    */templates/*
+    */tests/*
+    */settings/*
