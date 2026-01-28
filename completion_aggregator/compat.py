@@ -35,7 +35,6 @@ def init_course_block_key(modulestore, course_key):
     """
     Return a UsageKey for the root course block.
     """
-    # pragma: no-cover
     return modulestore.make_course_usage_key(course_key)
 
 
@@ -64,7 +63,6 @@ def init_course_blocks(user, root_block_key):
         .location
         .block_type
     """
-    # pragma: no-cover
     # pylint: disable=import-error
     from lms.djangoapps.course_blocks.api import get_course_block_access_transformers, get_course_blocks
     # pylint: disable=import-error
@@ -113,7 +111,6 @@ def course_enrollment_model():
     """
     Return the student.models.CourseEnrollment model.
     """
-    # pragma: no-cover
     from common.djangoapps.student.models import CourseEnrollment  # pylint: disable=import-error
     return CourseEnrollment
 
