@@ -14,6 +14,15 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
+[4.3.0] - 2026-01-28
+~~~~~~~~~~~~~~~~~~~~
+
+* Drop support for Python 2, Python 3.8, and Django 3.2.
+* Add support for Python 3.11 + 3.12 and Django 4.2 + 5.2.
+* Fix the ``stats`` API endpoint.
+* Fix the ``ENROLLMENT_TRACK_UPDATED`` signal.
+* Remove unused compat imports.
+
 [4.2.0] - 2024-06-21
 ~~~~~~~~~~~~~~~~~~~~
 

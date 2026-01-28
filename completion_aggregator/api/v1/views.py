@@ -563,11 +563,16 @@ class CourseLevelCompletionStatsView(CompletionViewMixin, APIView):
             course_key=course_key,
             aggregation_name='course',
             user_id__in=[enrollment.user_id for enrollment in enrollments])
-        completion_stats = aggregator_qs.aggregate(
-            possible=Avg('possible'),
-            earned=Sum('earned') / len(enrollments),
-            percent=Sum('earned') / (Avg('possible') * len(enrollments)))
-        completion_stats['course_key'] = course_key
+        num_enrollments = len(enrollments)
+        aggregates = aggregator_qs.aggregate(avg_possible=Avg("possible"), total_earned=Sum("earned"))
+        avg_possible = aggregates["avg_possible"] or 0
+        total_earned = aggregates["total_earned"] or 0
+        completion_stats = {
+            "course_key": course_key,
+            "possible": avg_possible,
+            "earned": total_earned / num_enrollments if num_enrollments else 0,
+            "percent": total_earned / (avg_possible * num_enrollments) if avg_possible and num_enrollments else 0,
+        }
 
         serializer = self.get_serializer_class()(
             instance=completion_stats,

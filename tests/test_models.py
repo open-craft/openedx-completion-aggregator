@@ -8,7 +8,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import ddt
 import pytest
-import six
 from mock import patch
 from opaque_keys.edx.keys import UsageKey
 
@@ -138,10 +137,10 @@ class AggregatorTestCase(TestCase):
             last_modified=now(),
         )
         expected_string = (
-            f'Aggregator: {self.user.username}, {six.text_type(block_key_obj.course_key)}, '
-            f'{six.text_type(block_key_obj)}: {expected_percent}'
+            f'Aggregator: {self.user.username}, {str(block_key_obj.course_key)}, '
+            f'{str(block_key_obj)}: {expected_percent}'
         )
-        self.assertEqual(six.text_type(obj), expected_string)
+        self.assertEqual(str(obj), expected_string)
         self.assert_emit_method_called(obj)
 
     @ddt.data(

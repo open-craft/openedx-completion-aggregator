@@ -5,9 +5,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import json
 from datetime import timedelta
+from urllib.parse import urlencode
 
 import ddt
-import six
 from mock import PropertyMock, patch
 from oauth2_provider import models as dot_models
 from oauth2_provider.contrib.rest_framework import OAuth2Authentication
@@ -373,7 +373,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         """
         response = self.client.get(self.get_detail_url(
             version,
-            six.text_type(self.course_key),
+            str(self.course_key),
             username=self.test_user.username))
         self.assertEqual(response.status_code, 200)
         expected_values = {
@@ -445,9 +445,9 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         response = self.client.get(
             self.get_detail_url(
                 1,
-                six.text_type(self.course_key),
+                str(self.course_key),
                 username=self.test_user.username,
-                root_block=six.text_type(self.blocks[1]),
+                root_block=str(self.blocks[1]),
                 requested_fields='sequential',
             )
         )
@@ -459,11 +459,11 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
                     'possible': None,
                     'percent': 0.0,
                 },
-                'course_key': six.text_type(self.course_key),
+                'course_key': str(self.course_key),
                 'sequential': [
                     {
-                        'course_key': six.text_type(self.course_key),
-                        'block_key': six.text_type(self.blocks[1]),
+                        'course_key': str(self.course_key),
+                        'block_key': str(self.blocks[1]),
                         'completion': {
                             'earned': 1.0,
                             'possible': 5.0,
@@ -490,7 +490,7 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         token = _create_oauth2_token(self.test_user)
         response = self.client.get(
             self.get_detail_url(version, self.course_key, username=self.test_user.username),
-            HTTP_AUTHORIZATION=f"Bearer {token}"
+            headers={"authorization": f"Bearer {token}"}
         )
         self.assertEqual(response.status_code, 200)
         if version == 0:
@@ -1022,14 +1022,14 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         create a URL to the stats view.
         """
         return append_params(
-            self.course_stat_url_fmt.format(six.text_type(course_key)), params)
+            self.course_stat_url_fmt.format(str(course_key)), params)
 
     def get_detail_url(self, version, course_key, **params):
         """
         Given a course_key and a number of key-value pairs as keyword arguments,
         create a URL to the detail view.
         """
-        return append_params(self.detail_url_fmt.format(version, six.text_type(course_key)), params)
+        return append_params(self.detail_url_fmt.format(version, str(course_key)), params)
 
     def get_list_url(self, version, **params):
         """
@@ -1096,7 +1096,7 @@ class CompletionBlockUpdateViewTestCase(CompletionAPITestMixin, TestCase):
         self.client.force_authenticate(user=self.test_user)
         self.update_url = reverse(
             'completion_api_v0:blockcompletion-update',
-            kwargs={'course_key': six.text_type(self.course_key), 'block_key': six.text_type(self.usage_key)}
+            kwargs={'course_key': str(self.course_key), 'block_key': str(self.usage_key)}
         )
 
     @XBlock.register_temp_plugin(StubCourse, 'course')
@@ -1124,7 +1124,7 @@ class CompletionBlockUpdateViewTestCase(CompletionAPITestMixin, TestCase):
 
         # Now, try with a valid token header:
         token = _create_oauth2_token(self.test_user)
-        response = self.client.post(self.update_url, {'completion': 1.0}, HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = self.client.post(self.update_url, {'completion': 1.0}, headers={"authorization": f"Bearer {token}"})
         self.assertEqual(response.status_code, 201)
         stub_submit.assert_called_once()
 
@@ -1142,5 +1142,5 @@ def append_params(base, params):
     Append the parameters to the base url, if any are provided.
     """
     if params:
-        return '?'.join([base, six.moves.urllib.parse.urlencode(params)])
+        return '?'.join([base, urlencode(params)])
     return base

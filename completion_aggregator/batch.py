@@ -11,8 +11,6 @@ import collections
 import logging
 import time
 
-import six
-
 from django.conf import settings
 from django.core.cache import cache
 
@@ -79,7 +77,7 @@ def perform_aggregation(batch_size=10000, delay=0.0, limit=None, routing_key=Non
     stale_blocks = collections.defaultdict(set)
     forced_updates = set()
     enqueued = 0
-    for idx in six.moves.range(max_id, min([min_id + batch_size, max_id]) - 1, -1 * batch_size):
+    for idx in range(max_id, min([min_id + batch_size, max_id]) - 1, -1 * batch_size):
         if enqueued >= limit:
             break
         evaluated = stale_queryset.filter(id__gt=idx - batch_size, id__lte=idx)
@@ -108,11 +106,11 @@ def perform_aggregation(batch_size=10000, delay=0.0, limit=None, routing_key=Non
         elif len(stale_blocks[enrollment]) > MAX_KEYS_PER_TASK:
             blocks = []
         else:
-            blocks = [six.text_type(block_key) for block_key in stale_blocks[enrollment]]
+            blocks = [str(block_key) for block_key in stale_blocks[enrollment]]
         aggregation_tasks.update_aggregators.apply_async(
             kwargs={
                 'username': enrollment.username,
-                'course_key': six.text_type(enrollment.course_key),
+                'course_key': str(enrollment.course_key),
                 'block_keys': blocks,
                 'force': enrollment in forced_updates,
             },

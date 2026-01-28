@@ -10,7 +10,6 @@ from datetime import timedelta
 import ddt
 import mock
 import pytest
-import six
 from opaque_keys.edx.keys import CourseKey
 from xblock.core import XBlock
 
@@ -519,8 +518,7 @@ class PartialUpdateTest(TestCase):
         '''
 
         with self.assertNumQueries(5):
-            aggregation_tasks.update_aggregators(self.user.username, six.text_type(self.course_key), {
-                six.text_type(completion.block_key)})
+            aggregation_tasks.update_aggregators(self.user.username, str(self.course_key), {str(completion.block_key)})
 
         new_completions = [
             BlockCompletion.objects.create(
@@ -540,8 +538,8 @@ class PartialUpdateTest(TestCase):
         with self.assertNumQueries(5):
             aggregation_tasks.update_aggregators(
                 username=self.user.username,
-                course_key=six.text_type(self.course_key),
-                block_keys=[six.text_type(comp.block_key) for comp in new_completions]
+                course_key=str(self.course_key),
+                block_keys=[str(comp.block_key) for comp in new_completions],
             )
 
         course_agg = Aggregator.objects.get(course_key=self.course_key, block_key=self.blocks[0])

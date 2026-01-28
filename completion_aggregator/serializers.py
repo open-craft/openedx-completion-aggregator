@@ -9,7 +9,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 from collections import defaultdict
 
-import six
 from rest_framework import serializers
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
@@ -375,12 +374,7 @@ def native_identifier(string):
     This is required for the first argument to three-argument-`type()`.  This
     function expects all identifiers comprise only ascii characters.
     """
-    if six.PY2:  # pragma: no cover
-
-        if isinstance(string, six.text_type):
-            # Python 2 identifiers are required to be ascii
-            string = string.encode('ascii')
-    elif isinstance(string, bytes):  # pragma: no cover
+    if isinstance(string, bytes):  # pragma: no cover
         # Python 3 identifiers can technically be non-ascii, but don't do that.
         string = string.decode('ascii')
     return string

@@ -259,9 +259,15 @@ class Aggregator(TimeStampedModel):
         Metadata describing the Aggregator model.
         """
 
-        index_together = [
-            ('user', 'aggregation_name', 'course_key'),
-            ('course_key', 'aggregation_name', 'block_key', 'percent'),
+        indexes = [
+            models.Index(
+                fields=["user", "aggregation_name", "course_key"],
+                name="aggr_name_user_course_idx",
+            ),
+            models.Index(
+                fields=["course_key", "aggregation_name", "block_key", "percent"],
+                name="aggr_name_course_block_per_idx",
+            ),
         ]
 
         unique_together = [
@@ -319,8 +325,11 @@ class StaleCompletion(TimeStampedModel):
         Metadata describing the StaleCompletion model.
         """
 
-        index_together = [
-            ('username', 'course_key', 'created', 'resolved'),
+        indexes = [
+            models.Index(
+                fields=["username", "course_key", "created", "resolved"],
+                name="stale_user_course_resolved_idx",
+            ),
         ]
 
     def __str__(self):

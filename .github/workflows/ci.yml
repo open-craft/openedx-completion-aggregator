@@ -25,16 +25,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
-        python-version: [3.8]
-        toxenv: [py38-django32, quality, docs]
+        os: [ubuntu-latest]
+        python-version: [3.11, 3.12]
+        toxenv: [django42, django52, quality, docs]
 
     steps:
     - name: checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v5
 
     - name: setup python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -47,7 +47,7 @@ jobs:
       run: tox
 
     - name: Run coverage
-      if: matrix.python-version == '3.8' && matrix.toxenv == 'py38-django32'
+      if: matrix.python-version == '3.11' && matrix.toxenv == 'django42'
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
