@@ -169,10 +169,13 @@ class AggregatorAdapter:
         return Aggregator(
             user=self.user,
             course_key=self.course_key,
-            aggregation_name='course',
+            aggregation_name="course",
             earned=0.0,
             possible=None,
             percent=0.0,
+            optional_earned=0.0,
+            optional_possible=None,
+            optional_percent=0.0,
         )
 
     @property
@@ -200,6 +203,27 @@ class AggregatorAdapter:
         """
         return self.course.percent
 
+    @property
+    def optional_earned(self):
+        """
+        Report the number of optional earned completions for the course.
+        """
+        return self.course.optional_earned
+
+    @property
+    def optional_possible(self):
+        """
+        Report the number of optional possible completions for the course.
+        """
+        return self.course.optional_possible
+
+    @property
+    def optional_percent(self):
+        """
+        Report the percentage of optional completions earned.
+        """
+        return self.course.optional_percent
+
 
 class _CompletionSerializer(serializers.Serializer):
     """
@@ -225,6 +249,16 @@ class _CompletionSerializerV0(_CompletionSerializer):
         return obj.percent
 
 
+class _OptionalCompletionSerializer(serializers.Serializer):
+    """
+    Serializer for optional completion data.
+    """
+
+    earned = serializers.FloatField(source="optional_earned")
+    possible = serializers.FloatField(source="optional_possible")
+    percent = serializers.FloatField(source="optional_percent")
+
+
 class CourseCompletionSerializer(serializers.Serializer):
     """
     Serialize completions at the course level.
@@ -234,17 +268,23 @@ class CourseCompletionSerializer(serializers.Serializer):
     completion = _CompletionSerializer(source='*')
     username = serializers.SerializerMethodField()
     mean = serializers.SerializerMethodField()
+    optional_completion = _OptionalCompletionSerializer(source="*")
 
-    optional_fields = {'mean', 'username'}
+    optional_fields = {"mean", "username", "optional_completion"}
 
-    def __init__(self, instance, *args, requested_fields=frozenset(), **kwargs):
+    def __init__(self, instance, *args, requested_fields=frozenset(), include_optional=False, **kwargs):
         """
         Initialize a course completion serializer.
 
         Add any requested optional fields.
         """
         super().__init__(instance, *args, **kwargs)
-        for field in self.optional_fields - requested_fields:
+        fields_to_remove = self.optional_fields - requested_fields
+        if not include_optional:
+            fields_to_remove.add("optional_completion")
+        else:
+            fields_to_remove.discard("optional_completion")
+        for field in fields_to_remove:
             del self.fields[field]
 
     def get_username(self, obj):
@@ -336,6 +376,17 @@ class BlockCompletionSerializer(serializers.Serializer):
     course_key = serializers.CharField()
     block_key = serializers.CharField()
     completion = _CompletionSerializer(source='*')
+    optional_completion = _OptionalCompletionSerializer(source="*")
+
+    optional_fields = {"optional_completion"}
+
+    def __init__(self, instance=None, include_optional=False, **kwargs):
+        """
+        Initialize a block completion serializer.
+        """
+        super().__init__(instance, **kwargs)
+        if not include_optional:
+            del self.fields["optional_completion"]
 
 
 class BlockCompletionSerializerV0(BlockCompletionSerializer):
@@ -347,9 +398,8 @@ class BlockCompletionSerializerV0(BlockCompletionSerializer):
 
 
 def course_completion_serializer_factory(
-        requested_fields,
-        course_completion_serializer,
-        block_completion_serializer):
+    requested_fields, course_completion_serializer, block_completion_serializer, include_optional=False
+):
     """
     Configure and create a serializer for aggregators.
 
@@ -357,7 +407,8 @@ def course_completion_serializer_factory(
     BlockCompletionSerializers for the specified requested_fields.
     """
     dunder_dict = {
-        field: block_completion_serializer(many=True) for field in requested_fields
+        field: block_completion_serializer(many=True, include_optional=include_optional)
+        for field in requested_fields
         if is_aggregation_name(field)
     }
     return type(

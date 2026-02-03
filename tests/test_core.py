@@ -194,9 +194,9 @@ class AggregationUpdaterTestCase(TestCase):
     @XBlock.register_temp_plugin(HTMLBlock, "html")
     @XBlock.register_temp_plugin(HiddenBlock, "hidden")
     @XBlock.register_temp_plugin(OtherAggBlock, "other")
-    def test_optional_blocks_excluded(self):
+    def test_optional_blocks_tracked_separately(self):
         """
-        Blocks with 'optional' in their ID should be excluded from aggregation.
+        Blocks with 'optional' in their ID should be tracked as optional completion.
 
         Course structure:
                         course
@@ -205,7 +205,10 @@ class AggregationUpdaterTestCase(TestCase):
                /   |              \\
             html html           html (optional)
 
-        The optional html block should not count toward earned or possible.
+        The optional html block should count toward optional_earned/optional_possible,
+        not toward earned/possible.
+        Note: StubCompat uses hyphen-separated segments for parent-child relations,
+        so optional blocks use 'optionalX' as a single segment (no extra hyphen).
         """
         course_key = CourseKey.from_string("course-v1:edx+optional+test")
         stubcompat = StubCompat(
@@ -213,11 +216,11 @@ class AggregationUpdaterTestCase(TestCase):
                 course_key.make_usage_key("course", "course"),
                 course_key.make_usage_key("html", "course-html0"),
                 course_key.make_usage_key("html", "course-html1"),
-                course_key.make_usage_key("html", "course-optional-html2"),
+                course_key.make_usage_key("html", "course-optional2"),
             ]
         )
         with mock.patch("completion_aggregator.core.compat", stubcompat):
-            for block_id in ["course-html0", "course-html1", "course-optional-html2"]:
+            for block_id in ["course-html0", "course-html1", "course-optional2"]:
                 BlockCompletion.objects.create(
                     user=self.user,
                     context_key=course_key,
@@ -231,6 +234,65 @@ class AggregationUpdaterTestCase(TestCase):
         agg = Aggregator.objects.get(course_key=course_key, block_key=course_key.make_usage_key("course", "course"))
         assert agg.possible == 2.0
         assert agg.earned == 2.0
+        assert agg.percent == 1.0
+        assert agg.optional_possible == 1.0
+        assert agg.optional_earned == 1.0
+        assert agg.optional_percent == 1.0
+
+    @XBlock.register_temp_plugin(CourseBlock, "course")
+    @XBlock.register_temp_plugin(HTMLBlock, "html")
+    @XBlock.register_temp_plugin(HiddenBlock, "hidden")
+    @XBlock.register_temp_plugin(OtherAggBlock, "other")
+    def test_optional_blocks_partial_completion(self):
+        """
+        Test optional blocks with partial completion.
+
+        Course structure:
+                        course
+                          |
+                +--+------^------+--+
+               /   |              \\  \\
+            html html    html(opt) html(opt)
+
+        Complete only one regular and one optional block.
+        Note: StubCompat uses hyphen-separated segments for parent-child relations,
+        so optional blocks use 'optionalX' as a single segment (no extra hyphen).
+        """
+        course_key = CourseKey.from_string("course-v1:edx+optpartial+test")
+        stubcompat = StubCompat(
+            [
+                course_key.make_usage_key("course", "course"),
+                course_key.make_usage_key("html", "course-html0"),
+                course_key.make_usage_key("html", "course-html1"),
+                course_key.make_usage_key("html", "course-optional2"),
+                course_key.make_usage_key("html", "course-optional3"),
+            ]
+        )
+        with mock.patch("completion_aggregator.core.compat", stubcompat):
+            BlockCompletion.objects.create(
+                user=self.user,
+                context_key=course_key,
+                block_key=course_key.make_usage_key("html", "course-html0"),
+                completion=1.0,
+                modified=now(),
+            )
+            BlockCompletion.objects.create(
+                user=self.user,
+                context_key=course_key,
+                block_key=course_key.make_usage_key("html", "course-optional2"),
+                completion=0.5,
+                modified=now(),
+            )
+            updater = AggregationUpdater(self.user, course_key, mock.MagicMock())
+            updater.update()
+
+        agg = Aggregator.objects.get(course_key=course_key, block_key=course_key.make_usage_key("course", "course"))
+        assert agg.possible == 2.0
+        assert agg.earned == 1.0
+        assert agg.percent == 0.5
+        assert agg.optional_possible == 2.0
+        assert agg.optional_earned == 0.5
+        assert agg.optional_percent == 0.25
 
 
 class CalculateUpdatedAggregatorsTestCase(TestCase):

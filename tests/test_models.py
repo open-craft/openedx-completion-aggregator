@@ -210,22 +210,31 @@ class AggregatorTestCase(TestCase):
         self.assert_emit_method_called(new_obj)
 
     @ddt.data(
-        (BLOCK_KEY_OBJ, 'course', 0.5, 1, 0.5),
+        # (earned, possible, expected_percent, optional_earned, optional_possible, expected_optional_percent)
+        (0.5, 1, 0.5, 0.0, 0.0, 1.0),  # Default optional values, zero possible = 100%
+        (5.0, 10.0, 0.5, 2.0, 4.0, 0.5),  # With optional values
     )
     @ddt.unpack
-    def test_get_values(self, block_key_obj, aggregate_name, earned, possible, expected_percent):
+    def test_get_values(
+        self, earned, possible, expected_percent, optional_earned, optional_possible, expected_optional_percent
+    ):
         aggregator = Aggregator(
             user=self.user,
-            course_key=block_key_obj.course_key,
-            block_key=block_key_obj,
-            aggregation_name=aggregate_name,
+            course_key=self.BLOCK_KEY_OBJ.course_key,
+            block_key=self.BLOCK_KEY_OBJ,
+            aggregation_name="course",
             earned=earned,
             possible=possible,
+            optional_earned=optional_earned,
+            optional_possible=optional_possible,
             last_modified=now(),
         )
         values = aggregator.get_values()
         self.assertEqual(values['user'], self.user.id)
         self.assertEqual(values['percent'], expected_percent)
+        self.assertEqual(values["optional_earned"], optional_earned)
+        self.assertEqual(values["optional_possible"], optional_possible)
+        self.assertEqual(values["optional_percent"], expected_optional_percent)
 
     @override_settings(COMPLETION_AGGREGATOR_TRACKING_EVENT_TYPES=None)
     def test_submit_completion_with_tracking_disabled(self):
@@ -260,3 +269,88 @@ class AggregatorTestCase(TestCase):
             }
         )
         self.tracker_mock.emit.reset_mock()
+
+    def test_optional_completion_fields_default_values(self):
+        """Test that optional completion fields have correct default values."""
+        obj, _is_new = Aggregator.objects.submit_completion(
+            user=self.user,
+            course_key=self.BLOCK_KEY_OBJ.course_key,
+            block_key=self.BLOCK_KEY_OBJ,
+            aggregation_name="course",
+            earned=5.0,
+            possible=10.0,
+            last_modified=now(),
+        )
+        self.assertEqual(obj.optional_earned, 0.0)
+        self.assertEqual(obj.optional_possible, 0.0)
+        self.assertEqual(obj.optional_percent, 1.0)
+
+    def test_get_values_includes_optional_fields(self):
+        """Test that get_values includes optional completion fields."""
+        aggregator = Aggregator(
+            user=self.user,
+            course_key=self.BLOCK_KEY_OBJ.course_key,
+            block_key=self.BLOCK_KEY_OBJ,
+            aggregation_name="course",
+            earned=5.0,
+            possible=10.0,
+            optional_earned=2.0,
+            optional_possible=4.0,
+            last_modified=now(),
+        )
+        values = aggregator.get_values()
+        self.assertEqual(values["optional_earned"], 2.0)
+        self.assertEqual(values["optional_possible"], 4.0)
+        self.assertEqual(values["optional_percent"], 0.5)
+
+    def test_get_values_optional_percent_zero_possible(self):
+        """Test that optional_percent is 1.0 when optional_possible is 0.0."""
+        aggregator = Aggregator(
+            user=self.user,
+            course_key=self.BLOCK_KEY_OBJ.course_key,
+            block_key=self.BLOCK_KEY_OBJ,
+            aggregation_name="course",
+            earned=5.0,
+            possible=10.0,
+            optional_earned=0.0,
+            optional_possible=0.0,
+            last_modified=now(),
+        )
+        values = aggregator.get_values()
+        self.assertEqual(values["optional_percent"], 1.0)
+
+    def test_optional_percent_validation(self):
+        """Test that optional_percent must be between 0.0 and 1.0."""
+        aggregator = Aggregator(
+            user=self.user,
+            course_key=self.BLOCK_KEY_OBJ.course_key,
+            block_key=self.BLOCK_KEY_OBJ,
+            aggregation_name="course",
+            earned=5.0,
+            possible=10.0,
+            percent=0.5,
+            optional_earned=0.0,
+            optional_possible=0.0,
+            optional_percent=1.5,  # Invalid: > 1.0
+            last_modified=now(),
+        )
+        with pytest.raises(ValidationError):
+            aggregator.full_clean()
+
+    def test_optional_earned_validation(self):
+        """Test that optional_earned must be >= 0."""
+        aggregator = Aggregator(
+            user=self.user,
+            course_key=self.BLOCK_KEY_OBJ.course_key,
+            block_key=self.BLOCK_KEY_OBJ,
+            aggregation_name="course",
+            earned=5.0,
+            possible=10.0,
+            percent=0.5,
+            optional_earned=-1.0,  # Invalid: negative
+            optional_possible=0.0,
+            optional_percent=0.0,
+            last_modified=now(),
+        )
+        with pytest.raises(ValidationError):
+            aggregator.full_clean()

@@ -395,3 +395,151 @@ class CourseCompletionSerializerTestCase(TestCase):
             aggregators=[aggregator],
         )
         assert not adapted.aggregators
+
+
+@ddt.ddt
+@patch("completion_aggregator.serializers.compat", stub_compat)
+@patch("completion_aggregator.core.compat", stub_compat)
+class OptionalCompletionSerializerTestCase(TestCase):
+    """Test optional completion serialization."""
+
+    def setUp(self):
+        super().setUp()
+        self.test_user = User.objects.create()
+        self.course_key = CourseKey.from_string("course-v1:abc+def+ghi")
+
+    @ddt.data(False, True)
+    @XBlock.register_temp_plugin(StubCourse, "course")
+    def test_course_serializer_optional_field(self, include_optional):
+        """Test that CourseCompletionSerializer handles include_optional parameter."""
+        aggregator, _ = models.Aggregator.objects.submit_completion(
+            user=self.test_user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type="course", block_id="course"),
+            aggregation_name="course",
+            earned=5.0,
+            possible=10.0,
+            last_modified=timezone.now(),
+        )
+        aggregator.optional_earned = 2.0
+        aggregator.optional_possible = 4.0
+        aggregator.optional_percent = 0.5
+        aggregator.save()
+
+        adapter = serializers.AggregatorAdapter(
+            user=self.test_user,
+            course_key=self.course_key,
+            aggregators=[aggregator],
+        )
+        assert adapter.optional_earned == 2.0
+        assert adapter.optional_possible == 4.0
+        assert adapter.optional_percent == 0.5
+
+        serializer = serializers.CourseCompletionSerializer(adapter, include_optional=include_optional)
+
+        if include_optional:
+            assert "optional_completion" in serializer.data
+            assert serializer.data["optional_completion"] == {
+                "earned": 2.0,
+                "possible": 4.0,
+                "percent": 0.5,
+            }
+        else:
+            assert "optional_completion" not in serializer.data
+
+    @ddt.data(False, True)
+    @XBlock.register_temp_plugin(StubCourse, "course")
+    def test_block_serializer_optional_field(self, include_optional):
+        """Test that BlockCompletionSerializer handles include_optional parameter."""
+        aggregator, _ = models.Aggregator.objects.submit_completion(
+            user=self.test_user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type="course", block_id="course"),
+            aggregation_name="course",
+            earned=5.0,
+            possible=10.0,
+            last_modified=timezone.now(),
+        )
+        aggregator.optional_earned = 3.0
+        aggregator.optional_possible = 6.0
+        aggregator.optional_percent = 0.5
+        aggregator.save()
+
+        serializer = serializers.BlockCompletionSerializer(aggregator, include_optional=include_optional)
+
+        if include_optional:
+            assert "optional_completion" in serializer.data
+            assert serializer.data["optional_completion"] == {
+                "earned": 3.0,
+                "possible": 6.0,
+                "percent": 0.5,
+            }
+        else:
+            assert "optional_completion" not in serializer.data
+
+    @XBlock.register_temp_plugin(StubCourse, "course")
+    def test_aggregator_adapter_optional_defaults(self):
+        """Test that AggregatorAdapter returns 0.0 for optional fields when no aggregator."""
+        adapter = serializers.AggregatorAdapter(
+            user=self.test_user,
+            course_key=self.course_key,
+            aggregators=[],
+        )
+        assert adapter.optional_earned == 0.0
+        assert adapter.optional_possible is None
+        assert adapter.optional_percent == 0.0
+
+    @XBlock.register_temp_plugin(StubCourse, "course")
+    @XBlock.register_temp_plugin(StubSequential, "sequential")
+    def test_serializer_factory_with_include_optional(self):
+        """Test that factory-created serializer includes optional_completion in nested fields."""
+
+        course_aggregator, _ = models.Aggregator.objects.submit_completion(
+            user=self.test_user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type="course", block_id="course"),
+            aggregation_name="course",
+            earned=5.0,
+            possible=10.0,
+            last_modified=timezone.now(),
+        )
+        seq_aggregator, _ = models.Aggregator.objects.submit_completion(
+            user=self.test_user,
+            course_key=self.course_key,
+            block_key=self.course_key.make_usage_key(block_type="sequential", block_id="seq1"),
+            aggregation_name="sequential",
+            earned=3.0,
+            possible=5.0,
+            last_modified=timezone.now(),
+        )
+
+        course_aggregator.optional_earned = 1.0
+        course_aggregator.optional_possible = 2.0
+        course_aggregator.optional_percent = 0.5
+        course_aggregator.save()
+        seq_aggregator.optional_earned = 0.5
+        seq_aggregator.optional_possible = 1.0
+        seq_aggregator.optional_percent = 0.5
+        seq_aggregator.save()
+
+        serializer_cls = serializers.course_completion_serializer_factory(
+            requested_fields={"sequential"},
+            course_completion_serializer=serializers.CourseCompletionSerializer,
+            block_completion_serializer=serializers.BlockCompletionSerializer,
+            include_optional=True,
+        )
+        adapter = serializers.AggregatorAdapter(
+            user=self.test_user,
+            course_key=self.course_key,
+            aggregators=[course_aggregator, seq_aggregator],
+        )
+        serializer = serializer_cls(adapter, include_optional=True)
+        data = serializer.data
+
+        assert "optional_completion" in data
+        assert data["optional_completion"]["earned"] == 1.0
+
+        assert "sequential" in data
+        assert len(data["sequential"]) == 1
+        assert "optional_completion" in data["sequential"][0]
+        assert data["sequential"][0]["optional_completion"]["earned"] == 0.5

@@ -17,7 +17,7 @@ Unreleased
 [4.4.0] - 2026-01-28
 ~~~~~~~~~~~~~~~~~~~~
 
-* Ignore XBlocks with `optional_completion`.
+* Count XBlocks with `optional_completion`.
 
 [4.3.0] - 2026-01-28
 ~~~~~~~~~~~~~~~~~~~~
