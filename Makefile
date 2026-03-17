@@ -124,4 +124,10 @@ sort_imports:
 	isort --recursive tests test_utils completion_aggregator manage.py setup.py test_settings.py
 
 mysql: ## run mysql database for tests
-	docker run --rm -it --name mysql -p 3307:3306 -e MYSQL_ROOT_PASSWORD=rootpw -e MYSQL_DATABASE=db mysql:8
+	docker run --rm -it \
+		--name mysql \
+		-p 3307:3306 \
+		-e MYSQL_ROOT_PASSWORD=rootpw \
+		mysql:8 \
+		--character-set-server=utf8mb4 \
+		--collation-server=utf8mb4_unicode_ci
