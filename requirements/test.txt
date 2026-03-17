@@ -12,7 +12,7 @@ aniso8601==10.0.1
     # via
     #   -r requirements/base.txt
     #   tincan
-apache-libcloud==3.8.0
+apache-libcloud==3.9.0
     # via
     #   -r requirements/base.txt
     #   edx-event-routing-backends
@@ -20,7 +20,7 @@ appdirs==1.4.4
     # via
     #   -r requirements/base.txt
     #   fs
-asgiref==3.11.0
+asgiref==3.11.1
     # via
     #   -r requirements/base.txt
     #   django
@@ -32,11 +32,11 @@ billiard==4.2.4
     # via
     #   -r requirements/base.txt
     #   celery
-boto3==1.42.35
+boto3==1.42.69
     # via
     #   -r requirements/base.txt
     #   fs-s3fs
-botocore==1.42.35
+botocore==1.42.69
     # via
     #   -r requirements/base.txt
     #   boto3
@@ -46,7 +46,7 @@ celery==5.6.2
     #   -r requirements/base.txt
     #   edx-celeryutils
     #   event-tracking
-certifi==2026.1.4
+certifi==2026.2.25
     # via
     #   -r requirements/base.txt
     #   requests
@@ -55,7 +55,7 @@ cffi==2.0.0
     #   -r requirements/base.txt
     #   cryptography
     #   pynacl
-charset-normalizer==3.4.4
+charset-normalizer==3.4.6
     # via
     #   -r requirements/base.txt
     #   requests
@@ -80,13 +80,13 @@ click-repl==0.3.0
     # via
     #   -r requirements/base.txt
     #   celery
-code-annotations==2.3.0
+code-annotations==2.3.2
     # via
     #   -r requirements/base.txt
     #   edx-toggles
-coverage[toml]==7.13.2
+coverage[toml]==7.13.5
     # via pytest-cov
-cryptography==46.0.3
+cryptography==46.0.5
     # via
     #   -r requirements/base.txt
     #   django-fernet-fields-v2
@@ -188,9 +188,9 @@ edx-drf-extensions==10.6.0
     #   edx-completion
 edx-event-routing-backends==9.3.8
     # via -r requirements/base.txt
-edx-i18n-tools==1.9.0
+edx-i18n-tools==2.0.0
     # via -r requirements/test.in
-edx-opaque-keys[django]==3.0.0
+edx-opaque-keys[django]==3.1.0
     # via
     #   -r requirements/base.txt
     #   edx-ccx-keys
@@ -211,7 +211,7 @@ event-tracking==3.3.0
     #   edx-event-routing-backends
 factory-boy==3.3.3
     # via -r requirements/test.in
-faker==40.1.2
+faker==40.11.0
     # via factory-boy
 fastavro==1.12.1
     # via
@@ -273,7 +273,7 @@ lxml[html-clean]==6.0.2
     #   edx-i18n-tools
     #   lxml-html-clean
     #   xblock
-lxml-html-clean==0.4.3
+lxml-html-clean==0.4.4
     # via lxml
 mako==1.3.10
     # via
@@ -289,11 +289,11 @@ mock==3.0.5
     # via -r requirements/test.in
 more-itertools==5.0.0
     # via -r requirements/test.in
-mysqlclient==2.2.7
+mysqlclient==2.2.8
     # via -r requirements/test.in
 oauthlib==3.3.1
     # via django-oauth-toolkit
-openedx-django-pyfs==3.8.0
+openedx-django-pyfs==4.0.0
     # via
     #   -r requirements/base.txt
     #   xblock
@@ -322,7 +322,7 @@ prompt-toolkit==3.0.52
     # via
     #   -r requirements/base.txt
     #   click-repl
-psutil==7.2.1
+psutil==7.2.2
     # via
     #   -r requirements/base.txt
     #   edx-django-utils
@@ -332,7 +332,7 @@ pycparser==3.0
     #   cffi
 pygments==2.19.2
     # via pytest
-pyjwt[crypto]==2.10.1
+pyjwt[crypto]==2.12.1
     # via
     #   -r requirements/base.txt
     #   drf-jwt
@@ -353,7 +353,7 @@ pytest==9.0.2
     #   pytest-django
 pytest-cov==7.0.0
     # via -r requirements/test.in
-pytest-django==4.11.1
+pytest-django==4.12.0
     # via -r requirements/test.in
 python-dateutil==2.9.0.post0
     # via
@@ -367,7 +367,7 @@ python-slugify==8.0.4
     # via
     #   -r requirements/base.txt
     #   code-annotations
-pytz==2025.2
+pytz==2026.1.post1
     # via
     #   -r requirements/base.txt
     #   edx-completion
@@ -381,7 +381,7 @@ pyyaml==6.0.3
     #   code-annotations
     #   edx-i18n-tools
     #   xblock
-redis==7.1.0
+redis==7.3.0
     # via
     #   -r requirements/base.txt
     #   -r requirements/test.in
@@ -420,7 +420,7 @@ sqlparse==0.5.5
     # via
     #   -r requirements/base.txt
     #   django
-stevedore==5.6.0
+stevedore==5.7.0
     # via
     #   -r requirements/base.txt
     #   code-annotations
@@ -458,11 +458,11 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.5.0
+wcwidth==0.6.0
     # via
     #   -r requirements/base.txt
     #   prompt-toolkit
-web-fragments==3.1.0
+web-fragments==4.0.0
     # via
     #   -r requirements/base.txt
     #   xblock

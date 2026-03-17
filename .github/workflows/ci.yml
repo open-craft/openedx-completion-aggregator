@@ -15,13 +15,6 @@ concurrency:
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
-    services:
-      mysql:
-        image: mysql:8
-        env:
-          MYSQL_ROOT_PASSWORD: rootpw
-        ports:
-          - 3307:3306
     strategy:
       fail-fast: false
       matrix:
@@ -30,6 +23,29 @@ jobs:
         toxenv: [django42, django52, quality, docs]
 
     steps:
+    - name: Start MySQL
+      if: contains(matrix.toxenv, 'django')
+      run: |
+        docker run -d \
+          --name mysql \
+          -p 3307:3306 \
+          -e MYSQL_ROOT_PASSWORD=rootpw \
+          mysql:8 \
+          --character-set-server=utf8mb4 \
+          --collation-server=utf8mb4_unicode_ci
+
+
+    - name: Wait for MySQL
+      if: contains(matrix.toxenv, 'django')
+      run: |
+        for i in $(seq 1 30); do
+          nc -z 127.0.0.1 3307 && echo "MySQL is up!" && exit 0
+          echo "Waiting for MySQL... ($i)"
+          sleep 2
+        done
+        echo "MySQL failed to start" && exit 1
+      timeout-minutes: 2
+
     - name: checkout repo
       uses: actions/checkout@v5
 

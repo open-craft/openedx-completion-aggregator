@@ -16,6 +16,8 @@ from django.test import TestCase
 
 from completion_aggregator.utils import get_percent, make_datetime_timezone_unaware
 
+AWARE_DATETIME = datetime(2024, 1, 1, tzinfo=timezone.utc)
+
 
 @ddt.ddt
 class GetPercentTestCase(TestCase):
@@ -51,5 +53,5 @@ class MakeTimeZoneUnawareTestCase(TestCase):
     )
     def test_make_datetime_timezone_unaware(self, version):
         with patch('django.VERSION', version):
-            date = make_datetime_timezone_unaware(datetime.now(timezone.utc))
+            date = make_datetime_timezone_unaware(AWARE_DATETIME)
             assert date.tzinfo is None

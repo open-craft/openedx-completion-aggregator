@@ -86,6 +86,12 @@ class CompletionListView(CompletionViewMixin, APIView):
             A value of "true" will provide only completions that come from
             mobile courses.
 
+        include_optional (optional):
+            A value of "true" will include optional completion data in the response.
+            Optional blocks (marked with ``optional_completion=True`` in Open edX)
+            are tracked separately and returned as an ``optional_completion`` object
+            with ``earned``, ``possible``, and ``percent`` fields.
+
     **Returns**
 
         * 200 on success with above fields
@@ -203,7 +209,8 @@ class CompletionListView(CompletionViewMixin, APIView):
         serializer = self.get_serializer_class()(
             instance=completions,
             requested_fields=self.get_requested_fields(),
-            many=True
+            include_optional=self.get_include_optional(),
+            many=True,
         )
         return paginator.get_paginated_response(serializer.data)  # pylint: disable=no-member
 
@@ -268,6 +275,12 @@ class CompletionDetailView(CompletionViewMixin, APIView):
             specified, completion data is also returned for the requested block
             types.  If any invalid fields are requested, a 400 error will be
             returned.
+
+        include_optional (optional):
+            A value of "true" will include optional completion data in the response.
+            Optional blocks (marked with ``optional_completion=True`` in Open edX)
+            are tracked separately and returned as an ``optional_completion`` object
+            with ``earned``, ``possible``, and ``percent`` fields.
 
     **Returns**
 
@@ -357,6 +370,7 @@ class CompletionDetailView(CompletionViewMixin, APIView):
         serializer = self.get_serializer_class()(
             instance=completions,
             requested_fields=requested_fields,
+            include_optional=self.get_include_optional(),
         )
         return Response(serializer.data)  # pylint: disable=no-member
 

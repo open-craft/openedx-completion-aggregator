@@ -1038,6 +1038,112 @@ class CompletionViewTestCase(CompletionAPITestMixin, TestCase):
         """
         return append_params(self.list_url.format(version), params)
 
+    def _get_detail_result(self, response, version):
+        """Extract the result object from a detail view response based on version."""
+        if version == 1:
+            return response.data["results"][0]
+        return response.data
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, "course")
+    @XBlock.register_temp_plugin(StubSequential, "sequential")
+    @XBlock.register_temp_plugin(StubHTML, "html")
+    def test_detail_view_optional_excluded_by_default(self, version):
+        """Test that optional_completion is not included by default or when include_optional=false."""
+        # Test without `include_optional` param.
+        response = self.client.get(self.get_detail_url(version, self.course_key, username=self.test_user.username))
+        assert response.status_code == 200
+        assert "optional_completion" not in self._get_detail_result(response, version)
+
+        # Test with `include_optional=false`.
+        response = self.client.get(
+            self.get_detail_url(version, self.course_key, username=self.test_user.username, include_optional="false")
+        )
+        assert response.status_code == 200
+        assert "optional_completion" not in self._get_detail_result(response, version)
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, "course")
+    @XBlock.register_temp_plugin(StubSequential, "sequential")
+    @XBlock.register_temp_plugin(StubHTML, "html")
+    def test_detail_view_with_include_optional(self, version):
+        """Test that optional_completion is included when include_optional=true."""
+        aggregator = models.Aggregator.objects.get(
+            user=self.test_user, course_key=self.course_key, aggregation_name="course"
+        )
+        aggregator.optional_earned = 2.0
+        aggregator.optional_possible = 3.0
+        aggregator.optional_percent = 2.0 / 3.0
+        aggregator.save()
+
+        response = self.client.get(
+            self.get_detail_url(version, self.course_key, username=self.test_user.username, include_optional="true")
+        )
+        assert response.status_code == 200
+        result = self._get_detail_result(response, version)
+        assert "optional_completion" in result
+        assert result["optional_completion"]["earned"] == 2.0
+        assert result["optional_completion"]["possible"] == 3.0
+        assert abs(result["optional_completion"]["percent"] - (2.0 / 3.0)) < 1e-10
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, "course")
+    @XBlock.register_temp_plugin(StubSequential, "sequential")
+    @XBlock.register_temp_plugin(StubHTML, "html")
+    def test_list_view_with_include_optional(self, version):
+        """Test that optional_completion is included in list view when include_optional=true."""
+        aggregator = models.Aggregator.objects.get(
+            user=self.test_user, course_key=self.course_key, aggregation_name="course"
+        )
+        aggregator.optional_earned = 1.0
+        aggregator.optional_possible = 2.0
+        aggregator.optional_percent = 0.5
+        aggregator.save()
+
+        response = self.client.get(
+            self.get_list_url(version, username=self.test_user.username, include_optional="true")
+        )
+        assert response.status_code == 200
+        result = response.data["results"][0]
+        assert "optional_completion" in result
+        assert result["optional_completion"]["earned"] == 1.0
+        assert result["optional_completion"]["possible"] == 2.0
+        assert result["optional_completion"]["percent"] == 0.5
+
+    @ddt.data(0, 1)
+    @XBlock.register_temp_plugin(StubCourse, "course")
+    @XBlock.register_temp_plugin(StubSequential, "sequential")
+    @XBlock.register_temp_plugin(StubHTML, "html")
+    def test_detail_view_with_sequentials_and_include_optional(self, version):
+        """Test that optional_completion is included in nested aggregators."""
+        sequential_aggregator = models.Aggregator.objects.get(
+            user=self.test_user, course_key=self.course_key, aggregation_name="sequential"
+        )
+        sequential_aggregator.optional_earned = 0.5
+        sequential_aggregator.optional_possible = 1.0
+        sequential_aggregator.optional_percent = 0.5
+        sequential_aggregator.save()
+
+        response = self.client.get(
+            self.get_detail_url(
+                version,
+                self.course_key,
+                username=self.test_user.username,
+                requested_fields="sequential",
+                include_optional="true",
+            )
+        )
+        assert response.status_code == 200
+        result = self._get_detail_result(response, version)
+        assert "optional_completion" in result
+        assert "sequential" in result
+
+        seq_result = result["sequential"][0]
+        assert "optional_completion" in seq_result
+        assert seq_result["optional_completion"]["earned"] == 0.5
+        assert seq_result["optional_completion"]["possible"] == 1.0
+        assert seq_result["optional_completion"]["percent"] == 0.5
+
 
 class CompletionBlockUpdateViewTestCase(CompletionAPITestMixin, TestCase):
     """

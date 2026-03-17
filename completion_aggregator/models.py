@@ -23,17 +23,43 @@ from .utils import get_percent, make_datetime_timezone_unaware
 User = get_user_model()
 
 INSERT_OR_UPDATE_AGGREGATOR_QUERY = """
-    INSERT INTO completion_aggregator_aggregator
-        (user_id, course_key, block_key, aggregation_name, earned, possible, percent, last_modified, created, modified)
-    VALUES
-        (%(user)s, %(course_key)s, %(block_key)s, %(aggregation_name)s, %(earned)s,
-        %(possible)s, %(percent)s, %(last_modified)s, %(created)s, %(modified)s)
-    ON DUPLICATE KEY UPDATE
-        earned=VALUES(earned),
-        possible=VALUES(possible),
-        percent=VALUES(percent),
-        last_modified=VALUES(last_modified),
-        modified=VALUES(modified);
+    INSERT INTO completion_aggregator_aggregator (
+        user_id,
+        course_key,
+        block_key,
+        aggregation_name,
+        earned,
+        possible,
+        percent,
+        optional_earned,
+        optional_possible,
+        optional_percent,
+        last_modified,
+        created,
+        modified
+    ) VALUES (
+        %(user)s,
+        %(course_key)s,
+        %(block_key)s,
+        %(aggregation_name)s,
+        %(earned)s,
+        %(possible)s,
+        %(percent)s,
+        %(optional_earned)s,
+        %(optional_possible)s,
+        %(optional_percent)s,
+        %(last_modified)s,
+        %(created)s,
+        %(modified)s
+    ) ON DUPLICATE KEY UPDATE
+        earned = VALUES(earned),
+        possible = VALUES(possible),
+        percent = VALUES(percent),
+        optional_earned = VALUES(optional_earned),
+        optional_possible = VALUES(optional_possible),
+        optional_percent = VALUES(optional_percent),
+        last_modified = VALUES(last_modified),
+        modified = VALUES(modified);
 """
 
 
@@ -250,6 +276,9 @@ class Aggregator(TimeStampedModel):
     earned = models.FloatField(validators=[validate_positive_float])
     possible = models.FloatField(validators=[validate_positive_float])
     percent = models.FloatField(validators=[validate_percent])
+    optional_earned = models.FloatField(default=0.0, validators=[validate_positive_float])
+    optional_possible = models.FloatField(default=0.0, validators=[validate_positive_float])
+    optional_percent = models.FloatField(default=1.0, validators=[validate_percent])
     last_modified = models.DateTimeField()
 
     objects = AggregatorManager()
@@ -284,11 +313,21 @@ class Aggregator(TimeStampedModel):
         """
         Return a dict object containing fields and their values to be used in bulk create or update query.
         """
-        values = {key: getattr(self, key) for key in [
-            'course_key', 'block_key', 'aggregation_name', 'earned', 'possible',
-        ]}
+        values = {
+            key: getattr(self, key)
+            for key in [
+                "course_key",
+                "block_key",
+                "aggregation_name",
+                "earned",
+                "possible",
+                "optional_earned",
+                "optional_possible",
+            ]
+        }
         values['user'] = self.user.id
         values['percent'] = get_percent(values['earned'], values['possible'])
+        values["optional_percent"] = get_percent(values["optional_earned"], values["optional_possible"])
         values.update({key: make_datetime_timezone_unaware(getattr(self, key)) for key in [
             'last_modified', 'created', 'modified',
         ]})

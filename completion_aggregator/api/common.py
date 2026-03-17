@@ -194,6 +194,18 @@ class CompletionViewMixin:
             raise ParseError(msg.format(invalid))
         return fields
 
+    def get_include_optional(self):
+        """
+        Parse and return value for include_optional parameter.
+        """
+        if self.request.method == "GET":
+            value = self.request.GET.get("include_optional", "false")
+        else:
+            value = self.request.data.get("include_optional", False)
+        if isinstance(value, bool):
+            return value
+        return value.lower() == "true"
+
     def get_serializer_class(self):
         """
         Return the appropriate serializer.
@@ -202,4 +214,5 @@ class CompletionViewMixin:
             self.get_requested_fields(),
             self.course_completion_serializer,
             self.block_completion_serializer,
+            include_optional=self.get_include_optional(),
         )
