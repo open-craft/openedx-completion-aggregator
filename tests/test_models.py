@@ -258,6 +258,7 @@ class AggregatorTestCase(TestCase):
             f"openedx.completion_aggregator.progress.{obj.aggregation_name}",
             {
                 "user_id": obj.user_id,
+                "username": obj.user.username,
                 "course_id": str(obj.course_key),
                 "block_id": str(obj.block_key),
                 "modified": obj.modified,

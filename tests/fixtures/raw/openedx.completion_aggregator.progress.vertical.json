@@ -3,6 +3,7 @@
   "timestamp": "2023-12-05T21:34:52.909063+00:00",
   "data": {
     "user_id": 4,
+    "username": "openedx",
     "course_id": "course-v1:edX+DemoX+Demo_Course",
     "context_key": "course-v1:edX+DemoX+Demo_Course",
     "block_id": "block-v1:edX+DemoX+Demo_Course+type@vertical+block@e1fabd9fa55f441caa75580f258ffbc3",
@@ -15,7 +16,7 @@
     "course_id": "course-v1:edX+DemoX+Demo_Course",
     "course_user_tags": {},
     "session": "056aca2a1c6b76742b283e73d3424453",
-    "user_id": 3,
+    "user_id": 4,
     "username": "openedx",
     "ip": "172.18.0.1",
     "host": "localhost:18000",
