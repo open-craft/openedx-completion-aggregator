@@ -45,3 +45,18 @@ def test_event_tracking_backends():
     # Ensure expected_events is a subset of these whitelists
     assert expected_events < toplevel_whitelist, "Aggregator events not found in event_transformer whitelist"
     assert expected_events < xapi_whitelist, "Aggregator events not found in xapi whitelist"
+
+
+def test_performance_tuning_settings():
+    """
+    Test that the performance tuning settings are properly set by plugin_settings.
+    """
+    # Reset settings to ensure we're testing fresh
+    if hasattr(settings, 'COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE'):
+        delattr(settings, 'COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE')
+
+    common_settings.plugin_settings(settings)
+
+    # Verify the settings are set with correct defaults
+    assert settings.COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE is False, \
+        "COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE should default to False"
