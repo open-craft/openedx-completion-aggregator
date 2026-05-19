@@ -14,6 +14,17 @@ Change Log
 Unreleased
 ~~~~~~~~~~
 
+[4.5.0] - 2026-05-19
+~~~~~~~~~~~~~~~~~~~~
+
+* Add ``COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT`` setting to configure the
+  per-user UpdaterCache timeout. Default remains 600 seconds (10 minutes) for
+  backward compatibility.
+* Add ``COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE`` setting to enable
+  use of the platform's pre-cached BlockStructure (24-hour TTL) instead of
+  rebuilding it on every UpdaterCache miss. Default is ``False`` for backward
+  compatibility. Set to ``True`` in production for reduced CPU usage.
+
 [4.4.1] - 2026-05-11
 ~~~~~~~~~~~~~~~~~~~~
 
