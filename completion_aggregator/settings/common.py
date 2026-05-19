@@ -45,6 +45,19 @@ def plugin_settings(settings):
     # 2. It's not possible to revert this change by reaggregation without manually removing existing Aggregators.
     settings.COMPLETION_AGGREGATOR_AGGREGATE_UNRELEASED_BLOCKS = False
 
+    # -------------------------------------------------------------------------
+    # Performance tuning settings
+    # -------------------------------------------------------------------------
+
+    # When enabled, the aggregator will attempt to use the platform's pre-cached
+    # BlockStructure (typically cached for 24 hours) instead of rebuilding it from
+    # scratch. This significantly reduces CPU usage when the UpdaterCache expires.
+    # The platform automatically updates this cache when courses are published via
+    # the course_published signal.
+    # Default: False (for backward compatibility)
+    # Set to True in production for better performance.
+    settings.COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE = False
+
     # Whitelist the aggregator events for use with event routing backends xAPI backend.
     # If these settings don't already exist, then ERB hasn't been loaded yet, so we need to set them to empty lists.
     # But once ERB does load it will append its events to our list, preserving what we added here.
