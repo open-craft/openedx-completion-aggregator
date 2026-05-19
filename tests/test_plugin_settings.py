@@ -52,11 +52,15 @@ def test_performance_tuning_settings():
     Test that the performance tuning settings are properly set by plugin_settings.
     """
     # Reset settings to ensure we're testing fresh
+    if hasattr(settings, 'COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT'):
+        delattr(settings, 'COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT')
     if hasattr(settings, 'COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE'):
         delattr(settings, 'COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE')
 
     common_settings.plugin_settings(settings)
 
     # Verify the settings are set with correct defaults
+    assert settings.COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT == 600, \
+        "COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT should default to 600 seconds"
     assert settings.COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE is False, \
         "COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE should default to False"

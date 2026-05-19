@@ -6,12 +6,59 @@ Tests for:
 - COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import mock
 from opaque_keys.edx.keys import CourseKey
 
+from django.conf import settings
 from django.test import TestCase, override_settings
 
 from completion_aggregator import compat
+from completion_aggregator.core import UpdaterCache
+
+
+class UpdaterCacheTimeoutTestCase(TestCase):
+    """
+    Test that the UpdaterCache timeout is configurable.
+    """
+
+    def test_default_timeout(self):
+        """
+        Test that the default timeout is 600 seconds (10 minutes).
+        """
+        assert settings.COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT == 600
+
+    @override_settings(COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT=7200)
+    def test_cache_set_uses_configured_timeout(self):
+        """
+        Test that UpdaterCache.set() uses the configured timeout.
+        """
+        course_key = CourseKey.from_string('course-v1:edx+test+2024')
+        cache = UpdaterCache(user_id=1, course_key=course_key, root_block=None)
+
+        with mock.patch('completion_aggregator.core.CacheGroup') as mock_cache_group:
+            mock_instance = mock_cache_group.return_value
+            cache.set({'test': 'value'})
+            mock_instance.set.assert_called_once_with(
+                str(course_key),
+                cache.cache_key,
+                {'test': 'value'},
+                timeout=7200
+            )
+
+    @override_settings(COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT=1800)
+    def test_cache_touch_uses_configured_timeout(self):
+        """
+        Test that UpdaterCache.touch() uses the configured timeout.
+        """
+        course_key = CourseKey.from_string('course-v1:edx+test+2024')
+        cache = UpdaterCache(user_id=1, course_key=course_key, root_block=None)
+
+        with mock.patch('completion_aggregator.core.CacheGroup') as mock_cache_group:
+            mock_instance = mock_cache_group.return_value
+            cache.touch()
+            mock_instance.touch.assert_called_once_with(cache.cache_key, timeout=1800)
 
 
 class CollectedBlockStructureTestCase(TestCase):
