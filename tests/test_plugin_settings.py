@@ -53,9 +53,9 @@ def test_performance_tuning_settings():
     """
     # Reset settings to ensure we're testing fresh
     if hasattr(settings, 'COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT'):
-        delattr(settings, 'COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT')
+        del settings.COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT
     if hasattr(settings, 'COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE'):
-        delattr(settings, 'COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE')
+        del settings.COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE
 
     common_settings.plugin_settings(settings)
 
