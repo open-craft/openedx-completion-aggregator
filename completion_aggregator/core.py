@@ -16,6 +16,7 @@ from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 from xblock.plugin import PluginMissingError
 
+from django.conf import settings
 from django.utils import timezone
 
 from . import compat
@@ -24,7 +25,6 @@ from .models import Aggregator, StaleCompletion
 from .utils import BagOfHolding
 
 OLD_DATETIME = pytz.utc.localize(datetime(1900, 1, 1, 0, 0, 0))
-UPDATER_CACHE_TIMEOUT = 600  # 10 minutes
 
 CacheEntry = namedtuple('CacheEntry', ['course_blocks', 'root_block'])
 CompletionStats = namedtuple(
@@ -65,13 +65,13 @@ class UpdaterCache:
         Sets the group to `str(self.course_key)`.
         """
         group = str(self.course_key)
-        CacheGroup().set(group, self.cache_key, value, timeout=UPDATER_CACHE_TIMEOUT)
+        CacheGroup().set(group, self.cache_key, value, timeout=settings.COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT)
 
     def touch(self):
         """
         Update the timeout for a given cache key.
         """
-        CacheGroup().touch(self.cache_key, timeout=UPDATER_CACHE_TIMEOUT)
+        CacheGroup().touch(self.cache_key, timeout=settings.COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT)
 
     @property
     def cache_key(self):

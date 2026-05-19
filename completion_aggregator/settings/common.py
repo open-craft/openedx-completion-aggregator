@@ -49,6 +49,15 @@ def plugin_settings(settings):
     # Performance tuning settings
     # -------------------------------------------------------------------------
 
+    # Timeout in seconds for the per-user UpdaterCache.
+    # This cache stores the simplified course block structure for a user to avoid
+    # repeatedly calling the expensive course_blocks API during a session.
+    # Default: 600 seconds (10 minutes)
+    # Increasing this value reduces CPU usage but may delay visibility of course
+    # structure changes to users. The platform's BlockStructure cache (24-hour TTL)
+    # handles course publish updates, so this can safely be increased.
+    settings.COMPLETION_AGGREGATOR_UPDATER_CACHE_TIMEOUT = 600
+
     # When enabled, the aggregator will attempt to use the platform's pre-cached
     # BlockStructure (typically cached for 24 hours) instead of rebuilding it from
     # scratch. This significantly reduces CPU usage when the UpdaterCache expires.
