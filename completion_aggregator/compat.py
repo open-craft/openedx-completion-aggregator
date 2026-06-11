@@ -54,6 +54,30 @@ def get_item_not_found_error():
     return ItemNotFoundError
 
 
+def get_collected_block_structure(course_key):
+    """
+    Return the collected (pre-transformed) BlockStructure from the platform's cache.
+
+    This is the BlockStructure that has been collected and cached by the platform
+    (typically with a 24-hour TTL). Using this avoids the expensive transformer
+    collection process when calling get_course_blocks().
+
+    Returns None if the setting is disabled or if fetching fails.
+    """
+    if not settings.COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE:
+        return None
+
+    try:
+        # pylint: disable=import-error
+        from openedx.core.djangoapps.content.block_structure.api import get_course_in_cache
+        from openedx.core.djangoapps.content.block_structure.exceptions import BlockStructureNotFound
+        return get_course_in_cache(course_key)
+    except BlockStructureNotFound:
+        # Cache miss - the block structure hasn't been collected yet.
+        # Fall back to rebuilding, which will also populate the cache.
+        return None
+
+
 def init_course_blocks(user, root_block_key):
     """
     Return a BlockStructure representing the course, optionally ignoring content start dates.
@@ -62,6 +86,10 @@ def init_course_blocks(user, root_block_key):
 
         .location
         .block_type
+
+    If COMPLETION_AGGREGATOR_USE_COLLECTED_BLOCK_STRUCTURE is enabled, this will
+    attempt to use the platform's pre-cached BlockStructure (typically cached for
+    24 hours) to avoid expensive transformer collection on every call.
     """
     # pylint: disable=import-error
     from lms.djangoapps.course_blocks.api import get_course_block_access_transformers, get_course_blocks
@@ -77,7 +105,15 @@ def init_course_blocks(user, root_block_key):
             tf for tf in transformers if not isinstance(tf, StartDateTransformer)
         ]
 
-    return get_course_blocks(user, root_block_key, BlockStructureTransformers(transformers))
+    # Try to use the platform's pre-cached block structure if enabled
+    collected_block_structure = get_collected_block_structure(root_block_key.course_key)
+
+    return get_course_blocks(
+        user,
+        root_block_key,
+        BlockStructureTransformers(transformers),
+        collected_block_structure=collected_block_structure
+    )
 
 
 def get_block_completions(user, course_key):
